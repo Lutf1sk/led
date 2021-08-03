@@ -41,7 +41,7 @@ LNK = cc
 
 DEPS = $(patsubst %.o,%.d,$(OBJS))
 
-CC_FLAGS += -Wall -I./
+CC_FLAGS += -Wall
 LNK_FLAGS +=
 
 OUT_PATH = bin/$(OUT)
