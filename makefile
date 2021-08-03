@@ -54,6 +54,7 @@ install: all
 
 LNK_CMD = $(LNK) $(LNK_FLAGS) -o $(OUT_PATH) $(OBJS) $(LNK_LIBS)
 $(OUT_PATH): $(OBJS)
+	@-mkdir -p bin
 	@printf "Linking %-25s (%s)\n" "$(OUT)" "$(LNK_CMD)"
 	@$(LNK_CMD)
 
