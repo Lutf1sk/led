@@ -1,14 +1,10 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include "focus_editor.h"
+#include "focus.h"
 #include "custom_keys.h"
 #include "file_browser.h"
 #include "editor.h"
-#include "focus_browse_files.h"
-#include "focus_error.h"
-#include "focus_goto.h"
-#include "focus_find_local.h"
 #include "algo.h"
 
 #include <string.h>

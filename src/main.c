@@ -19,8 +19,6 @@
 #include "custom_keys.h"
 #include "file_browser.h"
 #include "focus.h"
-#include "focus_editor.h"
-#include "focus_browse_filesystem.h"
 
 WINDOW* header_w = NULL;
 WINDOW* linenum_w = NULL;

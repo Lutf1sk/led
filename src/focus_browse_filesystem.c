@@ -1,8 +1,7 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include "focus_browse_filesystem.h"
-#include "focus_editor.h"
+#include "focus.h"
 #include "clr.h"
 #include "editor.h"
 #include "file_browser.h"

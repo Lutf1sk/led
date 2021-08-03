@@ -1,8 +1,7 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include "focus_goto.h"
-#include "focus_editor.h"
+#include "focus.h"
 #include "editor.h"
 #include "clr.h"
 #include "chartypes.h"
