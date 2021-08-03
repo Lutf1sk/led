@@ -37,7 +37,7 @@
 #	define ASSERT_NOT_REACHED() assert_unreachable_failed(__FILE__, __LINE__)
 #else
 #	define ASSERT(x) ((void)0)
-# define ASSRET_NOT_REACHED()
+#	define ASSERT_NOT_REACHED() ((void)0)
 #endif
 
 // Useful macros
