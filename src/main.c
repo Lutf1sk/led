@@ -337,7 +337,7 @@ int main(int argc, char** argv) {
 	
 	ed = fb_first_file();
 	
-	focus = focus_editor;
+	edit_file(&ed_globals, ed);
 
 	for (;;) {
 		// (Re)create windows when first started or when the

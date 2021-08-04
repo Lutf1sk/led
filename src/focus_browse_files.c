@@ -72,23 +72,23 @@ void draw_browse_files(global_t* ed_globals, void* win_, void* args) {
 }
 
 void input_browse_files(global_t* ed_global, int c) {
+	editor_t* ed = *ed_global->ed;
+	
 	switch (c) {
 	case '\n': case KEY_ENTER:
-		if (selected)
-			*ed_global->ed = selected;
-		focus = focus_editor;
+		edit_file(ed_global, selected ? selected : ed);
 		break;
 		
 	case KEY_BACKSPACE:
-		if (input.len)
-			--input.len;
+		if (!input.len)
+			edit_file(ed_global, ed);
 		else
-			focus = focus_editor;
+			--input.len;
 		break;
 	
 	case KEY_CBACKSPACE:
 		if (!input.len)
-			focus = focus_editor;
+			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '.')
 			;
 		break;

@@ -89,24 +89,24 @@ void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
 }
 
 void input_browse_filesystem(global_t* ed_global, int c) {
+	editor_t* ed = *ed_global->ed;
+	
 	switch (c) {
 	case KEY_ENTER: case '\n':
-		focus = focus_editor;
 		editor_t* new_ed = fb_open(ed_global, input);
-		if (new_ed)
-			*ed_global->ed = new_ed;
+		edit_file(ed_global, new_ed ? new_ed : ed);
 		break;
 		
 	case KEY_BACKSPACE:
-		if (input.len)
-			input.len--;
+		if (!input.len)
+			edit_file(ed_global, ed);
 		else
-			focus = focus_editor;
+			input.len--;
 		break;
 		
 	case KEY_CBACKSPACE:
 		if (!input.len)
-			focus = focus_editor;
+			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '/')
 			;
 		break;

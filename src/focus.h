@@ -9,6 +9,7 @@
 // Common
 
 typedef struct global global_t;
+typedef struct editor editor_t;
 
 typedef void (*fn_focus_draw_t)(global_t*, void*,void*);
 typedef void (*fn_focus_input_t)(global_t*, int);
@@ -30,8 +31,6 @@ void browse_files(void);
 void draw_browse_files(global_t* ed_global, void* win, void* args);
 void input_browse_files(global_t* ed_global, int c);
 
-extern focus_t focus_browse_files;
-
 // Filesystem browser
 
 void browse_filesystem(void);
@@ -39,13 +38,11 @@ void browse_filesystem(void);
 void draw_browse_filesystem(global_t* ed_global, void* win, void* args);
 void input_browse_filesystem(global_t* ed_global, int c);
 
-extern focus_t focus_browse_filesystem;
-
 // Editor
 
-void input_editor(global_t* ed, int c);
+void edit_file(global_t* ed_global, editor_t* ed);
 
-extern focus_t focus_editor;
+void input_editor(global_t* ed, int c);
 
 // Local find
 
@@ -54,8 +51,6 @@ void find_local(isz start_x, isz start_y);
 void draw_find_local(global_t* ed_global, void* win_, void* args);
 void input_find_local(global_t* ed_global, int c);
 
-extern focus_t focus_find_local;
-
 // Notify error
 
 void notify_error(char* str);
@@ -63,15 +58,11 @@ void notify_error(char* str);
 void draw_notify_error(global_t* ed_global, void* win_, void* args);
 void input_notify_error(global_t* ed_global, int c);
 
-extern focus_t focus_notify_error;
-
 // Goto
 
 void goto_line(void);
 
 void draw_goto(global_t* ed_global, void* win, void* args);
 void input_goto(global_t* ed_global, int c);
-
-extern focus_t focus_goto;
 
 #endif

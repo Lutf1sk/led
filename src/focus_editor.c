@@ -19,6 +19,11 @@ static char* clipboard = NULL;
 static usz clipboard_len = 0;
 static usz clipboard_alloc_len = 0;
 
+void edit_file(global_t* ed_global, editor_t* ed) {
+	focus = focus_editor;
+	*ed_global->ed = ed;
+}
+
 void input_editor(global_t* ed_globals, int c) {
 	editor_t* ed = *ed_globals->ed;
 

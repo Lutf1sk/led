@@ -48,15 +48,15 @@ void input_goto(global_t* ed_global, int c) {
 		break;
 	
 	case KEY_BACKSPACE:
-		if (input.len)
-			--input.len;
+		if (!input.len)
+			edit_file(ed_global, ed);
 		else
-			focus = focus_editor;
+			--input.len;
 		break;
 		
 	case KEY_CBACKSPACE:
 		if (!input.len)
-			focus = focus_editor;
+			edit_file(ed_global, ed);
 		while (input.len && is_digit(input.str[--input.len]))
 			;
 		break;
@@ -105,7 +105,7 @@ void input_goto(global_t* ed_global, int c) {
 		if (sync_selection)
 			ed_sync_selection(ed);			
 
-		focus = focus_editor;
+		edit_file(ed_global, ed);
 	}	break;
 	
 	case 'b': case 'e':

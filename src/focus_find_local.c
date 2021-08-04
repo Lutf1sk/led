@@ -42,20 +42,20 @@ void input_find_local(global_t* ed_global, int c) {
 	switch (c) {
 	case KEY_BACKSPACE:
 		if (!input.len)
-			focus = focus_editor;
+			edit_file(ed_global, ed);
 		else
 			--input.len;
 		break;
 		
 	case KEY_CBACKSPACE:
 		if (!input.len)
-			focus = focus_editor;
+			edit_file(ed_global, ed);
 		else
 			input.len = 0;
 		break;
 
 	case KEY_ENTER: case '\n':
-		focus = focus_editor;
+		edit_file(ed_global, ed);
 		break;
 
 	default:

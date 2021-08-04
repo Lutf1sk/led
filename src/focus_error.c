@@ -27,7 +27,6 @@ void draw_notify_error(global_t* ed_global, void* win_, void* args) {
 
 void input_notify_error(global_t* ed_global, int c) {
 	(void)ed_global;
-	focus = focus_editor;
+	edit_file(ed_global, *ed_global->ed);
 }
-
 
