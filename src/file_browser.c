@@ -18,15 +18,18 @@ editor_t* fb_first_file(void) {
 }
 
 usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
-	// TODO: Make this less terrible
 	usz buf_it = 0;
 	
 	for (usz i = 0; buf_it < out_count && i < file_count; ++i) {
 		char* name = editors[i].doc.name;
 		usz len = strlen(name);
 		
-		if (len >= str.len && memcmp(str.str, name, str.len) == 0)
-			out[buf_it++] = &editors[i];
+		for (usz j = 0; j + str.len <= len; ++j) {
+			if (len >= str.len && memcmp(str.str, name + j, str.len) == 0) {
+				out[buf_it++] = &editors[i];
+				break;
+			}
+		}
 	}
 	
 	return buf_it;
