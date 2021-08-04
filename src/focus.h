@@ -18,7 +18,7 @@ typedef
 struct focus {
 	fn_focus_draw_t draw;
 	void* draw_args;
-	
+
 	fn_focus_input_t input;
 } focus_t;
 

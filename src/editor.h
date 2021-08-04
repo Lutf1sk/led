@@ -15,30 +15,30 @@ typedef struct editor editor_t;
 typedef
 struct global {
 	editor_t** ed;
-	
+
 	usz tab_size;
 	usz scroll_offs;
 	usz vstep;
-	
+
 	usz width, height;
 	usz hstart, vstart;
-	
+
 	u8 predict_brackets;
 } global_t;
 
 typedef
 struct editor {
 	global_t* global;
-		
+
 	usz line_top;
 
 	usz cx, cy;
 	usz target_cx, target_cy_offs;
 	usz sel_x, sel_y;
-	
+
 	pframe_t* highl_pool;
 	highl_t** highl_lines;
-	
+
 	doc_t doc;
 } editor_t;
 

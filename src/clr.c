@@ -42,7 +42,7 @@ void init_color_from_conf(int color, lstr_t key, conf_t* parent_conf) {
 
 void clr_load(conf_t* clr_conf) {
 	ASSERT(clr_conf);
-	
+
 	// TODO: Handle both of these conditions properly
 	if (!can_change_color())
 		return;
@@ -135,7 +135,7 @@ void clr_load(conf_t* clr_conf) {
 	init_pair(PAIR_SYNTAX_PUNCTUATION, CLR_SYNTAX_PUNCTUATION, CLR_EDITOR_BG);
 
 	init_pair(PAIR_SYNTAX_FUNCTION, CLR_SYNTAX_FUNCTION, CLR_EDITOR_BG);
-	
+
 	init_pair(PAIR_SYNTAX_TRAIL_INDENT, CLR_SYNTAX_TRAIL_INDENT, CLR_SYNTAX_TRAIL_INDENT);
 
 	// Notification colors
@@ -158,7 +158,7 @@ void clr_load(conf_t* clr_conf) {
 	init_color_from_conf(CLR_BROWSE_FILES_ENTRY_FG, CLSTR("entry_text"), file_browser_cf);
 	init_color_from_conf(CLR_BROWSE_FILES_SEL_BG, CLSTR("selected_background"), file_browser_cf);
 	init_color_from_conf(CLR_BROWSE_FILES_SEL_FG, CLSTR("selected_text"), file_browser_cf);
-		
+
 	// File browser pairs
 	init_pair(PAIR_BROWSE_FILES_INPUT, CLR_BROWSE_FILES_INPUT_FG, CLR_BROWSE_FILES_INPUT_BG);
 	init_pair(PAIR_BROWSE_FILES_ENTRY, CLR_BROWSE_FILES_ENTRY_FG, CLR_BROWSE_FILES_ENTRY_BG);

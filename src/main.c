@@ -87,14 +87,14 @@ void add_doc_name(doc_t* doc) {
 void draw_header(editor_t* ed) {
 	wmove(header_w, 0, 0);
 	wattr_set(header_w, 0, PAIR_HEADER_TAB, NULL);
-	
+
 	waddch(header_w, ' ');
 	if (ed)
 		add_doc_name(&ed->doc);
 	else
 		waddstr(header_w, "No file selected");
 	waddch(header_w, ' ');
-	
+
 	wattr_set(header_w, 0, PAIR_HEADER_BG, NULL);
 	waddnch(header_w, COLS - getcurx(header_w), ' ');
 }
@@ -109,17 +109,17 @@ void draw_line(editor_t* ed, usz y, usz line_index) {
 	lstr_t* line = &ed->doc.lines[line_index];
 	wmove(editor_w, y, 0);
 	highl_t* hl_node = ed->highl_lines[line_index];
-	
+
 	isz j = 0;
 	while (hl_node) {
 		set_highl(hl_node);
 		isz len = hl_node->len;
 		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-		
+
 		j += len;
 		hl_node = hl_node->next;
 	}
-	
+
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
 	wprintw(editor_w, "%.*s", (int)(line->len - j), &line->str[j]);
 }
@@ -129,17 +129,17 @@ void draw_line_hbound(editor_t* ed, usz y, usz line_index, usz max_x) {
 	lstr_t* line = &ed->doc.lines[line_index];
 	wmove(editor_w, y, 0);
 	highl_t* hl_node = ed->highl_lines[line_index];
-	
+
 	isz j = 0;
 	while (hl_node && j < max_x) {
 		set_highl(hl_node);
 		isz len = min(hl_node->len, max_x - j);
 		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-		
+
 		j += len;
 		hl_node = hl_node->next;
 	}
-	
+
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
 	wprintw(editor_w, "%.*s", (int)min(line->len - j, max_x - j), &line->str[j]);
 }
@@ -148,32 +148,32 @@ static
 void draw_line_hoffs(editor_t* ed, usz y, usz line_index, usz start_x, usz start_col) {
 	lstr_t* line = &ed->doc.lines[line_index];
 	highl_t* hl_node = ed->highl_lines[line_index];
-	
+
 	wmove(editor_w, y, start_col);
-	
+
 	isz j = 0;
 	while (hl_node && j + hl_node->len <= start_x) {
 		j += hl_node->len;
 		hl_node = hl_node->next;
 	}
-	
+
 	if (hl_node) {
 		set_highl(hl_node);
 		const isz len = (j + hl_node->len) - start_x;
 		wprintw(editor_w, "%.*s", (int)len, &line->str[start_x]);
 		j += hl_node->len;
 		hl_node = hl_node->next;
-		
+
 		while (hl_node) {
 			set_highl(hl_node);
 			const isz len = hl_node->len;
 			wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-			
+
 			j += len;
 			hl_node = hl_node->next;
 		}
 	}
-	
+
 	isz remaining = (line->len - start_x) - j;
 	if (remaining > 0) {
 		wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
@@ -191,13 +191,13 @@ void draw_editor(editor_t* ed) {
 	ed_get_selection(ed, &sel_start_y, &sel_start_x, &sel_end_y, &sel_end_x);
 	sel_start_y -= ed->line_top;
 	sel_end_y -= ed->line_top;
-	
+
 	// Draw lines
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-	
+
 	const isz line_top = ed->line_top;
 	const isz line_count = imin(ed->doc.line_count - ed->line_top, EDITOR_HEIGHT);
-	
+
 	// Draw line numbers preceding the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
 	const isz pre_selection_lines = sel_start_y;
@@ -210,7 +210,7 @@ void draw_editor(editor_t* ed) {
 	wattr_set(linenum_w, 0, PAIR_LINENUM_SEL, NULL);
 	for (isz i = sel_min; i <= sel_max; ++i)
 		mvwprintw(linenum_w, i, 0, "%4zu ", (line_top + i + 1) % 10000);
-	
+
 	// Draw remaining line numbers
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
 	for (isz i = sel_end_y + 1; i < line_count; ++i)
@@ -225,14 +225,14 @@ void draw_editor(editor_t* ed) {
 	// Draw text preceding the selection
 	for (isz i = 0; i < pre_selection_lines; ++i)
 		draw_line(ed, i, line_top + i);
-	
+
 	// Draw text on selected lines
 	isz col = 0;
 	if (sel_start_y >= 0) {
 		draw_line_hbound(ed, sel_start_y, line_top + sel_start_y, sel_start_x);
 		col = getcurx(editor_w);
 	}
-	
+
 	wattr_set(editor_w, A_STANDOUT, PAIR_EDITOR, NULL);
 	for (isz i = sel_min, j = sel_start_y >= 0 ? sel_start_x : 0; i <= sel_max; ++i) {
 		lstr_t* line = &ed->doc.lines[line_top + i];
@@ -243,10 +243,10 @@ void draw_editor(editor_t* ed) {
 		col = 0;
 	}
 	wattr_off(editor_w, A_STANDOUT, NULL);
-	
+
 	if (sel_end_y < EDITOR_HEIGHT)
 		draw_line_hoffs(ed, sel_end_y, line_top + sel_end_y, sel_end_x, getcurx(editor_w));
-	
+
 	// Draw remaining text
 	for (isz i = sel_end_y + 1; i < line_count; ++i)
 		draw_line(ed, i, line_top + i);
@@ -268,11 +268,11 @@ FILE* fopen_config(void) {
 	memcpy(path_buf, home_dir, home_len);
 	memcpy(path_buf + home_len, conf_subpath.str, conf_subpath.len);
 	path_buf[home_len + conf_subpath.len] = 0;
-	
+
 	FILE* fp = fhl_fopen_r(path_buf);
 	if (fp)
 		return fp;
-	
+
 	return NULL;
 }
 
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
 	ed_globals.tab_size = conf_find_int_default(editor_cf, CLSTR("tab_size"), 4);
 	ed_globals.vstep = conf_find_int_default(editor_cf, CLSTR("vstep"), 4);
 	ed_globals.predict_brackets = conf_find_bool_default(editor_cf, CLSTR("predict_brackets"), 0);
-	
+
 	ed_globals.ed = &ed;
 
 	set_tabsize(ed_globals.tab_size);
@@ -341,9 +341,9 @@ int main(int argc, char** argv) {
 	// Load documents
 	for (usz i = 1; i < argc; ++i)
 		fb_open(&ed_globals, CLSTR(argv[i]));
-	
+
 	ed = fb_first_file();
-	
+
 	edit_file(&ed_globals, ed);
 
 	for (;;) {
@@ -375,28 +375,28 @@ int main(int argc, char** argv) {
 				free(ed->highl_lines);
 			ed->highl_lines = highl_generate(ed->highl_pool, &ed->doc);
 			draw_editor(ed);
-			
+
 		}
 		if (focus.draw)
 			focus.draw(&ed_globals, editor_w, focus.draw_args);
 		refresh();
-		
+
 		// Get and handle input.
 		int c = wgetch(stdscr);
 
 		if (c == 'E' - CTRL_MOD_DIFF)
 			break;
-		
+
 		switch (c) {
 		case 'O' - CTRL_MOD_DIFF:
 			browse_filesystem();
 			break;
-		
+
 		case KEY_RESIZE:
 			// For some reason, the tab size is reset to default by ncurses when a terminal is resized.
 			set_tabsize(ed_globals.tab_size);
 			break;
-			
+
 		default:
 			if (focus.input)
 				focus.input(&ed_globals, c);
@@ -418,7 +418,7 @@ int main(int argc, char** argv) {
 	clr_pop(); // Pop previous colors
 	refresh();
 	endwin();
-	
+
 	// Force disable mouse events again
 	printf("\x1B[?1003l");
 	fflush(stdout);

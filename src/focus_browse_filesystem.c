@@ -30,23 +30,23 @@ void browse_filesystem(void) {
 void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
 	WINDOW* win = win_;
 	(void)args;
-	
+
 	int height = ed_globals->height;
 	int width = ed_globals->width;
-	
+
 	usz start_height = height - 1 - MAX_ENTRY_COUNT;
-	
+
 	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
 	mvwprintw(win, start_height, 0, " %.*s", (int)input.len, input.str);
-	wcursyncup(win);	
+	wcursyncup(win);
 	waddnch(win, width - getcurx(win), ' ');
-	
+
 	char dir_path[PATH_MAX_LEN + 1];
 	memcpy(dir_path, input.str, input.len);
 	dir_path[input.len] = 0;
-	
+
 	char* inp_name = "";
-	
+
 	usz found_count = 0;
 	DIR* dir = opendir(dir_path);
 	if (!dir) {
@@ -62,27 +62,27 @@ void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
 			dir = opendir(".");
 		inp_name = &dir_path[slash];
 	}
-	
+
 	if (dir) {
 		usz inp_name_len = strlen(inp_name);
-		
+
 		struct dirent* entry = NULL;
 		while ((entry = readdir(dir)) && found_count < MAX_ENTRY_COUNT) {
 			if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
 				continue;
 			if (strncmp(entry->d_name, inp_name, inp_name_len) != 0)
 				continue;
-			
+
 			if (entry->d_type == DT_DIR || entry->d_type == DT_LNK)
 				wattr_set(win, 0, PAIR_BROWSE_FILES_SEL, NULL);
 			else
 				wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
-			
+
 			mvwprintw(win, start_height + found_count++ + 1, 0, " %s", entry->d_name);
 			waddnch(win, width - getcurx(win), ' ');
 		}
 	}
-	
+
 	wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
 	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i)
 		waddnch(win, width, ' ');
@@ -90,32 +90,32 @@ void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
 
 void input_browse_filesystem(global_t* ed_global, int c) {
 	editor_t* ed = *ed_global->ed;
-	
+
 	switch (c) {
 	case KEY_ENTER: case '\n': {
 		editor_t* new_ed = fb_open(ed_global, input);
 		edit_file(ed_global, new_ed ? new_ed : ed);
 	}	break;
-		
+
 	case KEY_BACKSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else
 			input.len--;
 		break;
-		
+
 	case KEY_CBACKSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '/')
 			;
 		break;
-		
+
 	default:
 		if (c >= 32 && c < 127 && input.len < PATH_MAX_LEN)
 			input.str[input.len++] = c;
 		break;
-	}	
+	}
 }
 
 

@@ -71,7 +71,7 @@ void pframe_relinq(pframe_t* pool, void* chunk) {
 		pool->head = node;
 		return;
 	}
-	
+
 	if (!pool->next)
 		ferr("Attempt to relinquish invalid pool chunk\n");
 	pframe_relinq(pool->next, chunk);

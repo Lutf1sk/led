@@ -17,10 +17,10 @@ void notify_error(char* str) {
 
 void draw_notify_error(global_t* ed_global, void* win_, void* args) {
 	WINDOW* win = win_;
-	
+
 	wattr_set(win, A_BOLD, PAIR_NOTIFY_ERROR, NULL);
 	char* str = args;
-		
+
 	mvwprintw(win, ed_global->height - 1, 0, " %s", str);
 	waddnch(win, ed_global->width - getcurx(win), ' ');
 }

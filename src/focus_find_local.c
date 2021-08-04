@@ -33,10 +33,10 @@ void find_local(isz start_y_, isz start_x_) {
 
 void draw_find_local(global_t* ed_global, void* win_, void* args) {
 	WINDOW* win = win_;
-	
+
 	isz width = ed_global->width;
 	isz height = ed_global->height;
-	
+
 	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
 	mvwprintw(win, height - 2, 0, " %.*s", (int)input.len, input.str);
 	wcursyncup(win);
@@ -75,7 +75,7 @@ void update_results(editor_t* ed) {
 
 void input_find_local(global_t* ed_global, int c) {
 	editor_t* ed = *ed_global->ed;
-	
+
 	switch (c) {
 	case KEY_BACKSPACE:
 		if (!input.len)
@@ -119,7 +119,7 @@ void input_find_local(global_t* ed_global, int c) {
 		}
 		break;
 	}
-	
+
 	if (selected_index >= 0) {
 		doc_pos_t result = results[selected_index];
 		ed_goto_line(ed, result.y);

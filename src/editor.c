@@ -9,11 +9,11 @@
 
 void ed_goto_line(editor_t* ed, usz line) {
 	line = min(line, ed->doc.line_count - 1);
-	
+
 	usz line_top = imax(line - ed->global->height / 2, 0);
 	if (line_top + ed->global->height >= ed->doc.line_count)
 		line_top = imax(ed->doc.line_count - ed->global->height, 0);
-	
+
 	ed->cy = line;
 	ed->line_top = line_top;
 	ed->cx = min(ed->target_cx, ed->doc.lines[ed->cy].len);
@@ -22,26 +22,26 @@ void ed_goto_line(editor_t* ed, usz line) {
 void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx) {
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-	
+
 	for (isz i = start_y; i <= end_y; ++i) {
 		lstr_t* line = &ed->doc.lines[i];
 		if (line->len < pfx.len || memcmp(pfx.str, line->str, pfx.len) != 0)
 			continue;
-	
+
 		if (i == ed->cy)
 			ed->cx = imax(ed->cx - pfx.len, 0);
 		if (i == ed->sel_y)
 			ed->sel_x = imax(ed->sel_x - pfx.len, 0);
-		
+
 		doc_erase_str(&ed->doc, i, 0, pfx.len);
 	}
-	
+
 }
 
 void ed_prefix_selection(editor_t* ed, lstr_t pfx) {
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-	
+
 	for (isz i = start_y; i <= end_y; ++i)
 		doc_insert_str(&ed->doc, i, 0, pfx);
 	ed->cx += pfx.len;
@@ -60,7 +60,7 @@ void ed_delete_selection(editor_t* ed) {
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 	ed->cy = end_y;
 	ed->cx = end_x;
-	
+
 	for (usz i = 0; i < sel_len; ++i) {
 		if (ed->cx)
 			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
@@ -81,18 +81,18 @@ usz ed_selection_len(editor_t* ed) {
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 
 	usz len = 0;
-	
+
 	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
 		lstr_t* line = &ed->doc.lines[i];
-		
+
 		if (i == end_y)
 			len += end_x - j;
 		else
 			len += line->len - j + 1;
-		
+
 		j = 0;
 	}
-	
+
 	return len;
 }
 
@@ -103,7 +103,7 @@ void ed_write_selection_str(editor_t* ed, char* str) {
 	char* it = str;
 	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
 		lstr_t* line = &ed->doc.lines[i];
-		
+
 		if (i == end_y) {
 			usz bytes = end_x - j;
 			memcpy(it, &line->str[j], bytes);
@@ -115,7 +115,7 @@ void ed_write_selection_str(editor_t* ed, char* str) {
 			it += bytes;
 			*(it++) = '\n';
 		}
-		
+
 		j = 0;
 	}
 }
@@ -123,7 +123,7 @@ void ed_write_selection_str(editor_t* ed, char* str) {
 b8 ed_get_selection(editor_t* ed, isz* out_start_y, isz* out_start_x, isz* out_end_y, isz* out_end_x) {
 	//if (ed->cy == ed->sel_y && ed->cx == ed->sel_x)
 	//	return 0;
-	
+
 	if (ed->cy < ed->sel_y || (ed->cy == ed->sel_y && ed->cx < ed->sel_x)) {
 		*out_start_y = ed->cy;
 		*out_start_x = ed->cx;
@@ -156,9 +156,9 @@ void ed_sync_target_cy(editor_t* ed) {
 usz ed_screen_x_to_cx(editor_t* ed, usz x, usz cy) {
 	lstr_t* line = &ed->doc.lines[cy];
 	usz it = 0;
-	
+
 	usz tab_size = ed->global->tab_size;
-	
+
 	for (usz i = 0; i < line->len; ++i) {
 		if (line->str[i] == '\t')
 			it += tab_size - it % tab_size;
@@ -256,7 +256,7 @@ usz ed_find_word_fwd(editor_t* ed) {
 		while (cx < line->len && !is_ident_body(str[cx]) && !is_whitespace(str[cx]))
 			++cx;
 	}
-	
+
 	// Skip whitespace
 	while (cx < line->len && is_whitespace(str[cx]))
 		++cx;

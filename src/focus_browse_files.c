@@ -30,16 +30,16 @@ void browse_files(void) {
 void draw_browse_files(global_t* ed_globals, void* win_, void* args) {
 	WINDOW* win = win_;
 	(void)args;
-	
+
 	int height = ed_globals->height;
 	int width = ed_globals->width;
-	
+
 	usz start_height = height - 1 - MAX_ENTRY_COUNT;
-	
+
 	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
 	mvwprintw(win, start_height, 0, " %.*s", (int)input.len, input.str);
 	wcursyncup(win);
-	
+
 	waddnch(win, width - getcurx(win), ' ');
 
 	editor_t* found[MAX_ENTRY_COUNT];
@@ -51,7 +51,7 @@ void draw_browse_files(global_t* ed_globals, void* win_, void* args) {
 		mvwprintw(win, start_height + 1 + i, 0, " %s", found[i]->doc.path);
 		waddnch(win, width - getcurx(win), ' ');
 	}
-	
+
 	// Draw selected file
 	usz sel_index = selected_index;
 	if (sel_index < found_count) {
@@ -67,42 +67,42 @@ void draw_browse_files(global_t* ed_globals, void* win_, void* args) {
 	wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
 	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i)
 		mvwaddnch(win, start_height + 1 + i, 0, width, ' ');
-	
+
 	max_index = found_count;
 }
 
 void input_browse_files(global_t* ed_global, int c) {
 	editor_t* ed = *ed_global->ed;
-	
+
 	switch (c) {
 	case '\n': case KEY_ENTER:
 		edit_file(ed_global, selected ? selected : ed);
 		break;
-		
+
 	case KEY_BACKSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else
 			--input.len;
 		break;
-	
+
 	case KEY_CBACKSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '.')
 			;
 		break;
-	
+
 	case KEY_UP:
 		if (selected_index)
 			--selected_index;
 		break;
-		
+
 	case KEY_DOWN:
 		if (selected_index + 1 < max_index)
 			++selected_index;
 		break;
-		
+
 	default:
 		if (c >= 32 && c < 127 && input.len < PATH_MAX_LEN)
 			input.str[input.len++] = c;

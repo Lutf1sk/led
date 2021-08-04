@@ -107,7 +107,7 @@ b8 is_keyword(lstr_t str) {
 	case 'r':
 		if (lstreq(str, CLSTR("return"))) return 1;
 		break;
-	
+
 	case 's':
 		if (lstreq(str, CLSTR("switch"))) return 1;
 		if (lstreq(str, CLSTR("static"))) return 1;
@@ -131,7 +131,7 @@ static
 b8 is_datatype(lstr_t str) {
 	if (!str.len)
 		return 0;
-	
+
 	switch (str.str[0]) {
 	case 'b':
 		if (lstreq(str, CLSTR("b8"))) return 1;
@@ -145,7 +145,7 @@ b8 is_datatype(lstr_t str) {
 	case 'd':
 		if (lstreq(str, CLSTR("double"))) return 1;
 		break;
-		
+
 	case 'e':
 		if (lstreq(str, CLSTR("enum"))) return 1;
 		break;
@@ -188,7 +188,7 @@ b8 is_datatype(lstr_t str) {
 		if (lstreq(str, CLSTR("volatile"))) return 1;
 		if (lstreq(str, CLSTR("void"))) return 1;
 		break;
-	
+
 	default:
 		break;
 	}
@@ -212,7 +212,7 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 		highl_t* new = pframe_reserve(pool);
 		if (!new)
 			return NULL;
-		
+
 		char* tk_start = &cx->line.str[cx->index];
 		new->len = 1;
 		consume(cx);
@@ -231,7 +231,7 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 		case '#':
 			new->mode = HLM_HASH;
 			break;
-		
+
 		case '"':
 			c = peek(cx);
 			while (c && c != '"') {
@@ -249,7 +249,7 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 			}
 			new->mode = HLM_STRING;
 			break;
-			
+
 		case '\'':
 			c = peek(cx);
 			while (c && c != '\'') {
@@ -267,7 +267,7 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 			}
 			new->mode = HLM_CHAR;
 			break;
-		
+
 		default:
 			if (is_whitespace(c)) {
 				c = peek(cx);
@@ -307,9 +307,9 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 					c = peek(cx);
 					++new->len;
 				}
-	
+
 				lstr_t tk = LSTR(tk_start, &cx->line.str[cx->index] - tk_start);
-	
+
 				if (is_keyword(tk))
 					new->mode = HLM_KEYWORD;
 				else if (is_datatype(tk))
