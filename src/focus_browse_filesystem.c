@@ -92,10 +92,10 @@ void input_browse_filesystem(global_t* ed_global, int c) {
 	editor_t* ed = *ed_global->ed;
 	
 	switch (c) {
-	case KEY_ENTER: case '\n':
+	case KEY_ENTER: case '\n': {
 		editor_t* new_ed = fb_open(ed_global, input);
 		edit_file(ed_global, new_ed ? new_ed : ed);
-		break;
+	}	break;
 		
 	case KEY_BACKSPACE:
 		if (!input.len)

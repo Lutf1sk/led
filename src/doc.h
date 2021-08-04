@@ -20,6 +20,12 @@ struct doc {
 	b8 new;
 } doc_t;
 
+typedef
+struct doc_pos {
+	usz y;
+	usz x;
+} doc_pos_t;
+
 static inline INLINE
 doc_t doc_make(char* path, char* name) {
 	doc_t doc;
@@ -34,7 +40,7 @@ doc_t doc_make(char* path, char* name) {
 	return doc;
 }
 
-b8 doc_find_str(doc_t* doc, lstr_t str, usz start_y, usz start_x, isz* out_y, isz* out_x);
+usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos);
 
 void doc_insert_char(doc_t* doc, usz line_index, usz index, char ch);
 void doc_erase_char(doc_t* doc, usz line_index, usz index);

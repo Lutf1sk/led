@@ -8,22 +8,26 @@
 #include <stdio.h>
 #include <string.h>
 
-b8 doc_find_str(doc_t* doc, lstr_t str, usz start_y, usz start_x, isz* out_y, isz* out_x) {
-	// TODO: This does not account for multiple instances in a single line
-	for (usz i = start_y, j = start_x; i < doc->line_count; ++i) {
+usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos) {
+	if (!str.len)
+		return 0;
+
+	doc_pos_t* out_it = out_pos;
+
+	usz found_count = 0;
+	for (usz i = 0; i < doc->line_count; ++i) {
 		lstr_t* line = &doc->lines[i];
-		
-		for (; j + str.len <= line->len; ++j) {
+
+		for (usz j = 0; j + str.len <= line->len; ++j) {
 			if (memcmp(&line->str[j], str.str, str.len) == 0) {
-				*out_y = i;
-				*out_x = j;
-				return 1;
+				++found_count;
+				if (out_it)
+					*(out_it++) = (doc_pos_t){ i, j };
 			}
 		}
-		j = 0;
 	}
-	
-	return 0;
+
+	return found_count;
 }
 
 void doc_insert_char(doc_t* doc, usz line_index, usz index, char ch) {
