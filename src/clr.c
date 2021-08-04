@@ -136,7 +136,7 @@ void clr_load(conf_t* clr_conf) {
 
 	init_pair(PAIR_SYNTAX_FUNCTION, CLR_SYNTAX_FUNCTION, CLR_EDITOR_BG);
 
-	init_pair(PAIR_SYNTAX_TRAIL_INDENT, CLR_SYNTAX_TRAIL_INDENT, CLR_SYNTAX_TRAIL_INDENT);
+	init_pair(PAIR_SYNTAX_TRAIL_INDENT, CLR_EDITOR_FG, CLR_SYNTAX_TRAIL_INDENT);
 
 	// Notification colors
 	conf_t* notify_err_cf = conf_find(clr_conf, CLSTR("notify_error"), CONF_OBJECT);
