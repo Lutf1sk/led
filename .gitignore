@@ -2,3 +2,4 @@
 /src/**/*.d
 /bin/*
 gmon.out
+test.txt
