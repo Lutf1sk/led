@@ -24,12 +24,12 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | CTRL+L    | Goto line             |
 | CTRL+K    | Browse open files     |
 | CTRL+Q    | Close current file    |
-| CTRL+F    | Find string           |
+| CTRL+F    | Local find string     |
 | CTRL+P    | Comment selection     |
 | TAB       | Intent selection      |
 | Shift+TAB | Unindent selection    |
-| PageUp    | Move up one page      |
-| PageDown  | Move down one page    |
+| Page Up   | Move up one page      |
+| Page Down | Move down one page    |
 | Home      | Jump to start of line |
 | End       | Jump to end of line   |
 | Shift+TAB | Unindent selection    |
@@ -37,9 +37,9 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 
 The cursor is moved with the arrow keys. 
 
-Using CTRL+LeftArrow/RightArrow moves word-by-word.
+Using CTRL+Horizontal arrows moves word-by-word.
 
-CTRL+UpArrow/DownArrow moves up/down ```editor.vstep``` lines.
+CTRL+Vertical arrows moves up/down ```editor.vstep``` lines.
 
 As expected, moving the cursor with shift held down adds text to the selection.
 
