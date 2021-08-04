@@ -62,6 +62,13 @@ void set_highl(highl_t* node) {
 	case HLM_OPERATOR: wattr_set(editor_w, 0, PAIR_SYNTAX_OPERATOR, NULL); break;
 	case HLM_PUNCTUATION: wattr_set(editor_w, 0, PAIR_SYNTAX_PUNCTUATION, NULL); break;
 
+	case HLM_INDENT:
+		if (!node->next)
+			wattr_set(editor_w, 0, PAIR_SYNTAX_TRAIL_INDENT, NULL);
+		else
+			wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
+		break;
+
 	default:
 		break;
 	}

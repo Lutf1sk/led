@@ -51,6 +51,8 @@
 
 #define CLR_HEADER_BG 33
 
+#define CLR_SYNTAX_TRAIL_INDENT 34
+
 #define PAIR_LINENUM 1
 #define PAIR_LINENUM_UFLOW 2
 #define PAIR_LINENUM_SEL 3
@@ -81,6 +83,8 @@
 #define PAIR_BROWSE_FILES_SEL 28
 
 #define PAIR_HEADER_BG 29
+
+#define PAIR_SYNTAX_TRAIL_INDENT 30
 
 typedef struct conf conf_t;
 
