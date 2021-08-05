@@ -198,7 +198,7 @@ void input_editor(global_t* ed_globals, int c) {
 		memmove(line_start, line_start + 1, line_count * sizeof(lstr_t));
 
 		--ed->sel_y;
-		--ed->cy;
+		ed_cur_up(ed, ed->cx);
 
 		ed->doc.lines[end_y] = old_start;
 	}	break;
@@ -219,7 +219,7 @@ void input_editor(global_t* ed_globals, int c) {
 		memmove(line_start + 1, line_start, line_count * sizeof(lstr_t));
 
 		++ed->sel_y;
-		++ed->cy;
+		ed_cur_down(ed, ed->cx);
 
 		*line_start = old_end;
 	}	break;
