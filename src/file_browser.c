@@ -13,6 +13,14 @@
 static usz file_count = 0;
 static editor_t* editors = NULL;
 
+editor_t* fb_find_unsaved(void) {
+	for (usz i = 0; i < file_count; ++i) {
+		if (editors[i].doc.unsaved)
+			return &editors[i];
+	}
+	return NULL;
+}
+
 editor_t* fb_first_file(void) {
 	return file_count ? editors : NULL;
 }

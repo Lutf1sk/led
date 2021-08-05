@@ -58,6 +58,13 @@ void notify_error(char* str);
 void draw_notify_error(global_t* ed_global, void* win_, void* args);
 void input_notify_error(global_t* ed_global, int c);
 
+// Notify exit
+
+void notify_exit(void);
+
+void draw_exit(global_t* ed_global, void* win_, void* args);
+void input_exit(global_t* ed_global, int c);
+
 // Goto
 
 void goto_line(void);

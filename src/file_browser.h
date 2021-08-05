@@ -11,6 +11,7 @@
 typedef struct editor editor_t;
 typedef struct global global_t;
 
+editor_t* fb_find_unsaved(void);
 editor_t* fb_first_file(void);
 
 usz fb_find_files(editor_t** out, usz out_count, lstr_t str);

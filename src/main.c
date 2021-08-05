@@ -276,6 +276,24 @@ FILE* fopen_config(void) {
 	return NULL;
 }
 
+void cleanup(int code, void* args) {
+	editor_t* ed_it;
+	while ((ed_it = fb_first_file()))
+		fb_close(ed_it);
+
+	delwin(header_w);
+	delwin(linenum_w);
+	delwin(editor_w);
+
+	clr_pop(); // Pop previous colors
+	refresh();
+	endwin();
+
+	// Force disable mouse events again
+	printf("\x1B[?1003l");
+	fflush(stdout);
+}
+
 int main(int argc, char** argv) {
 	allocators_initialize();
 
@@ -338,6 +356,12 @@ int main(int argc, char** argv) {
 		ferr("No 'colors' object found in config file\n");
 	clr_load(colors_cf);
 
+	// Free config
+	conf_free(&config);
+	free(conf_data);
+
+	on_exit(cleanup, NULL);
+
 	// Load documents
 	for (usz i = 1; i < argc; ++i)
 		fb_open(&ed_globals, CLSTR(argv[i]));
@@ -384,10 +408,11 @@ int main(int argc, char** argv) {
 		// Get and handle input.
 		int c = wgetch(stdscr);
 
-		if (c == 'E' - CTRL_MOD_DIFF)
+		switch (c) {
+		case 'E' - CTRL_MOD_DIFF:
+			notify_exit();
 			break;
 
-		switch (c) {
 		case 'O' - CTRL_MOD_DIFF:
 			browse_filesystem();
 			break;
@@ -403,24 +428,5 @@ int main(int argc, char** argv) {
 			break;
 		}
 	}
-
-	editor_t* ed_it;
-	while ((ed_it = fb_first_file()))
-		fb_close(ed_it);
-
-	delwin(header_w);
-	delwin(linenum_w);
-	delwin(editor_w);
-
-	conf_free(&config);
-	free(conf_data);
-
-	clr_pop(); // Pop previous colors
-	refresh();
-	endwin();
-
-	// Force disable mouse events again
-	printf("\x1B[?1003l");
-	fflush(stdout);
 	return 0;
 }
