@@ -261,7 +261,7 @@ void input_editor(global_t* ed_globals, int c) {
 
 		usz tab_count = 0;
 		lstr_t* line = &ed->doc.lines[ed->cy];
-		for (usz i = 0; i < line->len; ++i) {
+		for (usz i = 0; i < line->len && i < ed->cx; ++i) {
 			if (line->str[i] != '\t')
 				break;
 			tab_count++;
