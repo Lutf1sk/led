@@ -126,38 +126,75 @@ void input_editor(global_t* ed_globals, int c) {
 			notify_error("Failed to save document\n");
 		break;
 
-	case KEY_SUP: sync_selection = 0;
-	case KEY_UP: sync_target_x = 0;
+	case KEY_SUP: sync_selection = 0; sync_target_x = 0;
 		ed_cur_up(ed, ed->target_cx);
 		break;
 
-	case KEY_SDOWN: sync_selection = 0;
+	case KEY_UP: sync_target_x = 0;
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_start(ed);
+			break;
+		}
+		ed_cur_up(ed, ed->target_cx);
+		break;
+
+	case KEY_SDOWN: sync_selection = 0; sync_target_x = 0;
+		ed_cur_down(ed, ed->target_cx);
+		break;
+
 	case KEY_DOWN: sync_target_x = 0;
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_end(ed);
+			break;
+		}
 		ed_cur_down(ed, ed->target_cx);
 		break;
 
 	case KEY_SRIGHT: sync_selection = 0;
+		ed_cur_right(ed);
+		break;
+
 	case KEY_RIGHT:
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_end(ed);
+			break;
+		}
 		ed_cur_right(ed);
 		break;
 
 	case KEY_SLEFT: sync_selection = 0;
+		ed_cur_left(ed);
+		break;
+
 	case KEY_LEFT:
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_start(ed);
+			break;
+		}
 		ed_cur_left(ed);
 		break;
 
 	case KEY_CUP:
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_start(ed);
+			break;
+		}
+
 		for (usz i = 0; i < ed_globals->vstep; ++i)
 			ed_cur_up(ed, ed->target_cx);
 		break;
 
 	case KEY_CDOWN:
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_end(ed);
+			break;
+		}
+
 		for (usz i = 0; i < ed_globals->vstep; ++i)
 			ed_cur_down(ed, ed->target_cx);
 		break;
 
-	case KEY_CSRIGHT: sync_selection = 0;
-	case KEY_CRIGHT: {
+	case KEY_CSRIGHT: sync_selection = 0; {
 		usz move_chars = ed_find_word_fwd(ed) - ed->cx;
 		if (!move_chars)
 			ed_cur_right(ed);
@@ -165,8 +202,33 @@ void input_editor(global_t* ed_globals, int c) {
 			ed_cur_right(ed);
 	}	break;
 
-	case KEY_CSLEFT: sync_selection = 0;
+	case KEY_CRIGHT: {
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_end(ed);
+			break;
+		}
+
+		usz move_chars = ed_find_word_fwd(ed) - ed->cx;
+		if (!move_chars)
+			ed_cur_right(ed);
+		else for (usz i = 0; i < move_chars; ++i)
+			ed_cur_right(ed);
+	}	break;
+
+	case KEY_CSLEFT: sync_selection = 0; {
+		usz move_chars = ed->cx - ed_find_word_bwd(ed);
+		if (!move_chars)
+			ed_cur_left(ed);
+		else for (usz i = 0; i < move_chars; ++i)
+			ed_cur_left(ed);
+	}	break;
+
 	case KEY_CLEFT: {
+		if (ed_selection_available(ed)) {
+			ed_move_to_selection_start(ed);
+			break;
+		}
+
 		usz move_chars = ed->cx - ed_find_word_bwd(ed);
 		if (!move_chars)
 			ed_cur_left(ed);

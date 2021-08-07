@@ -58,6 +58,9 @@ editor_t ed_make(void) {
 	return ed;
 }
 
+void ed_move_to_selection_start(editor_t* ed);
+void ed_move_to_selection_end(editor_t* ed);
+
 void ed_goto_line(editor_t* ed, usz line);
 
 void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx);

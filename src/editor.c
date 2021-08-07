@@ -7,6 +7,20 @@
 
 #include <string.h>
 
+void ed_move_to_selection_start(editor_t* ed) {
+	isz start_y, start_x, end_y, end_x;
+	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
+	ed->cx = start_x;
+	ed->cy = start_y;
+}
+
+void ed_move_to_selection_end(editor_t* ed) {
+	isz start_y, start_x, end_y, end_x;
+	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
+	ed->cx = end_x;
+	ed->cy = end_y;
+}
+
 void ed_goto_line(editor_t* ed, usz line) {
 	line = min(line, ed->doc.line_count - 1);
 
