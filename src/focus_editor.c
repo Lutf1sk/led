@@ -174,7 +174,7 @@ void input_editor(global_t* ed_globals, int c) {
 		ed_cur_left(ed);
 		break;
 
-	case KEY_CUP:
+	case KEY_CUP: sync_target_x = 0;
 		if (ed_selection_available(ed)) {
 			ed_move_to_selection_start(ed);
 			break;
@@ -184,7 +184,7 @@ void input_editor(global_t* ed_globals, int c) {
 			ed_cur_up(ed, ed->target_cx);
 		break;
 
-	case KEY_CDOWN:
+	case KEY_CDOWN: sync_target_x = 0;
 		if (ed_selection_available(ed)) {
 			ed_move_to_selection_end(ed);
 			break;
