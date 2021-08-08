@@ -16,6 +16,7 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | Key       | Description           |
 | :-------: | :-------------------: |
 | CTRL+S    | Save current file     |
+| CTRL+D    | Select current line   |
 | CTRL+C    | Copy selection        |
 | CTRL+X    | Cut selection         |
 | CTRL+V    | Paste clipboard       |
