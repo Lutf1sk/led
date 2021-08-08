@@ -90,6 +90,12 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 	}	break;
 
+	case 'D' - CTRL_MOD_DIFF: sync_selection = 0; {
+		ed->sel_x = 0;
+		ed->sel_y = ed->cy;
+		ed->cx = ed->doc.lines[ed->cy].len;
+	}
+
 	case KEY_MOUSE: {
 		static b8 pressed = 0;
 
@@ -131,7 +137,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_UP: sync_target_x = 0;
-		if (ed_selection_available(ed)) {
+		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_start(ed);
 			break;
 		}
@@ -143,7 +149,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_DOWN: sync_target_x = 0;
-		if (ed_selection_available(ed)) {
+		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_end(ed);
 			break;
 		}
@@ -175,7 +181,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_CUP: sync_target_x = 0;
-		if (ed_selection_available(ed)) {
+		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_start(ed);
 			break;
 		}
@@ -185,7 +191,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_CDOWN: sync_target_x = 0;
-		if (ed_selection_available(ed)) {
+		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_end(ed);
 			break;
 		}
