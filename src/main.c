@@ -381,7 +381,7 @@ int main(int argc, char** argv) {
 		ed_globals.vstart = EDITOR_VSTART;
 		ed_globals.hstart = EDITOR_HSTART;
 
-		if (!editor_w || max_x != EDITOR_WIDTH || max_y != EDITOR_HEIGHT) {	
+		if (!editor_w || max_x != EDITOR_WIDTH || max_y != EDITOR_HEIGHT) {
 			delwin(header_w);
 			delwin(linenum_w);
 			delwin(editor_w);

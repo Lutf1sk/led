@@ -78,6 +78,8 @@ void input_editor(global_t* ed_globals, int c) {
 	}	break;
 
 	case 'V' - CTRL_MOD_DIFF: {
+		delete_selection_if_available(ed);
+
 		for (usz i = 0; i < clipboard_len; ++i) {
 			char c = clipboard[i];
 
