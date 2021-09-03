@@ -46,10 +46,10 @@ void clr_load(conf_t* clr_conf) {
 	if (!can_change_color() || COLOR_PAIRS < 256) {
 		// Generate color pairs
 		init_pair(PAIR_LINENUM, 0, 7);
-		init_pair(PAIR_LINENUM_UFLOW, 0, 6);
-		init_pair(PAIR_LINENUM_SEL, 0, 3);
+		init_pair(PAIR_LINENUM_UFLOW, 0, 4);
+		init_pair(PAIR_LINENUM_SEL, 0, 6);
 		init_pair(PAIR_HEADER_TAB, 0, 7);
-		init_pair(PAIR_HEADER_BG, 0, 7);
+		init_pair(PAIR_HEADER_BG, 7, 6);
 		init_pair(PAIR_EDITOR, 7, 0);
 
 		// Syntax highlighting pairs
@@ -73,6 +73,8 @@ void clr_load(conf_t* clr_conf) {
 
 		init_pair(PAIR_SYNTAX_TRAIL_INDENT, 0, 1);
 
+		// Notification pairs
+		init_pair(PAIR_NOTIFY_ERROR, 1, 0);
 
 		// File browser pairs
 		init_pair(PAIR_BROWSE_FILES_INPUT, 0, 3);
