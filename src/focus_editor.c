@@ -236,7 +236,6 @@ void input_editor(global_t* ed_globals, int c) {
 			ed_move_to_selection_start(ed);
 			break;
 		}
-
 		usz move_chars = ed->cx - ed_find_word_bwd(ed);
 		if (!move_chars)
 			ed_cur_left(ed);
@@ -252,7 +251,11 @@ void input_editor(global_t* ed_globals, int c) {
 		ed_page_down(ed);
 		break;
 
-	case KEY_CSUP: sync_selection = 0; {
+	case KEY_CSUP: sync_selection = 0; sync_target_x = 0; {
+		for (usz i = 0; i < ed_globals->vstep; ++i)
+			ed_cur_up(ed, ed->target_cx);
+
+		/*
 		isz start_y, start_x, end_y, end_x;
 		ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 
@@ -270,10 +273,14 @@ void input_editor(global_t* ed_globals, int c) {
 		--ed->sel_y;
 		ed_cur_up(ed, ed->cx);
 
-		ed->doc.lines[end_y] = old_start;
+		ed->doc.lines[end_y] = old_start; */
 	}	break;
 
-	case KEY_CSDOWN: sync_selection = 0; {
+	case KEY_CSDOWN: sync_selection = 0; sync_target_x = 0; {
+		for (usz i = 0; i < ed_globals->vstep; ++i)
+			ed_cur_down(ed, ed->target_cx);
+
+		/*
 		isz start_y, start_x, end_y, end_x;
 		ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 
@@ -291,7 +298,7 @@ void input_editor(global_t* ed_globals, int c) {
 		++ed->sel_y;
 		ed_cur_down(ed, ed->cx);
 
-		*line_start = old_end;
+		*line_start = old_end; */
 	}	break;
 
 	case KEY_CDC: ed_delete_word_fwd(ed); break;
