@@ -43,11 +43,43 @@ void init_color_from_conf(int color, lstr_t key, conf_t* parent_conf) {
 void clr_load(conf_t* clr_conf) {
 	ASSERT(clr_conf);
 
-	// TODO: Handle both of these conditions properly
-	if (!can_change_color())
+	if (!can_change_color() || COLOR_PAIRS < 256) {
+		// Generate color pairs
+		init_pair(PAIR_LINENUM, 0, 7);
+		init_pair(PAIR_LINENUM_UFLOW, 0, 6);
+		init_pair(PAIR_LINENUM_SEL, 0, 3);
+		init_pair(PAIR_HEADER_TAB, 0, 7);
+		init_pair(PAIR_HEADER_BG, 0, 7);
+		init_pair(PAIR_EDITOR, 7, 0);
+
+		// Syntax highlighting pairs
+		init_pair(PAIR_SYNTAX_UNKNOWN, 7, 0);
+
+		init_pair(PAIR_SYNTAX_STRING, 1, 0);
+		init_pair(PAIR_SYNTAX_CHAR, 1, 0);
+		init_pair(PAIR_SYNTAX_NUMBER, 7, 0);
+
+		init_pair(PAIR_SYNTAX_IDENTIFIER, 7, 0);
+		init_pair(PAIR_SYNTAX_KEYWORD, 3, 0);
+		init_pair(PAIR_SYNTAX_COMMENT, 2, 0);
+		init_pair(PAIR_SYNTAX_DATATYPE, 1, 0);
+
+		init_pair(PAIR_SYNTAX_HASH, 7, 0);
+		init_pair(PAIR_SYNTAX_BRACKET, 6, 0);
+		init_pair(PAIR_SYNTAX_OPERATOR, 6, 0);
+		init_pair(PAIR_SYNTAX_PUNCTUATION, 6, 0);
+
+		init_pair(PAIR_SYNTAX_FUNCTION, 7, 0);
+
+		init_pair(PAIR_SYNTAX_TRAIL_INDENT, 0, 1);
+
+
+		// File browser pairs
+		init_pair(PAIR_BROWSE_FILES_INPUT, 0, 3);
+		init_pair(PAIR_BROWSE_FILES_ENTRY, 0, 3);
+		init_pair(PAIR_BROWSE_FILES_SEL, 0, 7);
 		return;
-	if (COLOR_PAIRS < 256)
-		return;
+	}
 
 	// Line numbers
 	conf_t* linenum_cf = conf_find(clr_conf, CLSTR("linenum"), CONF_OBJECT);
