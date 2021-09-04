@@ -23,7 +23,7 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;2B", KEY_SDOWN);
 
 	define_key("\x1B[3;5~", KEY_CDC);
-	define_key("\177", KEY_CBACKSPACE);
+	//define_key("\177", KEY_CBACKSPACE);
 
 	define_key("\x1B[Z", KEY_STAB);
 }
