@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "custom_keys.h"
+#include "common.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #include <curses.h>
 
 void register_custom_keys(void) {
+	char* term_str_data = getenv("TERM");
+	lstr_t term_str = LSTR(term_str_data, strlen(term_str_data));
+
 	define_key("\x1B[1;5A", KEY_CUP);
 	define_key("\x1B[1;5B", KEY_CDOWN);
 	define_key("\x1B[1;5C", KEY_CRIGHT);
@@ -23,7 +30,14 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;2B", KEY_SDOWN);
 
 	define_key("\x1B[3;5~", KEY_CDC);
-	//define_key("\177", KEY_CBACKSPACE);
+
+	lstr_t xterm_str = CLSTR("xterm");
+
+	// For some reason, XTerm switches \x08 and \x7f.
+	// In XTerm, \x7f is CBACKSPACE and \0x08 is BACKSPACE.
+	// This hack fixes that.
+	if (term_str.len == xterm_str.len && memcmp(term_str.str, xterm_str.str, term_str.len) == 0)
+		define_key("\x7f", KEY_CBACKSPACE);
 
 	define_key("\x1B[Z", KEY_STAB);
 }
