@@ -1,5 +1,5 @@
 
-OUT = lutcreator
+OUT = led
 
 RUN_ARGS = test.txt
 
