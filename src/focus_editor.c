@@ -429,5 +429,11 @@ void input_editor(global_t* ed_globals, int c) {
 		ed_sync_target_cy(ed);
 	if (sync_selection)
 		ed_sync_selection(ed);
+
+	while ((isz)ed->cy - (isz)ed->line_top < (isz)ed->global->scroll_offs && (isz)ed->line_top)
+		--ed->line_top;
+
+	while ((isz)ed->cy - (isz)ed->line_top + 1 > (isz)ed->global->height - (isz)ed->global->scroll_offs && (isz)ed->line_top + (isz)ed->global->height < (isz)ed->doc.line_count)
+		++ed->line_top;
 }
 

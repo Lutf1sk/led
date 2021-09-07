@@ -188,8 +188,6 @@ void ed_cur_up(editor_t* ed, usz cx) {
 	if (ed->cy) {
 		--ed->cy;
 		ed->cx = min(cx, ed->doc.lines[ed->cy].len);
-		if (ed->cy - ed->line_top < ed->global->scroll_offs && ed->line_top)
-			--ed->line_top;
 	}
 }
 
@@ -197,8 +195,6 @@ void ed_cur_down(editor_t* ed, usz cx) {
 	if (ed->cy + 1 < ed->doc.line_count) {
 		++ed->cy;
 		ed->cx = min(cx, ed->doc.lines[ed->cy].len);
-		if (ed->cy - ed->line_top + 1 > ed->global->height - ed->global->scroll_offs && ed->line_top + ed->global->height < ed->doc.line_count)
-			++ed->line_top;
 	}
 }
 
