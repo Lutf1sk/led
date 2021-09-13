@@ -68,7 +68,7 @@ void ed_prefix_selection(editor_t* ed, lstr_t pfx);
 
 b8 ed_selection_available(editor_t* ed);
 void ed_delete_selection(editor_t* ed);
-void delete_selection_if_available(editor_t* ed);
+void ed_delete_selection_if_available(editor_t* ed);
 
 usz ed_selection_len(editor_t* ed);
 void ed_write_selection_str(editor_t* ed, char* str);

@@ -78,7 +78,7 @@ void input_editor(global_t* ed_globals, int c) {
 	}	break;
 
 	case 'V' - CTRL_MOD_DIFF: {
-		delete_selection_if_available(ed);
+		ed_delete_selection_if_available(ed);
 
 		for (usz i = 0; i < clipboard_len; ++i) {
 			char c = clipboard[i];
@@ -334,7 +334,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_ENTER: case '\n': {
-		delete_selection_if_available(ed);
+		ed_delete_selection_if_available(ed);
 
 		usz tab_count = 0;
 		lstr_t* line = &ed->doc.lines[ed->cy];
@@ -404,7 +404,7 @@ void input_editor(global_t* ed_globals, int c) {
 
 	default:
 		if (c >= 32 && c < 127) {
-			delete_selection_if_available(ed);
+			ed_delete_selection_if_available(ed);
 
 			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
 
@@ -430,9 +430,9 @@ void input_editor(global_t* ed_globals, int c) {
 	if (sync_selection)
 		ed_sync_selection(ed);
 
+	// TODO: This is slow and could be easily accomplished in a constant time with a bit of math
 	while ((isz)ed->cy - (isz)ed->line_top < (isz)ed->global->scroll_offs && (isz)ed->line_top)
 		--ed->line_top;
-
 	while ((isz)ed->cy - (isz)ed->line_top + 1 > (isz)ed->global->height - (isz)ed->global->scroll_offs && (isz)ed->line_top + (isz)ed->global->height < (isz)ed->doc.line_count)
 		++ed->line_top;
 }

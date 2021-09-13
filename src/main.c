@@ -418,7 +418,7 @@ int main(int argc, char** argv) {
 			break;
 
 		case KEY_RESIZE:
-			// For some reason, the tab size is reset to default by ncurses when a terminal is resized.
+			// For some reason, the tab size is reset to default when a terminal is resized.
 			set_tabsize(ed_globals.tab_size);
 			break;
 

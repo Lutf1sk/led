@@ -69,12 +69,12 @@ b8 ed_selection_available(editor_t* ed) {
 void ed_delete_selection(editor_t* ed) {
 	usz sel_len = ed_selection_len(ed);
 
-	// TODO: This is an extremely naive hack and needs to be replaced
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 	ed->cy = end_y;
 	ed->cx = end_x;
 
+	// TODO: This is an extremely slow and naive hack and needs to be replaced
 	for (usz i = 0; i < sel_len; ++i) {
 		if (ed->cx)
 			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
@@ -85,7 +85,7 @@ void ed_delete_selection(editor_t* ed) {
 	}
 }
 
-void delete_selection_if_available(editor_t* ed) {
+void ed_delete_selection_if_available(editor_t* ed) {
 	if (ed_selection_available(ed))
 		ed_delete_selection(ed);
 }

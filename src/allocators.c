@@ -40,7 +40,7 @@ void allocators_initialize(void) {
 }
 
 void allocators_terminate(void) {
-
+	// This only exists for completeness
 }
 
 void* alloc_pages(usz size) {

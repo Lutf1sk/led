@@ -18,6 +18,7 @@ usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos) {
 	for (usz i = 0; i < doc->line_count; ++i) {
 		lstr_t* line = &doc->lines[i];
 
+		// Search every possible offset in the line
 		for (usz j = 0; j + str.len <= line->len; ++j) {
 			if (memcmp(&line->str[j], str.str, str.len) == 0) {
 				++found_count;
@@ -33,13 +34,17 @@ usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos) {
 void doc_insert_char(doc_t* doc, usz line_index, usz index, char ch) {
 	doc->unsaved = 1;
 
+	// Reallocate memory
 	lstr_t* line = &doc->lines[line_index];
 	line->str = realloc(line->str, line->len + 1);
 	if (!line->str)
 		ferrf("Failed to allocate memory: %s\n", os_err_str());
 
+	// Move top to make space
 	if (index != line->len)
 		memmove(&line->str[index + 1], &line->str[index], line->len - index);
+
+	// Copy char into new space
 	line->str[index] = ch;
 	++line->len;
 }
@@ -57,24 +62,26 @@ void doc_insert_str(doc_t* doc, usz line_index, usz index, lstr_t str) {
 
 	lstr_t* line = &doc->lines[line_index];
 	usz new_len = line->len + str.len;
-	
+
+	// Reallocate memory
 	line->str = realloc(line->str, new_len);
 	if (new_len && !line->str)
 		ferrf("Failed to allocate memory: %s\n", os_err_str());
 
+	// Move top to make space
 	if (index != line->len)
 		memmove(&line->str[index + str.len], &line->str[index], line->len - index);
+
+	// Copy string into new space
 	memcpy(&line->str[index], str.str, str.len);
 	line->len = new_len;
 }
 
 void doc_erase_str(doc_t* doc, usz line_index, usz index, usz len) {
 	doc->unsaved = 1;
-	
-	
+
 	lstr_t* line = &doc->lines[line_index];
 	line->len -= len;
-	//ferrf("li: %zu, i: %zu, len: %zu\n", line_index, index, len);
 	memmove(&line->str[index], &line->str[index + len], line->len - index);
 }
 
@@ -85,6 +92,7 @@ void doc_split_line(doc_t* doc, usz line_index, usz index) {
 	if (!doc->lines)
 		ferrf("Failed to allocate memory: %s\n", os_err_str());
 
+	// Move top to make space
 	if (line_index != doc->line_count)
 		memmove(&doc->lines[line_index + 1], &doc->lines[line_index], (doc->line_count - line_index) * sizeof(lstr_t));
 	++doc->line_count;
@@ -94,6 +102,7 @@ void doc_split_line(doc_t* doc, usz line_index, usz index) {
 	lstr_t new_line = LSTR(NULL, old_line->len - index);
 	old_line->len -= new_line.len;
 
+	// Allocate new line and copy content
 	if (new_line.len) {
 		new_line.str = malloc(new_line.len);
 		if (!new_line.str)
@@ -101,18 +110,19 @@ void doc_split_line(doc_t* doc, usz line_index, usz index) {
 		memcpy(new_line.str, &old_line->str[index], new_line.len);
 	}
 
+	// Insert new line
 	doc->lines[line_index + 1] = new_line;
 }
 
 void doc_merge_line(doc_t* doc, usz line_index) {
 	doc->unsaved = 1;
 
-	ASSERT(line_index);
-
+	// Move top to cover merged line
 	lstr_t old_line = doc->lines[line_index];
 	lstr_t* new_line = &doc->lines[line_index - 1];
 	memmove(&doc->lines[line_index], &doc->lines[line_index + 1], (doc->line_count - line_index - 1) * sizeof(lstr_t));
 
+	// Append the contents of the merged line to the line above it
 	usz new_len = new_line->len + old_line.len;
 	if (new_len) {
 		new_line->str = realloc(new_line->str, new_len);
@@ -122,6 +132,7 @@ void doc_merge_line(doc_t* doc, usz line_index) {
 		new_line->len = new_len;
 	}
 
+	// Free merged line if necessary
 	if (old_line.str)
 		free(old_line.str);
 
@@ -138,13 +149,14 @@ void doc_load(doc_t* doc) {
 		if (fhl_fread(fp, data, size) != size)
 			ferrf("Failed to read from '%s'\n", doc->path);
 		fhl_fclose(fp);
-		
+
 		if (!fhl_permit_w(doc->path))
 			doc->read_only = 1;
 	}
 	else
 		doc->new = 1;
 
+	// Count lines
 	doc->line_count = 0;
 	for (usz i = 0; i < size;) {
 		while (i < size && data[i++] != '\n')
@@ -152,6 +164,7 @@ void doc_load(doc_t* doc) {
 		++doc->line_count;
 	}
 
+	// Allocate space for lines
 	if (doc->line_count) {
 		doc->lines = malloc(sizeof(lstr_t) * doc->line_count);
 		if (!doc->lines)
@@ -170,6 +183,7 @@ void doc_load(doc_t* doc) {
 		return;
 	}
 
+	// Create lines
 	int line_i = 0;
 	for (usz i = 0; i < size;) {
 		usz start = i;

@@ -32,6 +32,7 @@ usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
 		char* name = editors[i].doc.name;
 		usz len = strlen(name);
 
+		// Search at every possible offset
 		for (usz j = 0; j + str.len <= len; ++j) {
 			if (len >= str.len && memcmp(str.str, name + j, str.len) == 0) {
 				out[buf_it++] = &editors[i];
