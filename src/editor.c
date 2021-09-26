@@ -49,7 +49,6 @@ void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx) {
 
 		doc_erase_str(&ed->doc, i, 0, pfx.len);
 	}
-
 }
 
 void ed_prefix_selection(editor_t* ed, lstr_t pfx) {
