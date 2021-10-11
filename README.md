@@ -36,7 +36,9 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | Shift+TAB | Unindent selection    |
 | F4        | Switch header/source  |
 
-The cursor is moved with the arrow keys. 
+The cursor is moved with the arrow keys.
+
+CTRL+Shift+Home/End selects and moves to the end/start of the current line.
 
 Using CTRL+Horizontal arrows moves word-by-word.
 

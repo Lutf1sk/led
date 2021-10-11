@@ -33,6 +33,10 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;2A", KEY_SUP);
 	define_key("\x1B[1;2B", KEY_SDOWN);
 
+	// CTRL + Shift + Home/End
+	define_key("\x1B[1;6H", KEY_CSHOME);
+	define_key("\x1B[1;6F", KEY_CSEND);
+
 
 	define_key("\x1B[3;5~", KEY_CDC);
 

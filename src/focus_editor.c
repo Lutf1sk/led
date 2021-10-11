@@ -285,10 +285,12 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 		break;
 
+	case KEY_CSHOME: sync_selection = 0;
 	case KEY_HOME:
 		ed->cx = 0;
 		break;
 
+	case KEY_CSEND: sync_selection = 0;
 	case KEY_END:
 		ed->cx = ed->doc.lines[ed->cy].len;
 		break;

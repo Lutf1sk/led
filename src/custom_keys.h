@@ -20,6 +20,9 @@
 #define KEY_SUP		2015
 #define KEY_SDOWN	2016
 
+#define KEY_CSHOME	2017
+#define KEY_CSEND	2018
+
 #define KEY_CDC		2005
 
 #define KEY_CBACKSPACE 8
