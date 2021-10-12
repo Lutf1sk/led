@@ -104,6 +104,10 @@ b8 is_keyword(lstr_t str) {
 		if (lstreq(str, CLSTR("ifndef"))) return 1;
 		break;
 
+	case 'n':
+		if (lstreq(str, CLSTR("null"))) return 1;
+		break;
+
 	case 'r':
 		if (lstreq(str, CLSTR("return"))) return 1;
 		break;
@@ -115,6 +119,10 @@ b8 is_keyword(lstr_t str) {
 
 	case 't':
 		if (lstreq(str, CLSTR("typedef"))) return 1;
+		break;
+
+	case 'u':
+		if (lstreq(str, CLSTR("undef"))) return 1;
 		break;
 
 	case 'w':
