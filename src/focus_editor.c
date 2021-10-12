@@ -340,7 +340,7 @@ void input_editor(global_t* ed_globals, int c) {
 			*ed->global->ed = file;
 	}	break;
 
-	case 'P' - CTRL_MOD_DIFF: sync_selection = 0;
+	case 0x1F: sync_selection = 0;
 		ed_prefix_selection(ed, CLSTR("// "));
 		// This is a pretty hackish way of toggling a comment,
 		// might want to improve this later

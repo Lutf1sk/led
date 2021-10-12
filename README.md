@@ -26,7 +26,7 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | CTRL+K    | Browse open files     |
 | CTRL+Q    | Close current file    |
 | CTRL+F    | Local find string     |
-| CTRL+P    | Comment selection     |
+| CTRL+/    | Comment selection     |
 | TAB       | Intent selection      |
 | Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
