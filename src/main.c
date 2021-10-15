@@ -340,6 +340,8 @@ int main(int argc, char** argv) {
 	// positions without setting the $TERM env variable,
 	// there is probably a better way to accomplish this.
 	printf("\x1B[?1003h");
+	// Enable 'bracketed paste' mode
+	printf("\x1b[?2004h");
 	fflush(stdout);
 
 	clear();

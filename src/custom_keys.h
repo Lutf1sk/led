@@ -24,7 +24,10 @@
 #define KEY_CSEND	2018
 
 #define KEY_APLEFT	2019
-#define KEY_APRIGHT	2019
+#define KEY_APRIGHT	2020
+
+#define KEY_PASTE_START	2021
+#define KEY_PASTE_END	2022
 
 #define KEY_CDC		2005
 

@@ -364,6 +364,17 @@ void input_editor(global_t* ed_globals, int c) {
 		goto_line();
 		break;
 
+	case KEY_PASTE_START: {
+		while ((c = wgetch(stdscr)) != KEY_PASTE_END) {
+			if (c == '\n') {
+				doc_split_line(&ed->doc, ed->cy, ed->cx);
+				ed_cur_down(ed, 0);
+			}
+			else
+				doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
+		}
+	}	break;
+
 	default:
 		if (c >= 32 && c < 127) {
 			ed_delete_selection_if_available(ed);

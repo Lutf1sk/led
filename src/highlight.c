@@ -17,8 +17,8 @@ struct ctx {
 
 static
 char consume(ctx_t* cx) {
-	/*if (cx->index >= cx->line.len)
-		return 0;*/
+	if (cx->index >= cx->line.len)
+		return 0;
 	return cx->line.str[cx->index++];
 }
 
