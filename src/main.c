@@ -420,8 +420,7 @@ int main(int argc, char** argv) {
 		case KEY_RESIZE:
 			// For some reason, the tab size is reset to default when a terminal is resized.
 			set_tabsize(ed_globals.tab_size);
-			break;
-
+			// Fall through to propagate event
 		default:
 			if (focus.input)
 				focus.input(&ed_globals, c);
