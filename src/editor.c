@@ -250,6 +250,10 @@ usz ed_find_word_fwd(editor_t* ed) {
 	lstr_t* line = &ed->doc.lines[ed->cy];
 	char* str = line->str;
 
+	// Skip whitespace
+	while (cx < line->len && isspace(str[cx]))
+		++cx;
+
 	if (cx == line->len)
 		return cx;
 	char c = str[cx];
@@ -266,14 +270,8 @@ usz ed_find_word_fwd(editor_t* ed) {
 			++cx;
 	}
 
-	// Skip whitespace
-	while (cx < line->len && isspace(str[cx]))
-		++cx;
-
 	return cx;
 }
-
-
 
 usz ed_find_word_bwd(editor_t* ed) {
 	usz cx = ed->cx;
