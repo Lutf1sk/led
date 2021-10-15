@@ -259,10 +259,10 @@ usz ed_find_word_fwd(editor_t* ed) {
 	char c = str[cx];
 
 	if (isalpha(c) || isdigit(c) || c == '_') {
-		while (cx < line->len && (isalpha(str[cx]) || isdigit(str[cx])))
-			++cx;
 		// Skip underscores
 		while (cx < line->len && str[cx] == '_')
+			++cx;
+		while (cx < line->len && (isalpha(str[cx]) || isdigit(str[cx])))
 			++cx;
 	}
 	else {
