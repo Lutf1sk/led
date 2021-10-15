@@ -198,6 +198,7 @@ b8 is_datatype(lstr_t str) {
 		break;
 
 	case 'u':
+		if (lstreq(str, CLSTR("union"))) return 1;
 		if (lstreq(str, CLSTR("unsigned"))) return 1;
 		if (lstreq(str, CLSTR("usz"))) return 1;
 		if (lstreq(str, CLSTR("u8"))) return 1;
