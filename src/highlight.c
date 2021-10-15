@@ -10,9 +10,16 @@
 #include <stdlib.h>
 
 typedef
+enum multiline_mode {
+	MLMODE_NONE,
+	MLMODE_COMMENT,
+} multiline_mode_t;
+
+typedef
 struct ctx {
 	lstr_t line;
 	usz index;
+	multiline_mode_t mode;
 } ctx_t;
 
 static
@@ -211,14 +218,9 @@ b8 is_datatype(lstr_t str) {
 }
 
 static
-highl_t* gen_line(pframe_t* pool, lstr_t* line) {
-	if (!line->len)
+highl_t* gen_line(pframe_t* pool, ctx_t* cx) {
+	if (!cx->line.len)
 		return NULL;
-
-	ctx_t context;
-	context.line = *line;
-	context.index = 0;
-	ctx_t* cx = &context;
 
 	highl_t* head;
 	highl_t** node = &head;
@@ -232,11 +234,28 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 		new->len = 1;
 		consume(cx);
 
+		if (cx->mode == MLMODE_COMMENT)
+			goto parse_multiline_comment;
+
 		switch (c) {
 		case '/':
 			if (peek(cx) == '/') {
 				while (consume(cx))
 					++new->len;
+				new->mode = HLM_COMMENT;
+			}
+			else if (peek(cx) == '*') {
+				cx->mode = MLMODE_COMMENT;
+			parse_multiline_comment:
+				int last = c;
+				while ((c = consume(cx))) {
+					++new->len;
+					if (c == '/' && last == '*') {
+						cx->mode = MLMODE_NONE;
+						break;
+					}
+					last = c;
+				}
 				new->mode = HLM_COMMENT;
 			}
 			else
@@ -354,8 +373,14 @@ highl_t** highl_generate(pframe_t* pool, doc_t* doc) {
 
 	pframe_free_all(pool);
 
-	for (usz i = 0; i < doc->line_count; ++i)
-		lines[i] = gen_line(pool, &doc->lines[i]);
+
+	ctx_t context;
+	context.mode = MLMODE_NONE;
+	for (usz i = 0; i < doc->line_count; ++i) {
+		context.line = doc->lines[i];
+		context.index = 0;
+		lines[i] = gen_line(pool, &context);
+	}
 
 	return lines;
 }
