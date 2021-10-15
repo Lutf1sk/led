@@ -254,20 +254,20 @@ usz ed_find_word_fwd(editor_t* ed) {
 		return cx;
 	char c = str[cx];
 
-	if (is_alpha(c) || is_digit(c) || c == '_') {
-		while (cx < line->len && (is_alpha(str[cx]) || is_digit(str[cx])))
+	if (isalpha(c) || isdigit(c) || c == '_') {
+		while (cx < line->len && (isalpha(str[cx]) || isdigit(str[cx])))
 			++cx;
 		// Skip underscores
 		while (cx < line->len && str[cx] == '_')
 			++cx;
 	}
 	else {
-		while (cx < line->len && !is_ident_body(str[cx]) && !is_whitespace(str[cx]))
+		while (cx < line->len && !is_ident_body(str[cx]) && !isspace(str[cx]))
 			++cx;
 	}
 
 	// Skip whitespace
-	while (cx < line->len && is_whitespace(str[cx]))
+	while (cx < line->len && isspace(str[cx]))
 		++cx;
 
 	return cx;
@@ -281,22 +281,22 @@ usz ed_find_word_bwd(editor_t* ed) {
 	char* str = line->str;
 
 	// Skip whitespace
-	while (cx && is_whitespace(str[cx - 1]))
+	while (cx && isspace(str[cx - 1]))
 		--cx;
 
 	if (!cx)
 		return 0;
 	char c = str[cx - 1];
 
-	if (is_alpha(c) || is_digit(c) || c == '_') {
+	if (isalpha(c) || isdigit(c) || c == '_') {
 		// Skip underscores
 		while (cx && str[cx - 1] == '_')
 			--cx;
-		while (cx && (is_alpha(str[cx - 1]) || is_digit(str[cx - 1])))
+		while (cx && (isalpha(str[cx - 1]) || isdigit(str[cx - 1])))
 			--cx;
 	}
 	else {
-		while (cx && !is_ident_body(str[cx - 1]) && !is_whitespace(str[cx - 1]))
+		while (cx && !is_ident_body(str[cx - 1]) && !isspace(str[cx - 1]))
 			--cx;
 	}
 

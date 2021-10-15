@@ -37,6 +37,9 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;6H", KEY_CSHOME);
 	define_key("\x1B[1;6F", KEY_CSEND);
 
+	// CTRL + [/]
+	define_key("\x1B[", KEY_APLEFT);
+	define_key("\x1B]", KEY_APRIGHT);
 
 	define_key("\x1B[3;5~", KEY_CDC);
 

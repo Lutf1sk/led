@@ -77,7 +77,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	*new = ed_make();
 	new->doc = doc_make(path_nt, basename(path_nt));
 	doc_load(&new->doc);
-	new->highl_pool = pframe_alloc(sizeof(highl_t), 4096);
+	new->highl_pool = pframe_alloc(sizeof(highl_t), 0xFFFFF);
 	new->global = ed_global;
 
 	++file_count;

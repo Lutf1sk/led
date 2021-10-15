@@ -4,6 +4,8 @@
 #include "allocators.h"
 #include "chartypes.h"
 
+#include <ctype.h>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -15,8 +17,8 @@ struct ctx {
 
 static
 char consume(ctx_t* cx) {
-	if (cx->index >= cx->line.len)
-		return 0;
+	/*if (cx->index >= cx->line.len)
+		return 0;*/
 	return cx->line.str[cx->index++];
 }
 
@@ -282,9 +284,9 @@ highl_t* gen_line(pframe_t* pool, lstr_t* line) {
 			break;
 
 		default:
-			if (is_whitespace(c)) {
+			if (isspace(c)) {
 				c = peek(cx);
-				while (c && is_whitespace(c)) {
+				while (c && isspace(c)) {
 					consume(cx);
 					c = peek(cx);
 					++new->len;

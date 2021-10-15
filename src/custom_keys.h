@@ -23,6 +23,9 @@
 #define KEY_CSHOME	2017
 #define KEY_CSEND	2018
 
+#define KEY_APLEFT	2019
+#define KEY_APRIGHT	2019
+
 #define KEY_CDC		2005
 
 #define KEY_CBACKSPACE 8

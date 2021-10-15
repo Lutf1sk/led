@@ -22,16 +22,6 @@ b8 is_lower(char c) {
 }
 
 static inline INLINE
-b8 is_alpha(char c) {
-	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-}
-
-static inline INLINE
-b8 is_whitespace(char c) {
-	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
-static inline INLINE
 char to_upper(char c) {
 	return c + (is_upper(c) ? c : c + ('a' - 'A'));
 }

@@ -4,6 +4,7 @@
 #include "conf.h"
 
 #include "chartypes.h"
+#include <ctype.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,22 +12,22 @@
 
 static inline INLINE
 b8 is_numeric_head(char c) {
-	return is_digit(c);
+	return !!isdigit(c);
 }
 
 static inline INLINE
 b8 is_numeric_body(char c) {
-	return is_numeric_head(c) || c == '.' || is_alpha(c);
+	return is_numeric_head(c) || c == '.' || isalpha(c);
 }
 
 static inline INLINE
 b8 is_ident_head(char c) {
-	return is_alpha(c) || c == '_';
+	return isalpha(c) || c == '_';
 }
 
 static inline INLINE
 b8 is_ident_body(char c) {
-	return is_ident_head(c) || is_digit(c);
+	return is_ident_head(c) || isdigit(c);
 }
 
 typedef
@@ -65,7 +66,7 @@ char* get_ptr(parse_ctx_t* cx) {
 
 static inline INLINE
 void skip_whitespace(parse_ctx_t* cx) {
-	while (is_whitespace(peek(cx, 0)))
+	while (isspace(peek(cx, 0)))
 		consume(cx);
 }
 
