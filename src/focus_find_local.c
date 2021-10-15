@@ -54,6 +54,12 @@ isz find_index(void) {
 		if (result.y > start_y || (result.y == start_y && result.x >= start_x))
 			return i;
 	}
+
+	for (usz i = 0; i < result_count; ++i) {
+		doc_pos_t result = results[i];
+		if (result.y <= start_y || (result.y == start_y && result.x < start_x))
+			return i;
+	}
 	return -1;
 }
 
