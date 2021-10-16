@@ -421,9 +421,9 @@ void input_editor(global_t* ed_globals, int c) {
 	}
 
 	// Move screen if cursor is below the lower boundary
-	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs;
+	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs - 1;
 	if (ed->cy > vbound_bottom) {
-		ed->line_top += ed->cy - vbound_bottom + 1;
+		ed->line_top += ed->cy - vbound_bottom;
 		ed->line_top = clamp(ed->line_top, 0, ed->doc.line_count - ed->global->height);
 	}
 }
