@@ -222,16 +222,22 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 
 		case '"':
 			while (i < line.len) {
-				if (line.str[i++] == '"')
+				c = line.str[i++];
+				if (c == '"')
 					break;
+				if (c == '\\' && i < line.len)
+					++i;
 			}
 			mode = HLM_STRING;
 			break;
 
 		case '\'':
 			while (i < line.len) {
-				if (line.str[i++] == '\'')
+				c = line.str[i++];
+				if (c == '\'')
 					break;
+				if (c == '\\' && i < line.len)
+					++i;
 			}
 			mode = HLM_CHAR;
 			break;
@@ -241,10 +247,10 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 			break;
 
 		default:
-			if (c == '\t' || c == ' ' || c == '\n' || c == '\r') {
+			if (is_space(c)) {
 				while (i < line.len) {
 					c = line.str[i];
-					if (c != '\t' && c != ' ' && c != '\n' && c != '\r')
+					if (!is_space(c))
 						break;
 					++i;
 				}
