@@ -101,7 +101,7 @@ void draw_header(editor_t* ed) {
 
 static inline INLINE
 void draw_linenum(usz y, usz line_num) {
-	mvwprintw(linenum_w, y, 0, "%4zu ", line_num);
+	mvwprintw(linenum_w, y, 0, "%4zu ", line_num % 10000);
 }
 
 static
