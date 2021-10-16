@@ -359,6 +359,8 @@ void ed_paren_bwd(editor_t* ed) {
 	}
 }
 
+// TODO: This will not match properly if it has to iterate over a string/char
+// containing unmatched parenthesis
 static
 void ed_paren_match_ch(editor_t* ed, int paren) {
 	isz r = ed->cx, l = ed->cy, sc = 1;
@@ -388,7 +390,7 @@ void ed_paren_match_ch(editor_t* ed, int paren) {
 				continue;
 			}
 
-			if (!sc) {
+			if (sc <= 0) {
 				ed->cy = l;
 				ed->cx = r;
 				return;
@@ -418,7 +420,7 @@ fwd:
 				continue;
 			}
 
-			if (!sc) {
+			if (sc <= 0) {
 				ed->cy = l;
 				ed->cx = r;
 				return;
@@ -429,7 +431,9 @@ fwd:
 }
 
 void ed_paren_match(editor_t* ed) {
-	int c = ed->doc.lines[ed->cy].str[ed->cx];
+	int c = 0;
+	if (ed->cx < ed->doc.lines[ed->cy].len)
+		c = ed->doc.lines[ed->cy].str[ed->cx];
 	ed_paren_match_ch(ed, c);
 }
 
