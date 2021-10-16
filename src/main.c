@@ -148,7 +148,7 @@ void draw_editor(editor_t* ed) {
 
 	const usz tab_size = ed->global->tab_size;
 
-	for (isz i = 0; i < EDITOR_HEIGHT; ++i) {
+	for (isz i = 0; i < line_count; ++i) {
 		lstr_t line = ed->doc.lines[line_top + i];
 		wmove(editor_w, i, 0);
 		chtype* chstr = aframe_reserve(ed->highl_arena, 0);
