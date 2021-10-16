@@ -1,13 +1,10 @@
 #include "highlight.h"
 #include "doc.h"
 #include "token_chars.h"
-#include "allocators.h"
 #include "chartypes.h"
-
-#include <ctype.h>
+#include "allocators.h"
 
 #include <string.h>
-#include <stdlib.h>
 
 typedef
 enum multiline_mode {
@@ -200,14 +197,13 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 				*ml_mode = MLMODE_COMMENT;
 
 			parse_multiline_comment:
-				int last = c;
 				while (i < line.len) {
 					c = line.str[i++];
-					if (c == '/' && last == '*') {
+					if (c == '*' && i < line.len && line.str[i] == '/') {
+						++i;
 						*ml_mode = MLMODE_NONE;
 						break;
 					}
-					last = c;
 				}
 				mode = HLM_COMMENT;
 				break;
