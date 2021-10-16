@@ -413,10 +413,18 @@ void input_editor(global_t* ed_globals, int c) {
 	if (sync_selection)
 		ed_sync_selection(ed);
 
-	// TODO: This is slow and could be easily accomplished in a constant time with a bit of math
-	while ((isz)ed->cy - (isz)ed->line_top < (isz)ed->global->scroll_offs && (isz)ed->line_top)
-		--ed->line_top;
-	while ((isz)ed->cy - (isz)ed->line_top + 1 > (isz)ed->global->height - (isz)ed->global->scroll_offs && (isz)ed->line_top + (isz)ed->global->height < (isz)ed->doc.line_count)
-		++ed->line_top;
+	// Move screen if cursor is above the upper boundary
+	isz vbound_top = ed->line_top + ed->global->scroll_offs;
+	if (ed->cy < vbound_top) {
+		ed->line_top -= vbound_top - ed->cy;
+		ed->line_top = max(ed->line_top, 0);
+	}
+
+	// Move screen if cursor is below the lower boundary
+	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs;
+	if (ed->cy > vbound_bottom) {
+		ed->line_top += ed->cy - vbound_bottom + 1;
+		ed->line_top = min(ed->line_top, ed->doc.line_count - ed->global->height);
+	}
 }
 

@@ -16,12 +16,12 @@ typedef
 struct global {
 	editor_t** ed;
 
-	usz tab_size;
-	usz scroll_offs;
-	usz vstep;
+	isz tab_size;
+	isz scroll_offs;
+	isz vstep;
 
-	usz width, height;
-	usz hstart, vstart;
+	isz width, height;
+	isz hstart, vstart;
 
 	u8 predict_brackets;
 } global_t;
@@ -30,11 +30,11 @@ typedef
 struct editor {
 	global_t* global;
 
-	usz line_top;
+	isz line_top;
 
-	usz cx, cy;
-	usz target_cx, target_cy_offs;
-	usz sel_x, sel_y;
+	isz cx, cy;
+	isz target_cx, target_cy_offs;
+	isz sel_x, sel_y;
 
 	pframe_t* highl_pool;
 	highl_t** highl_lines;

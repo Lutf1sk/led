@@ -196,7 +196,7 @@ void draw_editor(editor_t* ed) {
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
 
 	const isz line_top = ed->line_top;
-	const isz line_count = imin(ed->doc.line_count - ed->line_top, EDITOR_HEIGHT);
+	const isz line_count = min(ed->doc.line_count - ed->line_top, EDITOR_HEIGHT);
 
 	// Draw line numbers preceding the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
@@ -204,8 +204,8 @@ void draw_editor(editor_t* ed) {
 	for (isz i = 0; i < pre_selection_lines; ++i)
 		draw_linenum(i, line_top + i + 1);
 
-	const isz sel_min = imax(sel_start_y, 0);
-	const isz sel_max = imin(sel_end_y, EDITOR_HEIGHT - 1);
+	const isz sel_min = max(sel_start_y, 0);
+	const isz sel_max = min(sel_end_y, EDITOR_HEIGHT - 1);
 	// Draw line numbers contained in the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM_SEL, NULL);
 	for (isz i = sel_min; i <= sel_max; ++i)

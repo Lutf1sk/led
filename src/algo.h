@@ -5,32 +5,17 @@
 #define ALGO_H 1
 
 static inline INLINE
-usz min(usz v1, usz v2) {
+isz min(isz v1, isz v2) {
 	return v1 < v2 ? v1 : v2;
 }
 
 static inline INLINE
-usz max(usz v1, usz v2) {
+isz max(isz v1, isz v2) {
 	return v1 > v2 ? v1 : v2;
 }
 
 static inline INLINE
-usz clamp(usz v, usz min, usz max) {
-	return v < min ? min : v > max ? max : v;
-}
-
-static inline INLINE
-isz imin(isz v1, isz v2) {
-	return v1 < v2 ? v1 : v2;
-}
-
-static inline INLINE
-isz imax(isz v1, isz v2) {
-	return v1 > v2 ? v1 : v2;
-}
-
-static inline INLINE
-isz iclamp(isz v, isz min, isz max) {
+isz clamp(isz v, isz min, isz max) {
 	return v < min ? min : v > max ? max : v;
 }
 

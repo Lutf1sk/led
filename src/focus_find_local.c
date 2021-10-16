@@ -105,7 +105,7 @@ void input_find_local(global_t* ed_global, int c) {
 		if (selected_index > 0)
 			--selected_index;
 		else if (selected_index == 0)
-			selected_index = imax(result_count - 1, 0);
+			selected_index = max(result_count - 1, 0);
 		break;
 
 	case KEY_DOWN:

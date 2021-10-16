@@ -122,7 +122,7 @@ void input_goto(global_t* ed_global, int c) {
 		line = interp_str(ed, input, &sync_selection, &dir);
 
 		if (dir == 'u')
-			ed_goto_line(ed, imax(ed->cy - line, 0));
+			ed_goto_line(ed, max(ed->cy - line, 0));
 		else if (dir == 'd')
 			ed_goto_line(ed, ed->cy + line);
 		else if (line)

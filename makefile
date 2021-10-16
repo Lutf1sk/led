@@ -28,7 +28,7 @@ OBJS = \
 
 LNK_LIBS = -lncurses
 
-CC_FLAGS = -O0
+CC_FLAGS = -O2
 
 ifdef DEBUG
 	CC_FLAGS += -rdynamic -g

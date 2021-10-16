@@ -24,9 +24,9 @@ void ed_move_to_selection_end(editor_t* ed) {
 void ed_goto_line(editor_t* ed, usz line) {
 	line = min(line, ed->doc.line_count - 1);
 
-	usz line_top = imax(line - ed->global->height / 2, 0);
+	usz line_top = max(line - ed->global->height / 2, 0);
 	if (line_top + ed->global->height >= ed->doc.line_count)
-		line_top = imax(ed->doc.line_count - ed->global->height, 0);
+		line_top = max(ed->doc.line_count - ed->global->height, 0);
 
 	ed->cy = line;
 	ed->line_top = line_top;
@@ -43,9 +43,9 @@ void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx) {
 			continue;
 
 		if (i == ed->cy)
-			ed->cx = imax(ed->cx - pfx.len, 0);
+			ed->cx = max(ed->cx - pfx.len, 0);
 		if (i == ed->sel_y)
-			ed->sel_x = imax(ed->sel_x - pfx.len, 0);
+			ed->sel_x = max(ed->sel_x - pfx.len, 0);
 
 		doc_erase_str(&ed->doc, i, 0, pfx.len);
 	}
@@ -255,7 +255,7 @@ void ed_page_down(editor_t* ed) {
 	else if (ed->line_top + ed->global->height >= ed->doc.line_count)
 		ed->cy = ed->doc.line_count - 1;
 	else {
-		usz offs = imin(ed->doc.line_count - (ed->line_top + ed->global->height), ed->global->height);
+		usz offs = min(ed->doc.line_count - (ed->line_top + ed->global->height), ed->global->height);
 		ed->cy += offs;
 		ed->line_top += offs;
 	}
