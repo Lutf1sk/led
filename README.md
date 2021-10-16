@@ -27,6 +27,7 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | CTRL+Q    | Close current file    |
 | CTRL+F    | Local find string     |
 | CTRL+/    | Comment selection     |
+| ALT+P     | Move to other bracket |
 | TAB       | Intent selection      |
 | Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
@@ -43,6 +44,8 @@ CTRL+Shift+Home/End selects and moves to the end/start of the current line.
 Using CTRL+Horizontal arrows moves word-by-word.
 
 CTRL+Vertical arrows moves up/down ```editor.vstep``` lines.
+
+ALT+Horizontal arrows moves to the next/previous bracket.
 
 As expected, moving the cursor with shift held down adds text to the selection.
 

@@ -37,14 +37,18 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;6H", KEY_CSHOME);
 	define_key("\x1B[1;6F", KEY_CSEND);
 
-	// CTRL + [/]
-	define_key("\x1B[", KEY_APLEFT);
-	define_key("\x1B]", KEY_APRIGHT);
+	// ALT + HArrows
+	define_key("\x1B[1;3D", KEY_ALEFT);
+	define_key("\x1B[1;3C", KEY_ARIGHT);
 
 	// Bracketed paste
-	define_key("\x1b[200~", KEY_PASTE_START);
-	define_key("\x1b[201~", KEY_PASTE_END);
+	define_key("\x1B[200~", KEY_PASTE_START);
+	define_key("\x1B[201~", KEY_PASTE_END);
 
+	// ALT + P
+	define_key("\x1Bp", KEY_A_P);
+
+	// CTRL + Delete
 	define_key("\x1B[3;5~", KEY_CDC);
 
 	lstr_t xterm_str = CLSTR("xterm");

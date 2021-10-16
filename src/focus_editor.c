@@ -375,6 +375,16 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 	}	break;
 
+	case KEY_ARIGHT:
+		ed_paren_fwd(ed);
+		break;
+	case KEY_ALEFT:
+		ed_paren_bwd(ed);
+		break;
+	case KEY_A_P:
+		ed_paren_match(ed);
+		break;
+
 	default:
 		if (c >= 32 && c < 127) {
 			ed_delete_selection_if_available(ed);

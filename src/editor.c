@@ -326,3 +326,110 @@ void ed_delete_word_bwd(editor_t* ed) {
 	doc_erase_str(&ed->doc, ed->cy, word, del_chars);
 	ed->cx -= del_chars;
 }
+
+void ed_paren_fwd(editor_t* ed) {
+	for (isz l = ed->cy, r = ed->cx + 1; l < ed->doc.line_count; ++l) {
+		lstr_t line = ed->doc.lines[l];
+
+		for (; r < line.len; ++r) {
+			if (line.str[r] == ')' || line.str[r] == ']' || line.str[r] == '}') {
+				ed->cy = l;
+				ed->cx = r;
+				return;
+			}
+		}
+		r = 0;
+	}
+}
+
+void ed_paren_bwd(editor_t* ed) {
+	for (isz l = ed->cy, r = ed->cx - 1; l >= 0; --l) {
+		lstr_t line = ed->doc.lines[l];
+
+		for (; r >= 0; --r) {
+			if (line.str[r] == '(' || line.str[r] == '[' || line.str[r] == '{') {
+				ed->cy = l;
+				ed->cx = r;
+				return;
+			}
+		}
+
+		if (l > 0)
+			r = ed->doc.lines[l - 1].len - 1;
+	}
+}
+
+static
+void ed_paren_match_ch(editor_t* ed, int paren) {
+	isz r = ed->cx, l = ed->cy, sc = 1;
+
+	switch (paren) {
+	case '[': case '{': case '(':
+		goto fwd;
+
+	default:
+		break;
+	}
+
+	for (--r; l >= 0; --l) {
+		lstr_t line = ed->doc.lines[l];
+
+		for (; r >= 0; --r) {
+			int c = line.str[r];
+			switch (c) {
+			case '[': case '{': case '(':
+				--sc;
+				break;
+			case ']': case '}': case ')':
+				++sc;
+				break;
+
+			default:
+				continue;
+			}
+
+			if (!sc) {
+				ed->cy = l;
+				ed->cx = r;
+				return;
+			}
+		}
+
+		if (l > 0)
+			r = ed->doc.lines[l - 1].len - 1;
+	}
+	return;
+
+fwd:
+	for (++r; l < ed->doc.line_count; ++l) {
+		lstr_t line = ed->doc.lines[l];
+
+		for (; r < line.len; ++r) {
+			int c = line.str[r];
+			switch (c) {
+			case '[': case '{': case '(':
+				++sc;
+				break;
+			case ']': case '}': case ')':
+				--sc;
+				break;
+
+			default:
+				continue;
+			}
+
+			if (!sc) {
+				ed->cy = l;
+				ed->cx = r;
+				return;
+			}
+		}
+		r = 0;
+	}
+}
+
+void ed_paren_match(editor_t* ed) {
+	int c = ed->doc.lines[ed->cy].str[ed->cx];
+	ed_paren_match_ch(ed, c);
+}
+

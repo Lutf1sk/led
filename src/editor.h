@@ -101,4 +101,8 @@ usz ed_find_word_bwd(editor_t* ed);
 void ed_delete_word_fwd(editor_t* ed);
 void ed_delete_word_bwd(editor_t* ed);
 
+void ed_paren_fwd(editor_t* ed);
+void ed_paren_bwd(editor_t* ed);
+void ed_paren_match(editor_t* ed);
+
 #endif
