@@ -1,7 +1,7 @@
 
 OUT = led
 
-RUN_ARGS = test.txt
+RUN_ARGS = src/conf.c
 
 OBJS = \
 	src/main.o \
@@ -28,7 +28,7 @@ OBJS = \
 
 LNK_LIBS = -lncurses
 
-CC_FLAGS = -O2
+CC_FLAGS = -O0
 
 ifdef DEBUG
 	CC_FLAGS += -rdynamic -g

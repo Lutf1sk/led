@@ -166,36 +166,34 @@ void ed_sync_target_cy(editor_t* ed) {
 	ed->target_cy_offs = ed->cy - ed->line_top;
 }
 
-usz ed_screen_x_to_cx(editor_t* ed, usz x, usz cy) {
-	cy = min(cy, ed->doc.line_count);
-	cy = max(cy, 0);
+usz ed_screen_x_to_cx(editor_t* ed, isz x, isz cy) {
+	if (cy >= ed->doc.line_count || cy < 0)
+		return 0;
 
 	lstr_t* line = &ed->doc.lines[cy];
-	usz screen_x = 0, tab_size = ed->global->tab_size;
+	isz screen_x = 0, tab_size = ed->global->tab_size;
 
-	for (usz i = 0; i < line->len; ++i) {
+	for (isz i = 0; i < line->len; ++i) {
 		if (line->str[i] == '\t')
 			screen_x += tab_size - screen_x % tab_size;
 		else
 			screen_x++;
-		if (screen_x >= x)
+		if (screen_x > x)
 			return i;
 	}
 	return line->len;
 }
 
 usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy) {
-	cy = min(cy, ed->doc.line_count);
-	cy = max(cy, 0);
+	if (cy >= ed->doc.line_count || cy < 0)
+		return 0;
 
 	lstr_t* line = &ed->doc.lines[cy];
-	usz screen_x = 0, tab_size = ed->global->tab_size;
+	isz screen_x = 0, tab_size = ed->global->tab_size;
 
-	usz max = ed->cx;
-	if (ed->cx <= line->len)
-		max++;
+	isz end = min(x, line->len);
 
-	for (usz i = 0; i < max; ++i) {
+	for (isz i = 0; i < end; ++i) {
 		if (line->str[i] == '\t')
 			screen_x += tab_size - screen_x % tab_size;
 		else
