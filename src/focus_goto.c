@@ -4,7 +4,7 @@
 #include "focus.h"
 #include "editor.h"
 #include "clr.h"
-#include "chartypes.h"
+#include "token_chars.h"
 #include "algo.h"
 
 #include <curses.h>

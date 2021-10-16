@@ -3,32 +3,11 @@
 
 #include "conf.h"
 
-#include "chartypes.h"
-#include <ctype.h>
+#include "token_chars.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static inline INLINE
-b8 is_numeric_head(char c) {
-	return !!isdigit(c);
-}
-
-static inline INLINE
-b8 is_numeric_body(char c) {
-	return is_numeric_head(c) || c == '.' || isalpha(c);
-}
-
-static inline INLINE
-b8 is_ident_head(char c) {
-	return isalpha(c) || c == '_';
-}
-
-static inline INLINE
-b8 is_ident_body(char c) {
-	return is_ident_head(c) || isdigit(c);
-}
 
 typedef
 struct parse_ctx {
@@ -66,7 +45,7 @@ char* get_ptr(parse_ctx_t* cx) {
 
 static inline INLINE
 void skip_whitespace(parse_ctx_t* cx) {
-	while (isspace(peek(cx, 0)))
+	while (is_space(peek(cx, 0)))
 		consume(cx);
 }
 
@@ -133,7 +112,7 @@ conf_t conf_parse_object(parse_ctx_t* cx) {
 static
 conf_t conf_parse_numeric(parse_ctx_t* cx) {
 	i64 val = 0;
-	while (is_digit(peek(cx, 0))) {
+	while (is_numeric_head(peek(cx, 0))) {
 		char c = consume(cx);
 		val *= 10;
 		val += c - '0';
@@ -143,7 +122,7 @@ conf_t conf_parse_numeric(parse_ctx_t* cx) {
 			i64 val_low = 0;
 			i64 decimal_mult = 1;
 
-			while (is_digit(peek(cx, 0))) {
+			while (is_numeric_head(peek(cx, 0))) {
 				decimal_mult *= 10;
 
 				char c = consume(cx);
@@ -249,7 +228,7 @@ conf_t conf_parse_node(parse_ctx_t* cx) {
 		break;
 
 	default: {
-		if (is_digit(peek(cx, 0)))// Number
+		if (is_numeric_head(peek(cx, 0)))// Number
 			return conf_parse_numeric(cx);
 		ferrf("Config: Unexpected character '%c'\n", peek(cx, 0));
 		return conf_make_node(CONF_INT);

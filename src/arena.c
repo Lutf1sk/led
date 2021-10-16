@@ -24,18 +24,6 @@ void aframe_free(aframe_t* frame) {
 	free_pages(frame, frame->size + aframe_header_size);
 }
 
-void* aframe_reserve(aframe_t* frame, usz size) {
-	usz aligned_size = align_fwd(size, sizeof(usz));
-
-	if (aligned_size > frame->free_bytes)
-		return NULL;
-
-	void* ptr = frame->mem_pos;
-	frame->free_bytes -= aligned_size;
-	frame->mem_pos = (char*)frame->mem_pos + aligned_size;
-	return ptr;
-}
-
 void aframe_restore(aframe_t* arena, arestore_t* restore_point) {
 	arena->mem_pos = restore_point->mem_pos;
 	arena->free_bytes = restore_point->free_bytes;

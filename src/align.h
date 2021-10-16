@@ -6,6 +6,9 @@
 
 #include "common.h"
 
+#define WORD_SIZE (sizeof(usz)<<1)
+#define WORD_MASK (WORD_SIZE-1)
+
 static inline INLINE
 b8 is_pow2(usz n) {
 	return (n & (n - 1)) == 0;
@@ -13,20 +16,31 @@ b8 is_pow2(usz n) {
 
 static inline INLINE
 usz pad(usz size, usz align) {
-	usz rem = size % align;
-	if (!rem)
-		return 0;
-	return align - rem;
+	usz align_mask = align - 1;
+	usz n = size & align_mask;
+	n ^= align_mask;
+	return n + 1;
+}
+
+static inline INLINE
+usz word_align_fwd(usz val) {
+	return (val + (WORD_MASK)) & ~(WORD_MASK);
+}
+
+static inline INLINE
+usz word_align_bwd(usz val) {
+	return val & ~WORD_MASK;
 }
 
 static inline INLINE
 usz align_fwd(usz val, usz align) {
-	return val + pad(val, align);
+	usz mask = align - 1;
+	return (val + mask) & ~mask;
 }
 
 static inline INLINE
 usz align_bwd(usz val, usz align) {
-	return val - val % align;
+	return val & ~(align - 1);
 }
 
 #endif

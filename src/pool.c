@@ -37,7 +37,7 @@ pframe_t* pframe_alloc(usz chunk_size, usz count) {
 	if (!mem)
 		ferrf("Failed to allocate pool memory: %s\n", os_err_str());
 
-	chunk_size = align_fwd(max(sizeof(pnode_t), chunk_size), sizeof(usz));
+	chunk_size = word_align_fwd(max(sizeof(pnode_t), chunk_size));
 
 	pframe_t* header = mem;
 	*header = pframe_make((u8*)mem + header_size, size, chunk_size);

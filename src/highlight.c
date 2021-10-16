@@ -15,57 +15,6 @@ enum multiline_mode {
 	MLMODE_COMMENT,
 } multiline_mode_t;
 
-typedef
-struct ctx {
-	lstr_t line;
-	usz index;
-	multiline_mode_t mode;
-} ctx_t;
-
-static
-char consume(ctx_t* cx) {
-	if (cx->index >= cx->line.len)
-		return 0;
-	return cx->line.str[cx->index++];
-}
-
-static
-char peek(ctx_t* cx) {
-	return cx->index >= cx->line.len ? 0 : cx->line.str[cx->index];
-}
-
-static
-b8 is_punctuation(char c) {
-	switch (c) {
-	case '.': case ',': case ':': case ';':
-		return 1;
-	default:
-		return 0;
-	}
-}
-
-static
-b8 is_operator(char c) {
-	switch (c) {
-	case '+': case '-': case '*': case '/': case '%':
-	case '&': case '|': case '^': case '~':
-	case '=': case '!': case '?': case '<': case '>':
-		return 1;
-	default:
-		return 0;
-	}
-}
-
-static
-b8 is_bracket(char c) {
-	switch (c) {
-	case '[': case ']': case '{': case '}': case '(': case ')':
-		return 1;
-	default:
-		return 0;
-	}
-}
-
 static
 b8 lstreq(lstr_t s1, lstr_t s2) {
 	if (s1.len != s2.len)
@@ -219,143 +168,127 @@ b8 is_datatype(lstr_t str) {
 }
 
 static
-highl_t* gen_line(aframe_t* arena, ctx_t* cx) {
-	if (!cx->line.len)
-		return NULL;
-
-	highl_t* head;
+highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
+	highl_t* head = NULL;
 	highl_t** node = &head;
-	char c;
-	while ((c = peek(cx))) {
-		highl_t* new = aframe_reserve(arena, sizeof(highl_t));
+	int c = 0;
+	usz i = 0, start = 0;
 
-		char* tk_start = &cx->line.str[cx->index];
-		new->len = 1;
-		consume(cx);
+	if (*ml_mode == MLMODE_COMMENT)
+		goto parse_multiline_comment;
 
-		if (cx->mode == MLMODE_COMMENT)
-			goto parse_multiline_comment;
+	while (i < line.len) {
+		c = line.str[i];
+		start = i++;
+
+		highl_mode_t mode = HLM_UNKNOWN;
 
 		switch (c) {
 		case '/':
-			if (peek(cx) == '/') {
-				while (consume(cx))
-					++new->len;
-				new->mode = HLM_COMMENT;
+			if (i >= line.len) {
+				mode = HLM_OPERATOR;
+				break;
 			}
-			else if (peek(cx) == '*') {
-				cx->mode = MLMODE_COMMENT;
+
+			c = line.str[i];
+			if (c == '/') {
+				i = line.len;
+				mode = HLM_COMMENT;
+				break;
+			}
+			else if (c == '*') {
+				*ml_mode = MLMODE_COMMENT;
+
 			parse_multiline_comment:
 				int last = c;
-				while ((c = consume(cx))) {
-					++new->len;
+				while (i < line.len) {
+					c = line.str[i++];
 					if (c == '/' && last == '*') {
-						cx->mode = MLMODE_NONE;
+						*ml_mode = MLMODE_NONE;
 						break;
 					}
 					last = c;
 				}
-				new->mode = HLM_COMMENT;
+				mode = HLM_COMMENT;
+				break;
 			}
-			else
-				new->mode = HLM_OPERATOR;
+
+			mode = HLM_OPERATOR;
 			break;
 
 		case '#':
-			new->mode = HLM_HASH;
+			mode = HLM_HASH;
 			break;
 
 		case '"':
-			c = peek(cx);
-			while (c && c != '"') {
-				c = consume(cx);
-				if (c == '\\' && peek(cx) == '"') {
-					consume(cx);
-					++new->len;
-				}
-				c = peek(cx);
-				++new->len;
+			while (i < line.len) {
+				if (line.str[i++] == '"')
+					break;
 			}
-			if (c) {
-				consume(cx);
-				++new->len;
-			}
-			new->mode = HLM_STRING;
+			mode = HLM_STRING;
 			break;
 
 		case '\'':
-			c = peek(cx);
-			while (c && c != '\'') {
-				c = consume(cx);
-				if (c == '\\' && peek(cx) == '\'') {
-					consume(cx);
-					++new->len;
-				}
-				c = peek(cx);
-				++new->len;
+			while (i < line.len) {
+				if (line.str[i++] == '\'')
+					break;
 			}
-			if (c) {
-				consume(cx);
-				++new->len;
-			}
-			new->mode = HLM_CHAR;
+			mode = HLM_CHAR;
+			break;
+
+		case '_':
+			mode = HLM_IDENTIFIER;
 			break;
 
 		default:
-			if (isspace(c)) {
-				c = peek(cx);
-				while (c && isspace(c)) {
-					consume(cx);
-					c = peek(cx);
-					++new->len;
+			if (c == '\t' || c == ' ' || c == '\n' || c == '\r') {
+				while (i < line.len) {
+					c = line.str[i];
+					if (c != '\t' && c != ' ' && c != '\n' && c != '\r')
+						break;
+					++i;
 				}
-				new->mode = HLM_INDENT;
-			}
-			else if (is_numeric_head(c)) {
-				c = peek(cx);
-				while (c && is_numeric_body(c)) {
-					consume(cx);
-					c = peek(cx);
-					++new->len;
-				}
-				new->mode = HLM_NUMBER;
-			}
-			else if (is_punctuation(c))
-				new->mode = HLM_PUNCTUATION;
-			else if (is_bracket(c))
-				new->mode = HLM_BRACKET;
-			else if (is_operator(c)) {
-				c = peek(cx);
-				while (c && is_operator(c)) {
-					consume(cx);
-					c = peek(cx);
-					++new->len;
-				}
-				new->mode = HLM_OPERATOR;
+				mode = HLM_INDENT;
 			}
 			else if (is_ident_head(c)) {
-				c = peek(cx);
-				while (c && is_ident_body(c)) {
-					consume(cx);
-					c = peek(cx);
-					++new->len;
+				while (i < line.len) {
+					c = line.str[i];
+					if (!is_ident_body(c)) {
+						if (c == '(') {
+							mode = HLM_FUNCTION;
+							goto done;
+						}
+						break;
+					}
+					++i;
 				}
 
-				lstr_t tk = LSTR(tk_start, &cx->line.str[cx->index] - tk_start);
+				lstr_t tk = LSTR(&line.str[start], i - start);
 
+				mode = HLM_IDENTIFIER;
 				if (is_keyword(tk))
-					new->mode = HLM_KEYWORD;
+					mode = HLM_KEYWORD;
 				else if (is_datatype(tk))
-					new->mode = HLM_DATATYPE;
-				else if (peek(cx) == '(')
-					new->mode = HLM_FUNCTION;
-				else
-					new->mode = HLM_IDENTIFIER;
+					mode = HLM_DATATYPE;
 			}
-			else
-				new->mode = HLM_UNKNOWN;
+			else if (is_numeric_head(c)) {
+				while (i < line.len) {
+					if (!is_numeric_body(line.str[i]))
+						break;
+					++i;
+				}
+				mode = HLM_NUMBER;
+			}
+			else if (is_operator(c))
+				mode = HLM_OPERATOR;
+			else if (is_punc(c))
+				mode = HLM_PUNCTUATION;
 			break;
 		}
+	done:
+		highl_t* new = aframe_reserve(arena, sizeof(highl_t));
+		new->len = i - start;
+		new->mode = mode;
 
 		*node = new;
 		node = &new->next;
@@ -368,13 +301,11 @@ highl_t* gen_line(aframe_t* arena, ctx_t* cx) {
 highl_t** highl_generate(aframe_t* arena, doc_t* doc) {
 	highl_t** lines = aframe_reserve(arena, doc->line_count * sizeof(highl_t*));
 
-	ctx_t context;
-	context.mode = MLMODE_NONE;
-	for (usz i = 0; i < doc->line_count; ++i) {
-		context.line = doc->lines[i];
-		context.index = 0;
-		lines[i] = gen_line(arena, &context);
-	}
+	multiline_mode_t mode = MLMODE_NONE;
+	usz line_count = doc->line_count;
+
+	for (usz i = 0; i < line_count; ++i)
+		lines[i] = gen_line(arena, doc->lines[i], &mode);
 
 	return lines;
 }

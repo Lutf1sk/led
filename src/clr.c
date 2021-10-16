@@ -65,7 +65,6 @@ void clr_load(conf_t* clr_conf) {
 		init_pair(PAIR_SYNTAX_DATATYPE, 1, 0);
 
 		init_pair(PAIR_SYNTAX_HASH, 7, 0);
-		init_pair(PAIR_SYNTAX_BRACKET, 6, 0);
 		init_pair(PAIR_SYNTAX_OPERATOR, 6, 0);
 		init_pair(PAIR_SYNTAX_PUNCTUATION, 6, 0);
 
@@ -143,7 +142,6 @@ void clr_load(conf_t* clr_conf) {
 	init_color_from_conf(CLR_SYNTAX_DATATYPE, CLSTR("datatype"), highl_cf);
 
 	init_color_from_conf(CLR_SYNTAX_HASH, CLSTR("hash"), highl_cf);
-	init_color_from_conf(CLR_SYNTAX_BRACKET, CLSTR("bracket"), highl_cf);
 	init_color_from_conf(CLR_SYNTAX_OPERATOR, CLSTR("operator"), highl_cf);
 	init_color_from_conf(CLR_SYNTAX_PUNCTUATION, CLSTR("punctuation"), highl_cf);
 
@@ -164,7 +162,6 @@ void clr_load(conf_t* clr_conf) {
 	init_pair(PAIR_SYNTAX_DATATYPE, CLR_SYNTAX_DATATYPE, CLR_EDITOR_BG);
 
 	init_pair(PAIR_SYNTAX_HASH, CLR_SYNTAX_HASH, CLR_EDITOR_BG);
-	init_pair(PAIR_SYNTAX_BRACKET, CLR_SYNTAX_BRACKET, CLR_EDITOR_BG);
 	init_pair(PAIR_SYNTAX_OPERATOR, CLR_SYNTAX_OPERATOR, CLR_EDITOR_BG);
 	init_pair(PAIR_SYNTAX_PUNCTUATION, CLR_SYNTAX_PUNCTUATION, CLR_EDITOR_BG);
 

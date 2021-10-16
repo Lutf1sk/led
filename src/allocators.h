@@ -5,6 +5,7 @@
 #define ALLOCATORS_H
 
 #include "common.h"
+#include "align.h"
 
 // Common
 void allocators_initialize(void);
@@ -38,7 +39,15 @@ aframe_t aframe_make(void* ptr, usz size) {
 
 aframe_t* aframe_alloc(usz size);
 void aframe_free(aframe_t* arena);
-void* aframe_reserve(aframe_t* arena, usz size);
+
+static inline
+void* aframe_reserve(aframe_t* frame, usz size) {
+	usz aligned_size = word_align_fwd(size);
+	void* ptr = frame->mem_pos;
+	frame->free_bytes -= aligned_size;
+	frame->mem_pos = (char*)frame->mem_pos + aligned_size;
+	return ptr;
+}
 
 typedef
 struct arestore {
