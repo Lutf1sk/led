@@ -96,7 +96,7 @@ void input_editor(global_t* ed_globals, int c) {
 		ed->sel_x = 0;
 		ed->sel_y = ed->cy;
 		ed->cx = ed->doc.lines[ed->cy].len;
-	}
+	}	break;
 
 	case KEY_MOUSE: {
 		static b8 pressed = 0;
@@ -135,7 +135,7 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	case KEY_SUP: sync_selection = 0; sync_target_x = 0;
-		ed_cur_up(ed, ed->target_cx);
+		ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
 		break;
 
 	case KEY_UP: sync_target_x = 0;
@@ -143,11 +143,11 @@ void input_editor(global_t* ed_globals, int c) {
 			ed_move_to_selection_start(ed);
 			break;
 		}
-		ed_cur_up(ed, ed->target_cx);
+		ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
 		break;
 
 	case KEY_SDOWN: sync_selection = 0; sync_target_x = 0;
-		ed_cur_down(ed, ed->target_cx);
+		ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 		break;
 
 	case KEY_DOWN: sync_target_x = 0;
@@ -155,7 +155,7 @@ void input_editor(global_t* ed_globals, int c) {
 			ed_move_to_selection_end(ed);
 			break;
 		}
-		ed_cur_down(ed, ed->target_cx);
+		ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 		break;
 
 	case KEY_SRIGHT: sync_selection = 0;
@@ -189,7 +189,7 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 
 		for (usz i = 0; i < ed_globals->vstep; ++i)
-			ed_cur_up(ed, ed->target_cx);
+			ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
 		break;
 
 	case KEY_CDOWN: sync_target_x = 0;
@@ -199,7 +199,7 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 
 		for (usz i = 0; i < ed_globals->vstep; ++i)
-			ed_cur_down(ed, ed->target_cx);
+			ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 		break;
 
 	case KEY_CSRIGHT: sync_selection = 0; {
@@ -253,12 +253,12 @@ void input_editor(global_t* ed_globals, int c) {
 
 	case KEY_CSUP: sync_selection = 0; sync_target_x = 0; {
 		for (usz i = 0; i < ed_globals->vstep; ++i)
-			ed_cur_up(ed, ed->target_cx);
+			ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
 	}	break;
 
 	case KEY_CSDOWN: sync_selection = 0; sync_target_x = 0; {
 		for (usz i = 0; i < ed_globals->vstep; ++i)
-			ed_cur_down(ed, ed->target_cx);
+			ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 	}	break;
 
 	case KEY_CDC: ed_delete_word_fwd(ed); break;

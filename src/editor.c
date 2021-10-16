@@ -30,7 +30,7 @@ void ed_goto_line(editor_t* ed, usz line) {
 
 	ed->cy = line;
 	ed->line_top = line_top;
-	ed->cx = min(ed->target_cx, ed->doc.lines[ed->cy].len);
+	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
 }
 
 void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx) {
@@ -159,7 +159,7 @@ void ed_sync_selection(editor_t* ed) {
 }
 
 void ed_sync_target_cx(editor_t* ed) {
-	ed->target_cx = ed->cx;
+	ed->target_cx = ed_cx_to_screen_x(ed, ed->cx, ed->cy);
 }
 
 void ed_sync_target_cy(editor_t* ed) {
@@ -167,20 +167,41 @@ void ed_sync_target_cy(editor_t* ed) {
 }
 
 usz ed_screen_x_to_cx(editor_t* ed, usz x, usz cy) {
-	lstr_t* line = &ed->doc.lines[cy];
-	usz it = 0;
+	cy = min(cy, ed->doc.line_count);
+	cy = max(cy, 0);
 
-	usz tab_size = ed->global->tab_size;
+	lstr_t* line = &ed->doc.lines[cy];
+	usz screen_x = 0, tab_size = ed->global->tab_size;
 
 	for (usz i = 0; i < line->len; ++i) {
 		if (line->str[i] == '\t')
-			it += tab_size - it % tab_size;
+			screen_x += tab_size - screen_x % tab_size;
 		else
-			it++;
-		if (x < it)
+			screen_x++;
+		if (screen_x >= x)
 			return i;
 	}
 	return line->len;
+}
+
+usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy) {
+	cy = min(cy, ed->doc.line_count);
+	cy = max(cy, 0);
+
+	lstr_t* line = &ed->doc.lines[cy];
+	usz screen_x = 0, tab_size = ed->global->tab_size;
+
+	usz max = ed->cx;
+	if (ed->cx <= line->len)
+		max++;
+
+	for (usz i = 0; i < max; ++i) {
+		if (line->str[i] == '\t')
+			screen_x += tab_size - screen_x % tab_size;
+		else
+			screen_x++;
+	}
+	return screen_x;
 }
 
 void ed_cur_up(editor_t* ed, usz cx) {
@@ -202,7 +223,6 @@ void ed_cur_right(editor_t* ed) {
 		++ed->cx;
 	else
 		ed_cur_down(ed, 0);
-	ed->target_cx = ed->cx;
 }
 
 void ed_cur_left(editor_t* ed) {
@@ -210,7 +230,6 @@ void ed_cur_left(editor_t* ed) {
 		--ed->cx;
 	else
 		ed_cur_up(ed, (usz)-1);
-	ed->target_cx = ed->cx;
 }
 
 void ed_page_up(editor_t* ed) {
@@ -226,7 +245,7 @@ void ed_page_up(editor_t* ed) {
 		ed->cy -= offs;
 		ed->line_top -= offs;
 	}
-	ed->cx = min(ed->target_cx, ed->doc.lines[ed->cy].len);
+	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
 }
 
 void ed_page_down(editor_t* ed) {
@@ -242,7 +261,7 @@ void ed_page_down(editor_t* ed) {
 		ed->cy += offs;
 		ed->line_top += offs;
 	}
-	ed->cx = min(ed->target_cx, ed->doc.lines[ed->cy].len);
+	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
 }
 
 usz ed_find_word_fwd(editor_t* ed) {

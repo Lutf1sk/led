@@ -86,6 +86,7 @@ void ed_sync_target(editor_t* ed) {
 }
 
 usz ed_screen_x_to_cx(editor_t* ed, usz x, usz cy);
+usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy);
 
 void ed_cur_up(editor_t* ed, usz cx);
 void ed_cur_down(editor_t* ed, usz cx);
