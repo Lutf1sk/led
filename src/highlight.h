@@ -35,9 +35,9 @@ struct highl {
 	struct highl* next;
 } highl_t;
 
-typedef struct pframe pframe_t;
+typedef struct aframe aframe_t;
 typedef struct doc doc_t;
 
-highl_t** highl_generate(pframe_t* pool, doc_t* doc);
+highl_t** highl_generate(aframe_t* arena, doc_t* doc);
 
 #endif

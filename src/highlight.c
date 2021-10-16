@@ -219,7 +219,7 @@ b8 is_datatype(lstr_t str) {
 }
 
 static
-highl_t* gen_line(pframe_t* pool, ctx_t* cx) {
+highl_t* gen_line(aframe_t* arena, ctx_t* cx) {
 	if (!cx->line.len)
 		return NULL;
 
@@ -227,9 +227,7 @@ highl_t* gen_line(pframe_t* pool, ctx_t* cx) {
 	highl_t** node = &head;
 	char c;
 	while ((c = peek(cx))) {
-		highl_t* new = pframe_reserve(pool);
-		if (!new)
-			return NULL;
+		highl_t* new = aframe_reserve(arena, sizeof(highl_t));
 
 		char* tk_start = &cx->line.str[cx->index];
 		new->len = 1;
@@ -367,20 +365,15 @@ highl_t* gen_line(pframe_t* pool, ctx_t* cx) {
 	return head;
 }
 
-highl_t** highl_generate(pframe_t* pool, doc_t* doc) {
-	highl_t** lines = malloc(doc->line_count * sizeof(highl_t*));
-	if (!lines)
-		ferrf("Failed to allocate memory: %s\n", os_err_str());
-
-	pframe_free_all(pool);
-
+highl_t** highl_generate(aframe_t* arena, doc_t* doc) {
+	highl_t** lines = aframe_reserve(arena, doc->line_count * sizeof(highl_t*));
 
 	ctx_t context;
 	context.mode = MLMODE_NONE;
 	for (usz i = 0; i < doc->line_count; ++i) {
 		context.line = doc->lines[i];
 		context.index = 0;
-		lines[i] = gen_line(pool, &context);
+		lines[i] = gen_line(arena, &context);
 	}
 
 	return lines;

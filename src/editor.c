@@ -22,7 +22,7 @@ void ed_move_to_selection_end(editor_t* ed) {
 }
 
 void ed_goto_line(editor_t* ed, usz line) {
-	line = min(line, ed->doc.line_count - 1);
+	line = clamp(line, 0, ed->doc.line_count - 1);
 
 	usz line_top = max(line - ed->global->height / 2, 0);
 	if (line_top + ed->global->height >= ed->doc.line_count)
@@ -78,7 +78,7 @@ void ed_delete_selection(editor_t* ed) {
 		if (ed->cx)
 			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
 		else if (ed->cy) {
-			ed_cur_up(ed, (usz)-1);
+			ed_cur_up(ed, ISIZE_MAX);
 			doc_merge_line(&ed->doc, ed->cy + 1);
 		}
 	}
@@ -227,14 +227,14 @@ void ed_cur_left(editor_t* ed) {
 	if (ed->cx)
 		--ed->cx;
 	else
-		ed_cur_up(ed, (usz)-1);
+		ed_cur_up(ed, ISIZE_MAX);
 }
 
 void ed_page_up(editor_t* ed) {
 	if (ed->line_top + ed->global->height >= ed->doc.line_count && ed->cy + 1 == ed->doc.line_count) {
 		if (ed->cy == ed->line_top + ed->target_cy_offs)
 			ed->target_cy_offs = ed->global->height / 2;
-		ed->cy = min(ed->line_top + ed->target_cy_offs, ed->doc.line_count - 1);
+		ed->cy = clamp(ed->line_top + ed->target_cy_offs, 0, ed->doc.line_count - 1);
 	}
 	else if (!ed->line_top)
 		ed->cy = 0;
@@ -250,12 +250,12 @@ void ed_page_down(editor_t* ed) {
 	if (!ed->line_top && !ed->cy) {
 		if (ed->cy == ed->line_top + ed->target_cy_offs)
 			ed->target_cy_offs = ed->global->height / 2;
-		ed->cy = min(ed->line_top + ed->target_cy_offs, ed->doc.line_count - 1);
+		ed->cy = clamp(ed->line_top + ed->target_cy_offs, 0, ed->doc.line_count - 1);
 	}
 	else if (ed->line_top + ed->global->height >= ed->doc.line_count)
 		ed->cy = ed->doc.line_count - 1;
 	else {
-		usz offs = min(ed->doc.line_count - (ed->line_top + ed->global->height), ed->global->height);
+		usz offs = clamp(ed->doc.line_count - (ed->line_top + ed->global->height), 0, ed->global->height);
 		ed->cy += offs;
 		ed->line_top += offs;
 	}
@@ -332,7 +332,7 @@ void ed_delete_word_fwd(editor_t* ed) {
 void ed_delete_word_bwd(editor_t* ed) {
 	if (!ed->cx) {
 		if (ed->cy) {
-			ed_cur_up(ed, (usz)-1);
+			ed_cur_up(ed, ISIZE_MAX);
 			doc_merge_line(&ed->doc, ed->cy + 1);
 		}
 		return;

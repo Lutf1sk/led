@@ -106,4 +106,6 @@ void werrf(const char* fmt, ...);
 // strerror wrapper
 char* os_err_str(void);
 
+#define ISIZE_MAX (SIZE_MAX >> 1)
+
 #endif

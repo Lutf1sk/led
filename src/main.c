@@ -133,7 +133,7 @@ void draw_line_hbound(editor_t* ed, usz y, usz line_index, usz max_x) {
 	isz j = 0;
 	while (hl_node && j < max_x) {
 		set_highl(hl_node);
-		isz len = min(hl_node->len, max_x - j);
+		isz len = clamp(hl_node->len, 0, max_x - j);
 		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
 
 		j += len;
@@ -141,7 +141,7 @@ void draw_line_hbound(editor_t* ed, usz y, usz line_index, usz max_x) {
 	}
 
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-	wprintw(editor_w, "%.*s", (int)min(line->len - j, max_x - j), &line->str[j]);
+	wprintw(editor_w, "%.*s", (int)clamp(line->len - j, 0, max_x - j), &line->str[j]);
 }
 
 static
@@ -183,7 +183,8 @@ void draw_line_hoffs(editor_t* ed, usz y, usz line_index, usz start_x, usz start
 
 void draw_editor(editor_t* ed) {
 	// Get correct cursor position
-	mvwprintw(editor_w, ed->cy - ed->line_top, 0, "%.*s", (int)min(ed->cx, COLS - EDITOR_HSTART), ed->doc.lines[ed->cy].str);
+	isz cx = ed_cx_to_screen_x(ed, ed->cx, ed->cy);
+	wmove(editor_w, ed->cy - ed->line_top, cx);
 	wcursyncup(editor_w);
 
 	// Get selection coordinates and make y relative to line_top
@@ -192,11 +193,9 @@ void draw_editor(editor_t* ed) {
 	sel_start_y -= ed->line_top;
 	sel_end_y -= ed->line_top;
 
-	// Draw lines
 	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-
 	const isz line_top = ed->line_top;
-	const isz line_count = min(ed->doc.line_count - ed->line_top, EDITOR_HEIGHT);
+	const isz line_count = clamp(ed->doc.line_count - ed->line_top, 0, EDITOR_HEIGHT);
 
 	// Draw line numbers preceding the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
@@ -397,9 +396,8 @@ int main(int argc, char** argv) {
 		erase();
 		draw_header(ed);
 		if (ed) {
-			if (ed->highl_lines)
-				free(ed->highl_lines);
-			ed->highl_lines = highl_generate(ed->highl_pool, &ed->doc);
+			aframe_restore(ed->highl_arena, &ed->restore);
+			ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
 			draw_editor(ed);
 
 		}

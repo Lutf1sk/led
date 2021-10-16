@@ -6,8 +6,8 @@
 
 #include "common.h"
 #include "doc.h"
+#include "allocators.h"
 
-typedef struct pframe pframe_t;
 typedef struct highl highl_t;
 
 typedef struct editor editor_t;
@@ -36,7 +36,8 @@ struct editor {
 	isz target_cx, target_cy_offs;
 	isz sel_x, sel_y;
 
-	pframe_t* highl_pool;
+	arestore_t restore;
+	aframe_t* highl_arena;
 	highl_t** highl_lines;
 
 	doc_t doc;
@@ -53,7 +54,7 @@ editor_t ed_make(void) {
 	ed.target_cy_offs = 0;
 	ed.sel_x = 0;
 	ed.sel_y = 0;
-	ed.highl_pool = NULL;
+	ed.highl_arena = NULL;
 	ed.highl_lines = NULL;
 	return ed;
 }

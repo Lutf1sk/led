@@ -77,8 +77,9 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	*new = ed_make();
 	new->doc = doc_make(path_nt, basename(path_nt));
 	doc_load(&new->doc);
-	new->highl_pool = pframe_alloc(sizeof(highl_t), 0xFFFFF);
+	new->highl_arena = aframe_alloc(GB(1));
 	new->global = ed_global;
+	new->restore = arestore_make(new->highl_arena);
 
 	++file_count;
 	return new;
@@ -86,9 +87,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 
 void fb_close(editor_t* ed) {
 	free(ed->doc.path);
-	if (ed->highl_lines)
-		free(ed->highl_lines);
-	pframe_free(ed->highl_pool);
+	aframe_free(ed->highl_arena);
 	doc_free(&ed->doc);
 
 	--file_count;

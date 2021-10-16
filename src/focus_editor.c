@@ -106,7 +106,7 @@ void input_editor(global_t* ed_globals, int c) {
 			break;
 
 		if (mev.bstate & BUTTON1_PRESSED) {
-			ed->sel_y = min(ed->line_top + (mev.y - ed->global->vstart), ed->doc.line_count - 1);
+			ed->sel_y = clamp(ed->line_top + (mev.y - ed->global->vstart), 0, ed->doc.line_count - 1);
 			ed->sel_x = ed_screen_x_to_cx(ed, mev.x - ed->global->hstart, ed->sel_y);
 			ed->cy = ed->sel_y;
 			ed->cx = ed->sel_x;
@@ -114,7 +114,7 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 		else if (mev.bstate & BUTTON1_RELEASED) {
 			if (pressed) {
-				ed->cy = min(ed->line_top + (mev.y - ed->global->vstart), ed->doc.line_count - 1);
+				ed->cy = clamp(ed->line_top + (mev.y - ed->global->vstart), 0, ed->doc.line_count - 1);
 				ed->cx = ed_screen_x_to_cx(ed, mev.x - ed->global->hstart, ed->cy);
 			}
 			sync_selection = 0;
@@ -122,7 +122,7 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 		else if (mev.bstate & REPORT_MOUSE_POSITION) {
 			if (pressed) {
-				ed->cy = min(ed->line_top + (mev.y - ed->global->vstart), ed->doc.line_count - 1);
+				ed->cy = clamp(ed->line_top + (mev.y - ed->global->vstart), 0, ed->doc.line_count - 1);
 				ed->cx = ed_screen_x_to_cx(ed, mev.x - ed->global->hstart, ed->cy);
 			}
 			sync_selection = 0;
@@ -280,7 +280,7 @@ void input_editor(global_t* ed_globals, int c) {
 		else if (ed->cx)
 			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
 		else if (ed->cy) {
-			ed_cur_up(ed, (usz)-1);
+			ed_cur_up(ed, ISIZE_MAX);
 			doc_merge_line(&ed->doc, ed->cy + 1);
 		}
 		break;
@@ -424,7 +424,7 @@ void input_editor(global_t* ed_globals, int c) {
 	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs;
 	if (ed->cy > vbound_bottom) {
 		ed->line_top += ed->cy - vbound_bottom + 1;
-		ed->line_top = min(ed->line_top, ed->doc.line_count - ed->global->height);
+		ed->line_top = clamp(ed->line_top, 0, ed->doc.line_count - ed->global->height);
 	}
 }
 

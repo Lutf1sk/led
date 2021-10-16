@@ -22,7 +22,7 @@ OBJS = \
 	src/fhl.o \
 	src/err.o \
 	src/allocators.o \
-	src/pool.o \
+	src/arena.o \
 	src/conf.o \
 	src/assert.o
 
