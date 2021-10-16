@@ -37,40 +37,35 @@ editor_t* ed = NULL;
 
 global_t ed_globals;
 
-void set_highl(highl_t* node) {
-	if (!node) {
-		wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-		return;
-	}
+chtype get_highl(highl_t* node) {
+	if (!node)
+		return PAIR_EDITOR;
 
 	switch (node->mode) {
-	case HLM_UNKNOWN: wattr_set(editor_w, 0, PAIR_SYNTAX_UNKNOWN, NULL); break;
+	case HLM_STRING: return COLOR_PAIR(PAIR_SYNTAX_STRING);
+	case HLM_CHAR: return COLOR_PAIR(PAIR_SYNTAX_CHAR);
+	case HLM_NUMBER: return COLOR_PAIR(PAIR_SYNTAX_NUMBER);
 
-	case HLM_STRING: wattr_set(editor_w, 0, PAIR_SYNTAX_STRING, NULL); break;
-	case HLM_CHAR: wattr_set(editor_w, 0, PAIR_SYNTAX_CHAR, NULL); break;
-	case HLM_NUMBER: wattr_set(editor_w, 0, PAIR_SYNTAX_NUMBER, NULL); break;
+	case HLM_IDENTIFIER: return COLOR_PAIR(PAIR_SYNTAX_IDENTIFIER);
+	case HLM_KEYWORD: return COLOR_PAIR(PAIR_SYNTAX_KEYWORD);
+	case HLM_COMMENT: return COLOR_PAIR(PAIR_SYNTAX_COMMENT);
+	case HLM_DATATYPE: return COLOR_PAIR(PAIR_SYNTAX_DATATYPE);
 
-	case HLM_IDENTIFIER: wattr_set(editor_w, 0, PAIR_SYNTAX_IDENTIFIER, NULL); break;
-	case HLM_KEYWORD: wattr_set(editor_w, 0, PAIR_SYNTAX_KEYWORD, NULL); break;
-	case HLM_COMMENT: wattr_set(editor_w, 0, PAIR_SYNTAX_COMMENT, NULL); break;
-	case HLM_DATATYPE: wattr_set(editor_w, 0, PAIR_SYNTAX_DATATYPE, NULL); break;
+	case HLM_FUNCTION: return COLOR_PAIR(PAIR_SYNTAX_FUNCTION);
 
-	case HLM_FUNCTION: wattr_set(editor_w, A_BOLD, PAIR_SYNTAX_FUNCTION, NULL); break;
-
-	case HLM_HASH: wattr_set(editor_w, 0, PAIR_SYNTAX_HASH, NULL); break;
-	case HLM_BRACKET: wattr_set(editor_w, 0, PAIR_SYNTAX_BRACKET, NULL); break;
-	case HLM_OPERATOR: wattr_set(editor_w, 0, PAIR_SYNTAX_OPERATOR, NULL); break;
-	case HLM_PUNCTUATION: wattr_set(editor_w, 0, PAIR_SYNTAX_PUNCTUATION, NULL); break;
+	case HLM_HASH: return COLOR_PAIR(PAIR_SYNTAX_HASH);
+	case HLM_OPERATOR: return COLOR_PAIR(PAIR_SYNTAX_OPERATOR);
+	case HLM_PUNCTUATION: return COLOR_PAIR(PAIR_SYNTAX_PUNCTUATION);
 
 	case HLM_INDENT:
 		if (!node->next)
-			wattr_set(editor_w, 0, PAIR_SYNTAX_TRAIL_INDENT, NULL);
+			return COLOR_PAIR(PAIR_SYNTAX_TRAIL_INDENT);
 		else
-			wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
+			return COLOR_PAIR(PAIR_EDITOR);
 		break;
 
 	default:
-		break;
+		return COLOR_PAIR(PAIR_SYNTAX_UNKNOWN);
 	}
 }
 
@@ -99,88 +94,6 @@ void draw_header(editor_t* ed) {
 	waddnch(header_w, COLS - getcurx(header_w), ' ');
 }
 
-static inline INLINE
-void draw_linenum(usz y, usz line_num) {
-	mvwprintw(linenum_w, y, 0, "%4zu ", line_num % 10000);
-}
-
-static
-void draw_line(editor_t* ed, usz y, usz line_index) {
-	lstr_t* line = &ed->doc.lines[line_index];
-	wmove(editor_w, y, 0);
-	highl_t* hl_node = ed->highl_lines[line_index];
-
-	isz j = 0;
-	while (hl_node) {
-		set_highl(hl_node);
-		isz len = hl_node->len;
-		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-
-		j += len;
-		hl_node = hl_node->next;
-	}
-
-	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-	wprintw(editor_w, "%.*s", (int)(line->len - j), &line->str[j]);
-}
-
-static
-void draw_line_hbound(editor_t* ed, usz y, usz line_index, usz max_x) {
-	lstr_t* line = &ed->doc.lines[line_index];
-	wmove(editor_w, y, 0);
-	highl_t* hl_node = ed->highl_lines[line_index];
-
-	isz j = 0;
-	while (hl_node && j < max_x) {
-		set_highl(hl_node);
-		isz len = clamp(hl_node->len, 0, max_x - j);
-		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-
-		j += len;
-		hl_node = hl_node->next;
-	}
-
-	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-	wprintw(editor_w, "%.*s", (int)clamp(line->len - j, 0, max_x - j), &line->str[j]);
-}
-
-static
-void draw_line_hoffs(editor_t* ed, usz y, usz line_index, usz start_x, usz start_col) {
-	lstr_t* line = &ed->doc.lines[line_index];
-	highl_t* hl_node = ed->highl_lines[line_index];
-
-	wmove(editor_w, y, start_col);
-
-	isz j = 0;
-	while (hl_node && j + hl_node->len <= start_x) {
-		j += hl_node->len;
-		hl_node = hl_node->next;
-	}
-
-	if (hl_node) {
-		set_highl(hl_node);
-		const isz len = (j + hl_node->len) - start_x;
-		wprintw(editor_w, "%.*s", (int)len, &line->str[start_x]);
-		j += hl_node->len;
-		hl_node = hl_node->next;
-
-		while (hl_node) {
-			set_highl(hl_node);
-			const isz len = hl_node->len;
-			wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-
-			j += len;
-			hl_node = hl_node->next;
-		}
-	}
-
-	isz remaining = (line->len - start_x) - j;
-	if (remaining > 0) {
-		wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
-		wprintw(editor_w, "%.*s", (int)remaining, &line->str[start_x + j]);
-	}
-}
-
 void draw_editor(editor_t* ed) {
 	// Get correct cursor position
 	isz cx = ed_cx_to_screen_x(ed, ed->cx, ed->cy);
@@ -193,62 +106,80 @@ void draw_editor(editor_t* ed) {
 	sel_start_y -= ed->line_top;
 	sel_end_y -= ed->line_top;
 
-	wattr_set(editor_w, 0, PAIR_EDITOR, NULL);
 	const isz line_top = ed->line_top;
 	const isz line_count = clamp(ed->doc.line_count - ed->line_top, 0, EDITOR_HEIGHT);
+
+	char linenum_buf[16];
 
 	// Draw line numbers preceding the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
 	const isz pre_selection_lines = sel_start_y;
-	for (isz i = 0; i < pre_selection_lines; ++i)
-		draw_linenum(i, line_top + i + 1);
+	for (isz i = 0; i < pre_selection_lines; ++i) {
+		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
+		mvwaddstr(linenum_w, i, 0, linenum_buf);
+	}
 
 	const isz sel_min = max(sel_start_y, 0);
 	const isz sel_max = min(sel_end_y, EDITOR_HEIGHT - 1);
 	// Draw line numbers contained in the selection
 	wattr_set(linenum_w, 0, PAIR_LINENUM_SEL, NULL);
-	for (isz i = sel_min; i <= sel_max; ++i)
-		mvwprintw(linenum_w, i, 0, "%4zu ", (line_top + i + 1) % 10000);
+	for (isz i = sel_min; i <= sel_max; ++i) {
+		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
+		mvwaddstr(linenum_w, i, 0, linenum_buf);
+	}
 
 	// Draw remaining line numbers
 	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
-	for (isz i = sel_end_y + 1; i < line_count; ++i)
-		draw_linenum(i, line_top + i + 1);
+	for (isz i = sel_end_y + 1; i < line_count; ++i) {
+		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
+		mvwaddstr(linenum_w, i, 0, linenum_buf);
+	}
 
 	// Fill any remaining line numbers
 	const isz underflow_count = EDITOR_HEIGHT - line_count;
-	wattr_set(linenum_w, 0, PAIR_LINENUM_UFLOW, NULL);
+	static const chtype uflow[] = {
+		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
+		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
+		'.' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
+		'.' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
+		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW)};
 	for (isz i = 0; i < underflow_count; ++i)
-		waddstr(linenum_w, "  .. ");
+		mvwaddchnstr(linenum_w, line_count + i, 0, uflow, sizeof(uflow));
 
-	// Draw text preceding the selection
-	for (isz i = 0; i < pre_selection_lines; ++i)
-		draw_line(ed, i, line_top + i);
+	const usz tab_size = ed->global->tab_size;
 
-	// Draw text on selected lines
-	isz col = 0;
-	if (sel_start_y >= 0) {
-		draw_line_hbound(ed, sel_start_y, line_top + sel_start_y, sel_start_x);
-		col = getcurx(editor_w);
+	for (isz i = 0; i < EDITOR_HEIGHT; ++i) {
+		lstr_t line = ed->doc.lines[line_top + i];
+		wmove(editor_w, i, 0);
+		chtype* chstr = aframe_reserve(ed->highl_arena, 0);
+		highl_t* hl = ed->highl_lines[line_top + i];
+		usz hl_p = 0, scrx = 0;
+		for (isz j = 0; j < line.len; ++j) {
+			char c = line.str[j];
+			chtype attr = get_highl(hl);
+
+			// If current char is within selection, set the corresponding attributes
+			if (i > sel_start_y || (i == sel_start_y && j >= sel_start_x))
+				if (i < sel_end_y || (i == sel_end_y && j < sel_end_x))
+					attr = COLOR_PAIR(PAIR_EDITOR) | A_STANDOUT;
+
+			if (c == '\t') {
+				usz tab_cols = tab_size - scrx % tab_size;
+				while (tab_cols--)
+					chstr[scrx++] = ' ' | attr;
+			}
+			else
+				chstr[scrx++] = c | attr;
+			++hl_p;
+
+			if (hl_p == hl->len) {
+				hl = hl->next;
+				hl_p = 0;
+			}
+		}
+		chstr[scrx] = 0;
+		waddchnstr(editor_w, chstr, scrx);
 	}
-
-	wattr_set(editor_w, A_STANDOUT, PAIR_EDITOR, NULL);
-	for (isz i = sel_min, j = sel_start_y >= 0 ? sel_start_x : 0; i <= sel_max; ++i) {
-		lstr_t* line = &ed->doc.lines[line_top + i];
-		isz len = (i == sel_end_y ? sel_end_x : line->len) - j;
-		wmove(editor_w, i, col);
-		wprintw(editor_w, "%.*s", (int)len, &line->str[j]);
-		j = 0;
-		col = 0;
-	}
-	wattr_off(editor_w, A_STANDOUT, NULL);
-
-	if (sel_end_y < EDITOR_HEIGHT)
-		draw_line_hoffs(ed, sel_end_y, line_top + sel_end_y, sel_end_x, getcurx(editor_w));
-
-	// Draw remaining text
-	for (isz i = sel_end_y + 1; i < line_count; ++i)
-		draw_line(ed, i, line_top + i);
 }
 
 static
