@@ -24,6 +24,7 @@ struct global {
 	isz hstart, vstart;
 
 	u8 predict_brackets;
+	u8 await_utf8;
 } global_t;
 
 typedef

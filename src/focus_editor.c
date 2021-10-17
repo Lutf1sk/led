@@ -6,6 +6,7 @@
 #include "file_browser.h"
 #include "editor.h"
 #include "algo.h"
+#include "utf8.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -206,8 +207,8 @@ void input_editor(global_t* ed_globals, int c) {
 		usz move_chars = ed_find_word_fwd(ed) - ed->cx;
 		if (!move_chars)
 			ed_cur_right(ed);
-		else for (usz i = 0; i < move_chars; ++i)
-			ed_cur_right(ed);
+		else
+			ed->cx += move_chars;
 	}	break;
 
 	case KEY_CRIGHT: {
@@ -219,16 +220,16 @@ void input_editor(global_t* ed_globals, int c) {
 		usz move_chars = ed_find_word_fwd(ed) - ed->cx;
 		if (!move_chars)
 			ed_cur_right(ed);
-		else for (usz i = 0; i < move_chars; ++i)
-			ed_cur_right(ed);
+		else
+			ed->cx += move_chars;
 	}	break;
 
 	case KEY_CSLEFT: sync_selection = 0; {
 		usz move_chars = ed->cx - ed_find_word_bwd(ed);
 		if (!move_chars)
 			ed_cur_left(ed);
-		else for (usz i = 0; i < move_chars; ++i)
-			ed_cur_left(ed);
+		else
+			ed->cx -= move_chars;
 	}	break;
 
 	case KEY_CLEFT: {
@@ -239,8 +240,8 @@ void input_editor(global_t* ed_globals, int c) {
 		usz move_chars = ed->cx - ed_find_word_bwd(ed);
 		if (!move_chars)
 			ed_cur_left(ed);
-		else for (usz i = 0; i < move_chars; ++i)
-			ed_cur_left(ed);
+		else
+			ed->cx -= move_chars;
 	}	break;
 
 	case KEY_PPAGE: sync_target_y = 0; sync_target_x = 0;
@@ -267,7 +268,7 @@ void input_editor(global_t* ed_globals, int c) {
 		if (ed_selection_available(ed))
 			ed_delete_selection(ed);
 		else if (ed->cx < ed->doc.lines[ed->cy].len)
-			doc_erase_char(&ed->doc, ed->cy, ed->cx);
+			doc_erase_str(&ed->doc, ed->cy, ed->cx, utf8_decode_len(ed->doc.lines[ed->cy].str[ed->cx]));
 		else if (ed->cy + 1 < ed->doc.line_count)
 			doc_merge_line(&ed->doc, ed->cy + 1);
 		break;
@@ -277,8 +278,11 @@ void input_editor(global_t* ed_globals, int c) {
 	case KEY_BACKSPACE:
 		if (ed_selection_available(ed))
 			ed_delete_selection(ed);
-		else if (ed->cx)
+		else if (ed->cx) {
+			while (ed->cx && (ed->doc.lines[ed->cy].str[ed->cx - 1] & 0xC0) == 0x80)
+				doc_erase_char(&ed->doc, ed->cy, --ed->cx);
 			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
+		}
 		else if (ed->cy) {
 			ed_cur_up(ed, ISIZE_MAX);
 			doc_merge_line(&ed->doc, ed->cy + 1);
@@ -386,14 +390,15 @@ void input_editor(global_t* ed_globals, int c) {
 		break;
 
 	default:
-		if (c >= 32 && c < 127) {
-			ed_delete_selection_if_available(ed);
+ 		if ((c >= 32 && c < 127) || (c & 0xE0) == 0xC0) {
+			if ((c & 0xE0) == 0xC0)
+				ed->global->await_utf8 = utf8_decode_len(c) - 1;
 
+			ed_delete_selection_if_available(ed);
 			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
 
 			if (!ed_globals->predict_brackets)
 				break;
-
 			if (c == '(')
 				doc_insert_char(&ed->doc, ed->cy, ed->cx, ')');
 			else if (c == '{')
@@ -401,8 +406,12 @@ void input_editor(global_t* ed_globals, int c) {
 			else if (c == '[')
 				doc_insert_char(&ed->doc, ed->cy, ed->cx, ']');
 		}
-		else
-			sync_selection = 0;
+		else if ((c & 0xC0) == 0x80 && ed->global->await_utf8) {
+			--ed->global->await_utf8;
+			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
+		}
+ 		else
+ 			sync_selection = 0;
 		break;
 	}
 

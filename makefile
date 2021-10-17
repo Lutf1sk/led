@@ -7,6 +7,7 @@ OBJS = \
 	src/main.o \
 	src/clr.o \
 	src/doc.o \
+	src/utf8.o \
 	src/highlight.o \
 	src/editor.o \
 	src/custom_keys.o \
@@ -26,7 +27,7 @@ OBJS = \
 	src/conf.o \
 	src/assert.o
 
-LNK_LIBS = -lncurses
+LNK_LIBS = -lncursesw
 
 CC_FLAGS = -O2
 

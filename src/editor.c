@@ -4,6 +4,7 @@
 #include "editor.h"
 #include "token_chars.h"
 #include "algo.h"
+#include "utf8.h"
 
 #include <string.h>
 
@@ -173,13 +174,19 @@ usz ed_screen_x_to_cx(editor_t* ed, isz x, isz cy) {
 	lstr_t* line = &ed->doc.lines[cy];
 	isz screen_x = 0, tab_size = ed->global->tab_size;
 
-	for (isz i = 0; i < line->len; ++i) {
-		if (line->str[i] == '\t')
+	for (isz i = 0, last = 0; i < line->len;) {
+		char c = line->str[i];
+		if (c == '\t') {
 			screen_x += tab_size - screen_x % tab_size;
-		else
-			screen_x++;
+			++i;
+		}
+		else {
+			i += utf8_decode_len(c);
+			++screen_x;
+		}
 		if (screen_x > x)
-			return i;
+			return last;
+		last = i;
 	}
 	return line->len;
 }
@@ -193,11 +200,16 @@ usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy) {
 
 	isz end = min(x, line->len);
 
-	for (isz i = 0; i < end; ++i) {
-		if (line->str[i] == '\t')
+	for (isz i = 0; i < end;) {
+		char c = line->str[i];
+		if (c == '\t') {
 			screen_x += tab_size - screen_x % tab_size;
-		else
-			screen_x++;
+			++i;
+		}
+		else {
+			i += utf8_decode_len(c);
+			++screen_x;
+		}
 	}
 	return screen_x;
 }
@@ -217,17 +229,30 @@ void ed_cur_down(editor_t* ed, usz cx) {
 }
 
 void ed_cur_right(editor_t* ed) {
-	if (ed->cx < ed->doc.lines[ed->cy].len)
-		++ed->cx;
-	else
+	lstr_t line = ed->doc.lines[ed->cy];
+
+	if (ed->cx == line.len) {
 		ed_cur_down(ed, 0);
+		return;
+	}
+
+	usz utf8_len = utf8_decode_len(line.str[ed->cx]);
+
+	if (ed->cx + utf8_len <= line.len)
+		ed->cx += utf8_len;
 }
 
 void ed_cur_left(editor_t* ed) {
-	if (ed->cx)
-		--ed->cx;
-	else
+	lstr_t line = ed->doc.lines[ed->cy];
+
+	if (!ed->cx) {
 		ed_cur_up(ed, ISIZE_MAX);
+		return;
+	}
+
+	--ed->cx;
+	while ((line.str[ed->cx] & 0xC0) == 0x80)
+		--ed->cx;
 }
 
 void ed_page_up(editor_t* ed) {
@@ -276,10 +301,11 @@ usz ed_find_word_fwd(editor_t* ed) {
 	char c = str[cx];
 
 	if (is_ident_head(c) || is_numeric_head(c)) {
+		// Skip underscores
 		while (cx < line->len && str[cx] == '_')
 			++cx;
 		while (cx < line->len && is_numeric_body(str[cx]))
-			++cx;
+			cx += utf8_decode_len(str[cx]);
 	}
 	else {
 		while (cx < line->len && !is_ident_body(str[cx]) && !is_space(str[cx]))
@@ -306,8 +332,11 @@ usz ed_find_word_bwd(editor_t* ed) {
 		// Skip underscores
 		while (cx && str[cx - 1] == '_')
 			--cx;
-		while (cx && is_numeric_body(str[cx - 1]))
+		while (cx && is_numeric_body(str[cx - 1])) {
 			--cx;
+			while ((str[cx - 1] & 0xC0) == 0x80)
+				--cx;
+		}
 	}
 	else {
 		while (cx && !is_ident_body(str[cx - 1]) && !is_space(str[cx - 1]))

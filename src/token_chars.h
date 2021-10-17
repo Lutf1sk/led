@@ -31,14 +31,14 @@ const u8 ctype_table[256] = {
 	/*60*/ 0, IDNR, IDNR, IDNR, /*64*/ IDNR, IDNR, IDNR, IDNR, /*68*/ IDNR, IDNR, IDNR, IDNR, /*6C*/ IDNR, IDNR, IDNR, IDNR,
 	/*70*/ IDNR, IDNR, IDNR, IDNR, /*74*/ IDNR, IDNR, IDNR, IDNR, /*78*/ IDNR, IDNR, IDNR, PARN|PUNC, /*7C*/ OPER, PARN|PUNC, OPER, 0,
 
-	/*80*/ 0, 0, 0, 0, /*84*/ 0, 0, 0, 0, /*88*/ 0, 0, 0, 0, /*8C*/ 0, 0, 0, 0,
-	/*90*/ 0, 0, 0, 0, /*94*/ 0, 0, 0, 0, /*98*/ 0, 0, 0, 0, /*9C*/ 0, 0, 0, 0,
-	/*A0*/ 0, 0, 0, 0, /*A4*/ 0, 0, 0, 0, /*A8*/ 0, 0, 0, 0, /*AC*/ 0, 0, 0, 0,
-	/*B0*/ 0, 0, 0, 0, /*B4*/ 0, 0, 0, 0, /*B8*/ 0, 0, 0, 0, /*BC*/ 0, 0, 0, 0,
-	/*C0*/ 0, 0, 0, 0, /*C4*/ 0, 0, 0, 0, /*C8*/ 0, 0, 0, 0, /*CC*/ 0, 0, 0, 0,
-	/*D0*/ 0, 0, 0, 0, /*D4*/ 0, 0, 0, 0, /*D8*/ 0, 0, 0, 0, /*DC*/ 0, 0, 0, 0,
-	/*E0*/ 0, 0, 0, 0, /*E4*/ 0, 0, 0, 0, /*E8*/ 0, 0, 0, 0, /*EC*/ 0, 0, 0, 0,
-	/*F0*/ 0, 0, 0, 0, /*F4*/ 0, 0, 0, 0, /*F8*/ 0, 0, 0, 0, /*FC*/ 0, 0, 0, 0,
+	/*80*/ IDNR, IDNR, IDNR, IDNR, /*84*/ IDNR, IDNR, IDNR, IDNR, /*88*/ IDNR, IDNR, IDNR, IDNR, /*8C*/ IDNR, IDNR, IDNR, IDNR,
+	/*90*/ IDNR, IDNR, IDNR, IDNR, /*94*/ IDNR, IDNR, IDNR, IDNR, /*98*/ IDNR, IDNR, IDNR, IDNR, /*9C*/ IDNR, IDNR, IDNR, IDNR,
+	/*A0*/ IDNR, IDNR, IDNR, IDNR, /*A4*/ IDNR, IDNR, IDNR, IDNR, /*A8*/ IDNR, IDNR, IDNR, IDNR, /*AC*/ IDNR, IDNR, IDNR, IDNR,
+	/*B0*/ IDNR, IDNR, IDNR, IDNR, /*B4*/ IDNR, IDNR, IDNR, IDNR, /*B8*/ IDNR, IDNR, IDNR, IDNR, /*BC*/ IDNR, IDNR, IDNR, IDNR,
+	/*C0*/ IDNR, IDNR, IDNR, IDNR, /*C4*/ IDNR, IDNR, IDNR, IDNR, /*C8*/ IDNR, IDNR, IDNR, IDNR, /*CC*/ IDNR, IDNR, IDNR, IDNR,
+	/*D0*/ IDNR, IDNR, IDNR, IDNR, /*D4*/ IDNR, IDNR, IDNR, IDNR, /*D8*/ IDNR, IDNR, IDNR, IDNR, /*DC*/ IDNR, IDNR, IDNR, IDNR,
+	/*E0*/ IDNR, IDNR, IDNR, IDNR, /*E4*/ IDNR, IDNR, IDNR, IDNR, /*E8*/ IDNR, IDNR, IDNR, IDNR, /*EC*/ IDNR, IDNR, IDNR, IDNR,
+	/*F0*/ IDNR, IDNR, IDNR, IDNR, /*F4*/ IDNR, IDNR, IDNR, IDNR, /*F8*/ IDNR, IDNR, IDNR, IDNR, /*FC*/ IDNR, IDNR, IDNR, IDNR,
 };
 
 static inline INLINE

@@ -19,6 +19,7 @@
 #include "custom_keys.h"
 #include "file_browser.h"
 #include "focus.h"
+#include "utf8.h"
 
 WINDOW* header_w = NULL;
 WINDOW* linenum_w = NULL;
@@ -96,8 +97,7 @@ void draw_header(editor_t* ed) {
 
 void draw_editor(editor_t* ed) {
 	// Get correct cursor position
-	isz cx = ed_cx_to_screen_x(ed, ed->cx, ed->cy);
-	wmove(editor_w, ed->cy - ed->line_top, cx);
+	wmove(editor_w, ed->cy - ed->line_top, ed_cx_to_screen_x(ed, ed->cx, ed->cy));
 	wcursyncup(editor_w);
 
 	// Get selection coordinates and make y relative to line_top
@@ -151,34 +151,40 @@ void draw_editor(editor_t* ed) {
 	for (isz i = 0; i < line_count; ++i) {
 		lstr_t line = ed->doc.lines[line_top + i];
 		wmove(editor_w, i, 0);
-		chtype* chstr = aframe_reserve(ed->highl_arena, 0);
 		highl_t* hl = ed->highl_lines[line_top + i];
-		usz hl_p = 0, scrx = 0;
-		for (isz j = 0; j < line.len; ++j) {
+		usz hl_end = 0, scrx = 0;
+		if (hl)
+			hl_end = hl->len;
+
+		for (isz j = 0; j < line.len && scrx < EDITOR_WIDTH;) {
 			char c = line.str[j];
 			chtype attr = get_highl(hl);
-
 			// If current char is within selection, set the corresponding attributes
 			if (i > sel_start_y || (i == sel_start_y && j >= sel_start_x))
 				if (i < sel_end_y || (i == sel_end_y && j < sel_end_x))
 					attr = COLOR_PAIR(PAIR_EDITOR) | A_STANDOUT;
+			wattrset(editor_w, attr);
+
+			usz utf8_len = utf8_decode_len(c);
 
 			if (c == '\t') {
-				usz tab_cols = tab_size - scrx % tab_size;
-				while (tab_cols--)
-					chstr[scrx++] = ' ' | attr;
+				usz len = tab_size - scrx % tab_size;
+				scrx += len;
+				while (len-- && scrx - len < EDITOR_WIDTH)
+					waddch(editor_w, ' ');
 			}
-			else
-				chstr[scrx++] = c | attr;
-			++hl_p;
+			else {
+				waddnstr(editor_w, &line.str[j], utf8_len);
+				++scrx;
+			}
+			j += utf8_len;
 
-			if (hl_p == hl->len) {
+			if (j >= hl_end) {
 				hl = hl->next;
-				hl_p = 0;
+				if (hl)
+					hl_end = j + hl->len;
 			}
 		}
-		chstr[scrx] = 0;
-		waddchnstr(editor_w, chstr, scrx);
 	}
 }
 
@@ -253,6 +259,7 @@ int main(int argc, char** argv) {
 	ed_globals.tab_size = conf_find_int_default(editor_cf, CLSTR("tab_size"), 4);
 	ed_globals.vstep = conf_find_int_default(editor_cf, CLSTR("vstep"), 4);
 	ed_globals.predict_brackets = conf_find_bool_default(editor_cf, CLSTR("predict_brackets"), 0);
+	ed_globals.await_utf8 = 0;
 
 	ed_globals.ed = &ed;
 
@@ -324,17 +331,18 @@ int main(int argc, char** argv) {
 		}
 
 		// Update highlighting and redraw all windows.
-		erase();
-		draw_header(ed);
-		if (ed) {
-			aframe_restore(ed->highl_arena, &ed->restore);
-			ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
-			draw_editor(ed);
-
+		if (!ed_globals.await_utf8) {
+			erase();
+			draw_header(ed);
+			if (ed) {
+				aframe_restore(ed->highl_arena, &ed->restore);
+				ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
+				draw_editor(ed);
+			}
+			if (focus.draw)
+				focus.draw(&ed_globals, editor_w, focus.draw_args);
+			refresh();
 		}
-		if (focus.draw)
-			focus.draw(&ed_globals, editor_w, focus.draw_args);
-		refresh();
 
 		// Get and handle input.
 		int c = wgetch(stdscr);
