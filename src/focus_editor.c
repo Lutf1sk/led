@@ -433,7 +433,8 @@ void input_editor(global_t* ed_globals, int c) {
 	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs - 1;
 	if (ed->cy > vbound_bottom) {
 		ed->line_top += ed->cy - vbound_bottom;
-		ed->line_top = clamp(ed->line_top, 0, ed->doc.line_count - ed->global->height);
+		ed->line_top = min(ed->line_top, max(0, ed->doc.line_count - ed->global->height));
 	}
+
 }
 
