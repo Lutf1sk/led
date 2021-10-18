@@ -6,6 +6,7 @@
 
 #include <locale.h>
 
+#define _XOPEN_SOURCE_EXTENDED 1
 #include <curses.h>
 #include "curses_helpers.h"
 
@@ -52,7 +53,7 @@ chtype get_highl(highl_t* node) {
 	case HLM_COMMENT: return COLOR_PAIR(PAIR_SYNTAX_COMMENT);
 	case HLM_DATATYPE: return COLOR_PAIR(PAIR_SYNTAX_DATATYPE);
 
-	case HLM_FUNCTION: return COLOR_PAIR(PAIR_SYNTAX_FUNCTION);
+	case HLM_FUNCTION: return COLOR_PAIR(PAIR_SYNTAX_FUNCTION) | A_BOLD;
 
 	case HLM_HASH: return COLOR_PAIR(PAIR_SYNTAX_HASH);
 	case HLM_OPERATOR: return COLOR_PAIR(PAIR_SYNTAX_OPERATOR);
@@ -150,35 +151,37 @@ void draw_editor(editor_t* ed) {
 
 	for (isz i = 0; i < line_count; ++i) {
 		lstr_t line = ed->doc.lines[line_top + i];
-		wmove(editor_w, i, 0);
 		highl_t* hl = ed->highl_lines[line_top + i];
 		usz hl_end = 0, scrx = 0;
 		if (hl)
 			hl_end = hl->len;
 
+		cchar_t* cchar_str = aframe_reserve(ed->highl_arena, 0);
+		usz cchar_i = 0;
+
 		for (isz j = 0; j < line.len && scrx < EDITOR_WIDTH;) {
-			char c = line.str[j];
 			chtype attr = get_highl(hl);
 			// If current char is within selection, set the corresponding attributes
 			if (i > sel_start_y || (i == sel_start_y && j >= sel_start_x))
 				if (i < sel_end_y || (i == sel_end_y && j < sel_end_x))
 					attr = COLOR_PAIR(PAIR_EDITOR) | A_STANDOUT;
 
-			usz utf8_len = utf8_decode_len(c);
+			u32 c = 0;
+			u32 utf8_len = utf8_decode(&line.str[j], &c);
 
 			if (c == '\t') {
 				usz len = tab_size - scrx % tab_size;
 				scrx += len;
-				while (len-- && scrx - len < EDITOR_WIDTH)
-					waddch(editor_w, ' ' | attr);
+				memset(&cchar_str[cchar_i], 0, len * sizeof(cchar_t));
+				while (len-- && (isz)scrx - (isz)len < EDITOR_WIDTH) {
+					cchar_str[cchar_i].attr = attr;
+					cchar_str[cchar_i++].chars[0] = ' ';
+				}
 			}
 			else {
-				if (utf8_len > 1) {
-					wattrset(editor_w, attr);
-					waddnstr(editor_w, &line.str[j], utf8_len);
-				}
-				else
-					waddch(editor_w, line.str[j] | attr);
+				memset(&cchar_str[cchar_i], 0, sizeof(cchar_t));
+				cchar_str[cchar_i].attr = attr;
+				*(u32*)cchar_str[cchar_i++].chars = c;
 				++scrx;
 			}
 			j += utf8_len;
@@ -189,6 +192,9 @@ void draw_editor(editor_t* ed) {
 					hl_end = j + hl->len;
 			}
 		}
+
+		aframe_reserve(ed->highl_arena, cchar_i * sizeof(cchar_t));
+		mvwadd_wchnstr(editor_w, i, 0, cchar_str, cchar_i);
 	}
 }
 
