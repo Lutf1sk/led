@@ -163,7 +163,6 @@ void draw_editor(editor_t* ed) {
 			if (i > sel_start_y || (i == sel_start_y && j >= sel_start_x))
 				if (i < sel_end_y || (i == sel_end_y && j < sel_end_x))
 					attr = COLOR_PAIR(PAIR_EDITOR) | A_STANDOUT;
-			wattrset(editor_w, attr);
 
 			usz utf8_len = utf8_decode_len(c);
 
@@ -171,10 +170,15 @@ void draw_editor(editor_t* ed) {
 				usz len = tab_size - scrx % tab_size;
 				scrx += len;
 				while (len-- && scrx - len < EDITOR_WIDTH)
-					waddch(editor_w, ' ');
+					waddch(editor_w, ' ' | attr);
 			}
 			else {
-				waddnstr(editor_w, &line.str[j], utf8_len);
+				if (utf8_len > 1) {
+					wattrset(editor_w, attr);
+					waddnstr(editor_w, &line.str[j], utf8_len);
+				}
+				else
+					waddch(editor_w, line.str[j] | attr);
 				++scrx;
 			}
 			j += utf8_len;

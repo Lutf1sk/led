@@ -253,13 +253,13 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 				mode = HLM_INDENT;
 			}
 			else if (is_ident_head(c)) {
+				mode = HLM_IDENTIFIER;
+
 				while (i < line.len) {
 					c = line.str[i];
 					if (!is_ident_body(c)) {
-						if (c == '(') {
+						if (c == '(')
 							mode = HLM_FUNCTION;
-							goto done;
-						}
 						break;
 					}
 					++i;
@@ -267,7 +267,6 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 
 				lstr_t tk = LSTR(&line.str[start], i - start);
 
-				mode = HLM_IDENTIFIER;
 				if (is_keyword(tk))
 					mode = HLM_KEYWORD;
 				else if (is_datatype(tk))
@@ -287,7 +286,7 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 				mode = HLM_PUNCTUATION;
 			break;
 		}
-	done:
+
 		highl_t* new = aframe_reserve(arena, sizeof(highl_t));
 		new->len = i - start;
 		new->mode = mode;

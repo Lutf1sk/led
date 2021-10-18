@@ -5,8 +5,19 @@ usz utf8_encode(char* out, u32 v) {
 	if (v < 0x80)
 		*it++ = v;
 	else if (v < 0x800) {
-		*it++ = 0b11000000 | (v >> 6);
-		*it++ = 0b10000000 | (v & 0b00111111);
+		*it++ = 0xC0 | (v >> 6);
+		*it++ = 0x80 | (v & 0x3F);
+	}
+	else if (v < 0x10000) {
+		*it++ = 0xE0 | (v >> 12);
+		*it++ = 0x80 | ((v >> 6) & 0x3F);
+		*it++ = 0x80 | ((v >> 0) & 0x3F);
+	}
+	else {
+		*it++ = 0xE0 | (v >> 18);
+		*it++ = 0x80 | ((v >> 12) & 0x3F);
+		*it++ = 0x80 | ((v >> 6) & 0x3F);
+		*it++ = 0x80 | ((v >> 0) & 0x3F);
 	}
 	return it - out;
 }
