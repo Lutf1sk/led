@@ -291,7 +291,7 @@ void input_editor(global_t* ed_globals, int c) {
 
 	case KEY_CSHOME: sync_selection = 0;
 	case KEY_HOME:
-		ed->cx = 0;
+		ed->cx = ed_find_indent_pfx(ed);
 		break;
 
 	case KEY_CSEND: sync_selection = 0;
@@ -302,20 +302,14 @@ void input_editor(global_t* ed_globals, int c) {
 	case KEY_ENTER: case '\n': {
 		ed_delete_selection_if_available(ed);
 
-		usz tab_count = 0;
+		isz indent_len = ed_find_indent_pfx(ed);
 		lstr_t* line = &ed->doc.lines[ed->cy];
-		for (usz i = 0; i < line->len && i < ed->cx; ++i) {
-			if (line->str[i] != '\t')
-				break;
-			tab_count++;
-		}
 
 		doc_split_line(&ed->doc, ed->cy, ed->cx);
 		ed_cur_down(ed, 0);
 
-		for (usz i = 0; i < tab_count; ++i)
-			doc_insert_char(&ed->doc, ed->cy, i, '\t');
-		ed->cx = tab_count;
+		doc_insert_str(&ed->doc, ed->cy, 0, LSTR(line->str, indent_len));
+		ed->cx = indent_len;
 	}	break;
 
 	case KEY_AUP: sync_target_y = 1;

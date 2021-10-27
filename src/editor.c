@@ -482,3 +482,15 @@ void ed_paren_match(editor_t* ed) {
 	ed_paren_match_ch(ed, c);
 }
 
+isz ed_find_indent_pfx(editor_t* ed) {
+	lstr_t line = ed->doc.lines[ed->cy];
+
+	isz cx = 0;
+
+	for (usz i = 0; i < line.len && i < ed->cx; ++i) {
+		if (!isspace(line.str[i]))
+			break;
+		++cx;
+	}
+	return cx;
+}
