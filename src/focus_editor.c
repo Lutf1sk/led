@@ -315,7 +315,7 @@ void input_editor(global_t* ed_globals, int c) {
 	case KEY_AUP: sync_target_y = 1; {
 		isz move_h = ed->global->height / 2;
 
-		if (ed->cy < ed->line_top + move_h)
+		if (ed->cy < ed->line_top + move_h && ed->line_top != 0)
 			ed_goto_line(ed, ed->cy);
 		else
 			ed_goto_line(ed, ed->cy - move_h);
@@ -324,7 +324,7 @@ void input_editor(global_t* ed_globals, int c) {
 	case KEY_ADOWN: sync_target_y = 1; {
 		isz move_h = ed->global->height / 2;
 
-		if (ed->cy > ed->line_top + move_h)
+		if (ed->cy > ed->line_top + move_h && ed->line_top + ed->global->height < ed->doc.line_count)
 			ed_goto_line(ed, ed->cy);
 		else
 			ed_goto_line(ed, ed->cy + move_h);
