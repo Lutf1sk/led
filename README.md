@@ -47,6 +47,8 @@ CTRL+Vertical arrows moves up/down ```editor.vstep``` lines.
 
 ALT+Horizontal arrows moves to the next/previous bracket.
 
+ALT+Vertical arrows moves the cursor up half a page and centers the cursor.
+
 As expected, moving the cursor with shift held down adds text to the selection.
 
 Selecting text with a mouse works just like any other gui application (given that your terminal emulator supports mouse events).

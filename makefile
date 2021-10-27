@@ -1,7 +1,7 @@
 
 OUT = led
 
-RUN_ARGS = src/utf8.c
+RUN_ARGS = test.txt
 
 OBJS = \
 	src/main.o \

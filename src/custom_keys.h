@@ -11,6 +11,8 @@
 
 #define KEY_ARIGHT	2009
 #define KEY_ALEFT	2010
+#define KEY_AUP		2050
+#define KEY_ADOWN	2051
 
 #define KEY_CSUP	 2011
 #define KEY_CSDOWN	 2012

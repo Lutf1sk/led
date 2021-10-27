@@ -25,7 +25,9 @@ void register_custom_keys(void) {
 	define_key("\x1B[1;6C", KEY_CSRIGHT);
 	define_key("\x1B[1;6D", KEY_CSLEFT);
 
-	// ALT + HArrows
+	// ALT + Arrows
+	define_key("\x1B[1;3A", KEY_AUP);
+	define_key("\x1B[1;3B", KEY_ADOWN);
 	define_key("\x1B[1;3C", KEY_ARIGHT);
 	define_key("\x1B[1;3D", KEY_ALEFT);
 
@@ -36,10 +38,6 @@ void register_custom_keys(void) {
 	// CTRL + Shift + Home/End
 	define_key("\x1B[1;6H", KEY_CSHOME);
 	define_key("\x1B[1;6F", KEY_CSEND);
-
-	// ALT + HArrows
-	define_key("\x1B[1;3D", KEY_ALEFT);
-	define_key("\x1B[1;3C", KEY_ARIGHT);
 
 	// Bracketed paste
 	define_key("\x1B[200~", KEY_PASTE_START);
