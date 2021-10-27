@@ -312,13 +312,23 @@ void input_editor(global_t* ed_globals, int c) {
 		ed->cx = indent_len;
 	}	break;
 
-	case KEY_AUP: sync_target_y = 1;
-		ed_goto_line(ed, ed->cy - ed->global->height / 2);
-		break;
+	case KEY_AUP: sync_target_y = 1; {
+		isz move_h = ed->global->height / 2;
 
-	case KEY_ADOWN: sync_target_y = 1;
-		ed_goto_line(ed, ed->cy + ed->global->height / 2);
-		break;
+		if (ed->cy < ed->line_top + move_h)
+			ed_goto_line(ed, ed->cy);
+		else
+			ed_goto_line(ed, ed->cy - move_h);
+	}	break;
+
+	case KEY_ADOWN: sync_target_y = 1; {
+		isz move_h = ed->global->height / 2;
+
+		if (ed->cy > ed->line_top + move_h)
+			ed_goto_line(ed, ed->cy);
+		else
+			ed_goto_line(ed, ed->cy + move_h);
+	}	break;
 
 	case KEY_F(4): {
 		char* name = ed->doc.name;
