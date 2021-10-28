@@ -391,12 +391,22 @@ void input_editor(global_t* ed_globals, int c) {
 		}
 	}	break;
 
-	case KEY_ARIGHT:
-		ed_paren_fwd(ed);
-		break;
-	case KEY_ALEFT:
-		ed_paren_bwd(ed);
-		break;
+	case KEY_ARIGHT: sync_target_x = 1; {
+		isz len = ed->doc.lines[ed->cy].len, indent = ed_find_indent(ed), move_cols = (len - indent) / 2;
+		isz move_to = ed->cx + move_cols;
+		if (ed->cx < indent)
+			move_to = indent;
+		ed->cx = clamp(move_to, 0, len);
+	}	break;
+
+	case KEY_ALEFT: sync_target_x = 1; {
+		isz len = ed->doc.lines[ed->cy].len, indent = ed_find_indent(ed), move_cols = (len - indent) / 2;
+		isz move_to = ed->cx - move_cols;
+		if (indent == len)
+			move_to = 0;
+		ed->cx = clamp(move_to, 0, len);
+	}	break;
+
 	case KEY_A_P:
 		ed_paren_match(ed);
 		break;

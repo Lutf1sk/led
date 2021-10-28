@@ -45,7 +45,7 @@ Using CTRL+Horizontal arrows moves word-by-word.
 
 CTRL+Vertical arrows moves up/down ```editor.vstep``` lines.
 
-ALT+Horizontal arrows moves to the next/previous bracket.
+ALT+Horizontal arrows moves left/right by half of the line length.
 
 ALT+Vertical arrows moves the cursor up half a page and centers the cursor.
 
