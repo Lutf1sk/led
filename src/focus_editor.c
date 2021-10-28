@@ -395,7 +395,7 @@ void input_editor(global_t* ed_globals, int c) {
 		isz len = ed->doc.lines[ed->cy].len, indent = ed_find_indent(ed), move_cols = (len - indent) / 2;
 		isz move_to = ed->cx + move_cols;
 		if (ed->cx < indent)
-			move_to = indent;
+			move_to = indent + move_cols;
 		ed->cx = clamp(move_to, 0, len);
 	}	break;
 
