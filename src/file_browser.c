@@ -5,6 +5,7 @@
 #include "editor.h"
 #include "highlight.h"
 #include "allocators.h"
+#include "highlight.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -80,6 +81,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	new->highl_arena = aframe_alloc(GB(1));
 	new->global = ed_global;
 	new->restore = arestore_make(new->highl_arena);
+	new->highl_lines = highl_generate(new->highl_arena, &new->doc);
 
 	++file_count;
 	return new;

@@ -10,7 +10,6 @@ OBJS = \
 	src/utf8.o \
 	src/highlight.o \
 	src/editor.o \
-	src/custom_keys.o \
 	src/file_browser.o \
 	src/focus_editor.o \
 	src/focus_error.o \
@@ -25,9 +24,9 @@ OBJS = \
 	src/allocators.o \
 	src/arena.o \
 	src/conf.o \
-	src/assert.o
-
-LNK_LIBS = -lncursesw
+	src/assert.o \
+	src/term.o \
+	src/draw.o
 
 CC_FLAGS = -O2
 

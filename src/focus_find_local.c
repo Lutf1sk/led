@@ -6,11 +6,9 @@
 #include "clr.h"
 #include "chartypes.h"
 #include "algo.h"
+#include "draw.h"
 
-#include <curses.h>
-#include "curses_helpers.h"
-#include "custom_keys.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 
 focus_t focus_find_local = { draw_find_local, NULL, input_find_local };
@@ -31,20 +29,16 @@ void find_local(isz start_y_, isz start_x_) {
 	start_x = start_x_;
 }
 
-void draw_find_local(global_t* ed_global, void* win_, void* args) {
-	WINDOW* win = win_;
+void draw_find_local(global_t* ed_global, void* args) {
+	rec_goto(2, lt_term_height - 1);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_lstr(input.str, input.len);
 
-	isz width = ed_global->width;
-	isz height = ed_global->height;
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
-	mvwprintw(win, height - 2, 0, " %.*s", (int)input.len, input.str);
-	wcursyncup(win);
-	waddnch(win, width - getcurx(win), ' ');
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_SEL, NULL);
-	mvwprintw(win, height - 1, 0, " Result %zu/%zu", selected_index + 1, result_count);
-	waddnch(win, width - getcurx(win), ' ');
+	rec_goto(2, lt_term_height);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+	char buf[128];
+	sprintf(buf, "Result %zu/%zu", selected_index + 1, result_count);
+	rec_str(buf);
 }
 
 static
@@ -79,11 +73,11 @@ void update_results(editor_t* ed) {
 	selected_index = find_index();
 }
 
-void input_find_local(global_t* ed_global, int c) {
+void input_find_local(global_t* ed_global, u32 c) {
 	editor_t* ed = *ed_global->ed;
 
 	switch (c) {
-	case KEY_BACKSPACE:
+	case LT_TERM_KEY_BSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else {
@@ -92,7 +86,7 @@ void input_find_local(global_t* ed_global, int c) {
 		}
 		break;
 
-	case KEY_CBACKSPACE:
+	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else {
@@ -101,19 +95,19 @@ void input_find_local(global_t* ed_global, int c) {
 		}
 		break;
 
-	case KEY_UP:
+	case LT_TERM_KEY_UP:
 		if (selected_index > 0)
 			--selected_index;
 		else if (selected_index == 0)
 			selected_index = max(result_count - 1, 0);
 		break;
 
-	case KEY_DOWN:
+	case LT_TERM_KEY_DOWN:
 		if (selected_index != -1 && ++selected_index >= result_count)
 			selected_index = 0;
 		break;
 
-	case KEY_ENTER: case '\n':
+	case '\n':
 		edit_file(ed_global, ed);
 		ed_sync_selection(ed);
 		return;

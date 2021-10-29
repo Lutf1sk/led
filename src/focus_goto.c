@@ -6,10 +6,9 @@
 #include "clr.h"
 #include "token_chars.h"
 #include "algo.h"
+#include "draw.h"
 
-#include <curses.h>
-#include "curses_helpers.h"
-#include "custom_keys.h"
+#include <stdio.h>
 
 focus_t focus_goto = { draw_goto, NULL, input_goto };
 
@@ -61,35 +60,30 @@ void goto_line(void) {
 	focus = focus_goto;
 }
 
-void draw_goto(global_t* ed_global, void* win_, void* args) {
-	WINDOW* win = win_;
+void draw_goto(global_t* ed_global, void* args) {
+	rec_goto(2, lt_term_height - 1);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_lstr(input.str, input.len);
 
-	isz width = ed_global->width;
-	isz height = ed_global->height;
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
-	mvwprintw(win, height - 2, 0, " %.*s", (int)input.len, input.str);
-	wcursyncup(win);
-	waddnch(win, width - getcurx(win), ' ');
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_SEL, NULL);
 	b8 sync_selection; char dir; usz line;
 	line = interp_str(*ed_global->ed, input, &sync_selection, &dir);
 
-	mvwaddstr(win, height - 1, 0, sync_selection ? " Jump" : " Select");
+	rec_goto(2, lt_term_height);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+	rec_str(sync_selection ? " Jump" : " Select");
 	if (line) {
+		char buf[64];
 		if (dir == 0)
-			wprintw(win, " to line %zu", line);
+			sprintf(buf, " to line %zu", line);
 		else if (dir == 'u')
-			wprintw(win, " UP %zu lines", line);
+			sprintf(buf, " UP %zu lines", line);
 		else if (dir == 'd')
-			wprintw(win, " DOWN %zu lines", line);
+			sprintf(buf, " DOWN %zu lines", line);
+		rec_str(buf);
 	}
-
-	waddnch(win, width - getcurx(win), ' ');
 }
 
-void input_goto(global_t* ed_global, int c) {
+void input_goto(global_t* ed_global, u32 c) {
 	editor_t* ed = *ed_global->ed;
 
 	switch (c) {
@@ -103,21 +97,21 @@ void input_goto(global_t* ed_global, int c) {
 			input.str[input.len++] = c;
 		break;
 
-	case KEY_BACKSPACE:
+	case LT_TERM_KEY_BSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else
 			--input.len;
 		break;
 
-	case KEY_CBACKSPACE:
+	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		while (input.len && is_digit(input.str[--input.len]))
 			;
 		break;
 
-	case KEY_ENTER: case '\n': {
+	case '\n': {
 		b8 sync_selection; char dir; usz line;
 		line = interp_str(ed, input, &sync_selection, &dir);
 

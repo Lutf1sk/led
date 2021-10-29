@@ -4,12 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <locale.h>
-
-#define _XOPEN_SOURCE_EXTENDED 1
-#include <curses.h>
-#include "curses_helpers.h"
-
 #include "fhl.h"
 #include "algo.h"
 #include "conf.h"
@@ -17,185 +11,137 @@
 #include "clr.h"
 #include "highlight.h"
 #include "editor.h"
-#include "custom_keys.h"
 #include "file_browser.h"
 #include "focus.h"
 #include "utf8.h"
 
-WINDOW* header_w = NULL;
-WINDOW* linenum_w = NULL;
-WINDOW* editor_w = NULL;
-
-#define HEADER_HEIGHT 1
-#define LINENUM_WIDTH 5
-
-#define EDITOR_HSTART (LINENUM_WIDTH)
-#define EDITOR_VSTART (HEADER_HEIGHT)
-
-#define EDITOR_HEIGHT (LINES - EDITOR_VSTART)
-#define EDITOR_WIDTH (COLS - EDITOR_HSTART)
+#include "draw.h"
 
 editor_t* ed = NULL;
 
 global_t ed_globals;
 
-chtype get_highl(highl_t* node) {
+char* get_highl(highl_t* node) {
 	if (!node)
-		return PAIR_EDITOR;
+		return clr_strs[CLR_EDITOR];
 
 	switch (node->mode) {
-	case HLM_STRING: return COLOR_PAIR(PAIR_SYNTAX_STRING);
-	case HLM_CHAR: return COLOR_PAIR(PAIR_SYNTAX_CHAR);
-	case HLM_NUMBER: return COLOR_PAIR(PAIR_SYNTAX_NUMBER);
+	case HLM_STRING: return clr_strs[CLR_SYNTAX_STRING];
+	case HLM_CHAR: return clr_strs[CLR_SYNTAX_CHAR];
+	case HLM_NUMBER: return clr_strs[CLR_SYNTAX_NUMBER];
 
-	case HLM_IDENTIFIER: return COLOR_PAIR(PAIR_SYNTAX_IDENTIFIER);
-	case HLM_KEYWORD: return COLOR_PAIR(PAIR_SYNTAX_KEYWORD);
-	case HLM_COMMENT: return COLOR_PAIR(PAIR_SYNTAX_COMMENT);
-	case HLM_DATATYPE: return COLOR_PAIR(PAIR_SYNTAX_DATATYPE);
+	case HLM_IDENTIFIER: return clr_strs[CLR_SYNTAX_IDENTIFIER];
+	case HLM_KEYWORD: return clr_strs[CLR_SYNTAX_KEYWORD];
+	case HLM_COMMENT: return clr_strs[CLR_SYNTAX_COMMENT];
+	case HLM_DATATYPE: return clr_strs[CLR_SYNTAX_DATATYPE];
 
-	case HLM_FUNCTION: return COLOR_PAIR(PAIR_SYNTAX_FUNCTION) | A_BOLD;
+	case HLM_FUNCTION: return clr_strs[CLR_SYNTAX_FUNCTION];
 
-	case HLM_HASH: return COLOR_PAIR(PAIR_SYNTAX_HASH);
-	case HLM_OPERATOR: return COLOR_PAIR(PAIR_SYNTAX_OPERATOR);
-	case HLM_PUNCTUATION: return COLOR_PAIR(PAIR_SYNTAX_PUNCTUATION);
+	case HLM_HASH: return clr_strs[CLR_SYNTAX_HASH];
+	case HLM_OPERATOR: return clr_strs[CLR_SYNTAX_OPERATOR];
+	case HLM_PUNCTUATION: return clr_strs[CLR_SYNTAX_PUNCTUATION];
 
 	case HLM_INDENT:
 		if (!node->next)
-			return COLOR_PAIR(PAIR_SYNTAX_TRAIL_INDENT);
+			return clr_strs[CLR_SYNTAX_TRAIL_INDENT];
 		else
-			return COLOR_PAIR(PAIR_EDITOR);
+			return clr_strs[CLR_EDITOR];
 		break;
 
 	default:
-		return COLOR_PAIR(PAIR_SYNTAX_UNKNOWN);
+		return clr_strs[CLR_SYNTAX_UNKNOWN];
 	}
 }
 
-void add_doc_name(doc_t* doc) {
-	waddstr(header_w, doc->path);
- 	if (doc->unsaved)
-		waddch(header_w, '*');
-	if (doc->new)
-		waddstr(header_w, "[NEW]");
-	if (doc->read_only)
-		waddstr(header_w, "[RO]");
-}
-
 void draw_header(editor_t* ed) {
-	wmove(header_w, 0, 0);
-	wattr_set(header_w, 0, PAIR_HEADER_TAB, NULL);
-
-	waddch(header_w, ' ');
-	if (ed)
-		add_doc_name(&ed->doc);
+	rec_goto(0, 0);
+	rec_clearline(clr_strs[CLR_HEADER_BG]);
+	rec_str(clr_strs[CLR_HEADER_TAB]);
+	rec_c(' ');
+	if (ed) {
+		rec_str(ed->doc.path);
+	 	if (ed->doc.unsaved)
+			rec_c('*');
+		if (ed->doc.new)
+			rec_str("[NEW]");
+		if (ed->doc.read_only)
+			rec_str("[RO]");
+	}
 	else
-		waddstr(header_w, "No file selected");
-	waddch(header_w, ' ');
-
-	wattr_set(header_w, 0, PAIR_HEADER_BG, NULL);
-	waddnch(header_w, COLS - getcurx(header_w), ' ');
+		rec_str("No file selected");
+	rec_c(' ');
 }
 
 void draw_editor(editor_t* ed) {
-	// Get correct cursor position
-	wmove(editor_w, ed->cy - ed->line_top, ed_cx_to_screen_x(ed, ed->cx, ed->cy));
-	wcursyncup(editor_w);
-
 	// Get selection coordinates and make y relative to line_top
 	isz sel_start_y, sel_start_x, sel_end_y, sel_end_x;
 	ed_get_selection(ed, &sel_start_y, &sel_start_x, &sel_end_y, &sel_end_x);
 	sel_start_y -= ed->line_top;
 	sel_end_y -= ed->line_top;
 
-	const isz line_top = ed->line_top;
-	const isz line_count = clamp(ed->doc.line_count - ed->line_top, 0, EDITOR_HEIGHT);
+	isz line_top = ed->line_top;
+	isz line_count = clamp(ed->doc.line_count - ed->line_top, 0, EDITOR_HEIGHT);
 
-	char linenum_buf[16];
+	usz tab_size = ed->global->tab_size;
 
-	// Draw line numbers preceding the selection
-	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
-	const isz pre_selection_lines = sel_start_y;
-	for (isz i = 0; i < pre_selection_lines; ++i) {
-		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
-		mvwaddstr(linenum_w, i, 0, linenum_buf);
-	}
-
-	const isz sel_min = max(sel_start_y, 0);
-	const isz sel_max = min(sel_end_y, EDITOR_HEIGHT - 1);
-	// Draw line numbers contained in the selection
-	wattr_set(linenum_w, 0, PAIR_LINENUM_SEL, NULL);
-	for (isz i = sel_min; i <= sel_max; ++i) {
-		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
-		mvwaddstr(linenum_w, i, 0, linenum_buf);
-	}
-
-	// Draw remaining line numbers
-	wattr_set(linenum_w, 0, PAIR_LINENUM, NULL);
-	for (isz i = sel_end_y + 1; i < line_count; ++i) {
-		snprintf(linenum_buf, sizeof(linenum_buf), "%4zu ", (line_top + i + 1) % 10000);
-		mvwaddstr(linenum_w, i, 0, linenum_buf);
-	}
-
-	// Fill any remaining line numbers
-	const isz underflow_count = EDITOR_HEIGHT - line_count;
-	static const chtype uflow[] = {
-		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
-		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
-		'.' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
-		'.' | COLOR_PAIR(PAIR_LINENUM_UFLOW),
-		' ' | COLOR_PAIR(PAIR_LINENUM_UFLOW)};
-	for (isz i = 0; i < underflow_count; ++i)
-		mvwaddchnstr(linenum_w, line_count + i, 0, uflow, sizeof(uflow));
-
-	const usz tab_size = ed->global->tab_size;
+	char line_num_buf[32];
 
 	for (isz i = 0; i < line_count; ++i) {
+		rec_goto(0, EDITOR_VSTART + i + 1);
+
 		lstr_t line = ed->doc.lines[line_top + i];
 		highl_t* hl = ed->highl_lines[line_top + i];
-		usz hl_end = 0, scrx = 0;
+
+		sprintf(line_num_buf, "%4zu ", (line_top + i + 1) % 10000);
+		u8 sel = (i >= sel_start_y) && (i <= sel_end_y);
+		rec_str(clr_strs[sel ? CLR_LINENUM_SEL : CLR_LINENUM]);
+		rec_str(line_num_buf);
+
+		sel = (i > sel_start_y) && (i <= sel_end_y);
+
+		if (sel)
+			rec_str(clr_strs[CLR_EDITOR_SEL]);
+		else
+			rec_str(get_highl(hl));
+
+		isz next_hl = -1;
 		if (hl)
-			hl_end = hl->len;
+			next_hl = hl->len;
 
-		cchar_t* cchar_str = aframe_reserve(ed->highl_arena, 0);
-		usz cchar_i = 0;
+		for (isz j = 0, scr_x = 0; j < line.len && scr_x < EDITOR_WIDTH;) {
+			if (!sel && i == sel_start_y && j == sel_start_x) {
+				rec_str(clr_strs[CLR_EDITOR_SEL]);
+				sel = 1;
+			}
+			if (sel && i == sel_end_y && j == sel_end_x) {
+				rec_str(get_highl(hl));
+				sel = 0;
+			}
 
-		for (isz j = 0; j < line.len && scrx < EDITOR_WIDTH;) {
-			chtype attr = get_highl(hl);
-			// If current char is within selection, set the corresponding attributes
-			if (i > sel_start_y || (i == sel_start_y && j >= sel_start_x))
-				if (i < sel_end_y || (i == sel_end_y && j < sel_end_x))
-					attr = COLOR_PAIR(PAIR_EDITOR) | A_STANDOUT;
+			while (j >= next_hl) {
+				hl = hl->next;
+				if (!sel)
+					rec_str(get_highl(hl));
+				next_hl = j + hl->len;
+			}
 
-			u32 c = 0;
-			u32 utf8_len = utf8_decode(&line.str[j], &c);
-
+			char c = line.str[j];
 			if (c == '\t') {
-				usz len = tab_size - scrx % tab_size;
-				scrx += len;
-				memset(&cchar_str[cchar_i], 0, len * sizeof(cchar_t));
-				while (len-- && (isz)scrx - (isz)len < EDITOR_WIDTH) {
-					cchar_str[cchar_i].attr = attr;
-					cchar_str[cchar_i++].chars[0] = ' ';
-				}
+				isz tab_len = tab_size - (scr_x % tab_size);
+				scr_x += tab_len;
+				++j;
+				rec_nc(tab_len, ' ');
 			}
 			else {
-				memset(&cchar_str[cchar_i], 0, sizeof(cchar_t));
-				cchar_str[cchar_i].attr = attr;
-				*(u32*)cchar_str[cchar_i++].chars = c;
-				++scrx;
-			}
-			j += utf8_len;
-
-			if (j >= hl_end) {
-				hl = hl->next;
-				if (hl)
-					hl_end = j + hl->len;
+				++scr_x;
+				usz end = j + utf8_decode_len(c);
+				while (j < end)
+					rec_c(line.str[j++]);
 			}
 		}
-
-		aframe_reserve(ed->highl_arena, cchar_i * sizeof(cchar_t));
-		mvwadd_wchnstr(editor_w, i, 0, cchar_str, cchar_i);
 	}
+
+	rec_goto(ed_cx_to_screen_x(ed, ed->cx, ed->cy) + EDITOR_HSTART + 1, ed->cy - line_top + EDITOR_VSTART + 1);
 }
 
 static
@@ -227,20 +173,20 @@ void cleanup(int code, void* args) {
 	while ((ed_it = fb_first_file()))
 		fb_close(ed_it);
 
-	delwin(header_w);
-	delwin(linenum_w);
-	delwin(editor_w);
-
-	clr_pop(); // Pop previous colors
-	refresh();
-	endwin();
-
-	// Force disable mouse events again
-	printf("\x1B[?1003l");
-	fflush(stdout);
+	lt_term_restore();
 }
 
 int main(int argc, char** argv) {
+	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
+
+// 	u32 c = 0;
+// 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
+// 		c = lt_term_getkey();
+// 		printf("Key 0x%X, Mod 0x%X\n", c & LT_TERM_KEY_MASK, c & LT_TERM_MOD_MASK);
+// 	}
+// 	lt_term_restore();
+// 	return 0;
+
 	allocators_initialize();
 
 	// Read config
@@ -260,11 +206,6 @@ int main(int argc, char** argv) {
 	if (!editor_cf)
 		ferr("Missing required option 'editor'\n");
 
-	// Initialize ncurses
-	setlocale(LC_ALL, "");
-	if (!initscr())
-		ferr("Failed to initialize ncurses\n");
-
 	ed_globals.scroll_offs = conf_find_int_default(editor_cf, CLSTR("scroll_offset"), 2);
 	ed_globals.tab_size = conf_find_int_default(editor_cf, CLSTR("tab_size"), 4);
 	ed_globals.vstep = conf_find_int_default(editor_cf, CLSTR("vstep"), 4);
@@ -273,43 +214,11 @@ int main(int argc, char** argv) {
 
 	ed_globals.ed = &ed;
 
-	set_tabsize(ed_globals.tab_size);
-
-	// Set input modes
-	noecho();
-	raw();
-	keypad(stdscr, 1);
-	mouseinterval(0);
-	mmask_t mmask_old;
-	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, &mmask_old);
-
-	// This hack is here to make the terminal report mouse
-	// positions without setting the $TERM env variable,
-	// there is probably a better way to accomplish this.
-	printf("\x1B[?1003h");
-	// Enable 'bracketed paste' mode
-	printf("\x1b[?2004h");
-	fflush(stdout);
-
-	clear();
-
-	// Register custom keycodes
-	register_custom_keys();
-
-	// Initialize colors
-	start_color();
-	clr_push(); // Push current colors until exit
-
 	conf_t* colors_cf = conf_find(&config, CLSTR("colors"), CONF_OBJECT);
 	if (!colors_cf)
 		ferr("No 'colors' object found in config file\n");
 	clr_load(colors_cf);
-
-	// Free config
-	conf_free(&config);
 	free(conf_data);
-
-	on_exit(cleanup, NULL);
 
 	// Load documents
 	for (usz i = 1; i < argc; ++i)
@@ -317,59 +226,45 @@ int main(int argc, char** argv) {
 
 	ed = fb_first_file();
 
+	on_exit(cleanup, NULL);
+
 	edit_file(&ed_globals, ed);
 
-	for (;;) {
-		// (Re)create windows when first started or when the
-		// size of the terminal changed.
-		int max_x, max_y;
-		getmaxyx(editor_w, max_y, max_x);
+	aframe_t* write_arena = aframe_alloc(GB(1));
+	write_buf = aframe_reserve(write_arena, 0);
 
+	for (;;) {
 		ed_globals.width = EDITOR_WIDTH;
 		ed_globals.height = EDITOR_HEIGHT;
-		ed_globals.vstart = EDITOR_VSTART;
 		ed_globals.hstart = EDITOR_HSTART;
-
-		if (!editor_w || max_x != EDITOR_WIDTH || max_y != EDITOR_HEIGHT) {
-			delwin(header_w);
-			delwin(linenum_w);
-			delwin(editor_w);
-
-			header_w = subwin(stdscr, HEADER_HEIGHT, COLS, 0, 0);
-			linenum_w = subwin(stdscr, EDITOR_HEIGHT, LINENUM_WIDTH, HEADER_HEIGHT, 0);
-			editor_w = subwin(stdscr, EDITOR_HEIGHT, EDITOR_WIDTH, HEADER_HEIGHT, LINENUM_WIDTH);
-		}
+		ed_globals.vstart = EDITOR_VSTART;
 
 		// Update highlighting and redraw all windows.
 		if (!ed_globals.await_utf8) {
-			erase();
+			write_it = write_buf;
+
+			rec_clear(clr_strs[CLR_EDITOR]);
 			draw_header(ed);
-			if (ed) {
-				aframe_restore(ed->highl_arena, &ed->restore);
-				ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
+
+			if (ed)
 				draw_editor(ed);
-			}
 			if (focus.draw)
-				focus.draw(&ed_globals, editor_w, focus.draw_args);
-			refresh();
+					focus.draw(&ed_globals, focus.draw_args);
+			lt_term_write_direct(write_buf, write_it - write_buf);
 		}
 
 		// Get and handle input.
-		int c = wgetch(stdscr);
+		u32 c = lt_term_getkey();
 
 		switch (c) {
-		case 'E' - CTRL_MOD_DIFF:
+		case 'E' | LT_TERM_MOD_CTRL:
 			notify_exit();
 			break;
 
-		case 'O' - CTRL_MOD_DIFF:
+		case 'O' | LT_TERM_MOD_CTRL:
 			browse_filesystem();
 			break;
 
-		case KEY_RESIZE:
-			// For some reason, the tab size is reset to default when a terminal is resized.
-			set_tabsize(ed_globals.tab_size);
-			// Fall through to propagate event
 		default:
 			if (focus.input)
 				focus.input(&ed_globals, c);
@@ -378,3 +273,4 @@ int main(int argc, char** argv) {
 	}
 	return 0;
 }
+

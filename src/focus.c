@@ -3,5 +3,9 @@
 
 #include "focus.h"
 
-focus_t focus;
+focus_t focus = { NULL, NULL, NULL };
+
+void focus_none(void) {
+	focus = (focus_t){ NULL, NULL, NULL };
+}
 

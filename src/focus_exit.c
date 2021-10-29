@@ -5,9 +5,7 @@
 #include "clr.h"
 #include "editor.h"
 #include "file_browser.h"
-
-#include <curses.h>
-#include "curses_helpers.h"
+#include "draw.h"
 
 #include <stdlib.h>
 
@@ -24,15 +22,13 @@ void notify_exit(void) {
 		exit(0);
 }
 
-void draw_exit(global_t* ed_global, void* win_, void* args) {
-	WINDOW* win = win_;
-
-	wattr_set(win, A_BOLD, PAIR_NOTIFY_ERROR, NULL);
-	mvwprintw(win, ed_global->height - 1, 0, " '%s' has unsaved changed, are you sure? (Y/n)", unsaved_path);
-	waddnch(win, ed_global->width - getcurx(win), ' ');
+void draw_exit(global_t* ed_global, void* args) {
+	rec_goto(2, lt_term_height);
+	rec_clearline(clr_strs[CLR_NOTIFY_ERROR]);
+	rec_str("files have unsaved changed, are you sure? (Y/n)");
 }
 
-void input_exit(global_t* ed_global, int c) {
+void input_exit(global_t* ed_global, u32 c) {
 	switch (c) {
 	case 'N': case 'n':
 		edit_file(ed_global, *ed_global->ed);

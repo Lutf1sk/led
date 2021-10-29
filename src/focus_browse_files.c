@@ -7,9 +7,7 @@
 #include "editor.h"
 #include "common.h"
 
-#include <curses.h>
-#include "curses_helpers.h"
-#include "custom_keys.h"
+#include "draw.h"
 
 focus_t focus_browse_files = { draw_browse_files, NULL, input_browse_files };
 
@@ -27,78 +25,76 @@ void browse_files(void) {
 	input.len = 0;
 }
 
-void draw_browse_files(global_t* ed_globals, void* win_, void* args) {
-	WINDOW* win = win_;
+void draw_browse_files(global_t* ed_globals, void* args) {
 	(void)args;
 
-	int height = ed_globals->height;
-	int width = ed_globals->width;
+	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	usz start_height = height - 1 - MAX_ENTRY_COUNT;
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
-	mvwprintw(win, start_height, 0, " %.*s", (int)input.len, input.str);
-	wcursyncup(win);
-
-	waddnch(win, width - getcurx(win), ' ');
+	rec_goto(2, start_height);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_lstr(input.str, input.len);
 
 	editor_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, input);
 
-	// Draw available files
-	wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
-	for (usz i = 0; i < found_count; ++i) {
-		mvwprintw(win, start_height + 1 + i, 0, " %s", found[i]->doc.path);
-		waddnch(win, width - getcurx(win), ' ');
-	}
+	selected = NULL;
 
-	// Draw selected file
-	usz sel_index = selected_index;
-	if (sel_index < found_count) {
-		selected = found[sel_index];
-		wattr_set(win, 0, PAIR_BROWSE_FILES_SEL, NULL);
-		mvwprintw(win, start_height + 1 + sel_index, 0, " %s", found[sel_index]->doc.path);	
-		waddnch(win, width - getcurx(win), ' ');
+	// Draw available files
+	rec_str(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+	for (usz i = 0; i < found_count; ++i) {
+		if (i == selected_index) {
+			rec_goto(2, start_height + i + 1);
+			rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+			rec_str(found[i]->doc.path);
+			rec_str(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+
+			selected = found[selected_index];
+		}
+		else {
+			rec_goto(2, start_height + i + 1);
+			rec_clearline("");
+			rec_str(found[i]->doc.path);
+		}
 	}
-	else
-		selected = NULL;
 
 	// Fill underflowed slots
-	wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
-	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i)
-		mvwaddnch(win, start_height + 1 + i, 0, width, ' ');
+	rec_str(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i) {
+		rec_goto(0, start_height + i + 1);
+		rec_clearline("");
+	}
 
 	max_index = found_count;
 }
 
-void input_browse_files(global_t* ed_global, int c) {
+void input_browse_files(global_t* ed_global, u32 c) {
 	editor_t* ed = *ed_global->ed;
 
 	switch (c) {
-	case '\n': case KEY_ENTER:
+	case '\n':
 		edit_file(ed_global, selected ? selected : ed);
 		break;
 
-	case KEY_BACKSPACE:
+	case LT_TERM_KEY_BSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else
 			--input.len;
 		break;
 
-	case KEY_CBACKSPACE:
+	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '.')
 			;
 		break;
 
-	case KEY_UP:
+	case LT_TERM_KEY_UP:
 		if (selected_index)
 			--selected_index;
 		break;
 
-	case KEY_DOWN:
+	case LT_TERM_KEY_DOWN:
 		if (selected_index + 1 < max_index)
 			++selected_index;
 		break;

@@ -484,7 +484,6 @@ void ed_paren_match(editor_t* ed) {
 
 isz ed_find_indent_pfx(editor_t* ed) {
 	lstr_t line = ed->doc.lines[ed->cy];
-
 	isz cx = 0;
 
 	for (usz i = 0; i < line.len && i < ed->cx; ++i) {
@@ -498,7 +497,6 @@ isz ed_find_indent_pfx(editor_t* ed) {
 
 isz ed_find_indent(editor_t* ed) {
 	lstr_t line = ed->doc.lines[ed->cy];
-
 	isz cx = 0;
 
 	for (usz i = 0; i < line.len; ++i) {

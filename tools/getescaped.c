@@ -8,11 +8,13 @@ int main() {
 	struct termios term;
 	tcgetattr(1, &term);
 	term.c_lflag &= ~ECHO;
-	//term.c_lflag |= ECHOE;
 	term.c_lflag &= ~ICANON;
 	tcsetattr(1, TCSANOW, &term);
 
 	tcflush(1, TCIOFLUSH);
+
+	printf("\x1B[?1003h");
+	fflush(stdout);
 
 	for (;;) {
 		char c = getchar();

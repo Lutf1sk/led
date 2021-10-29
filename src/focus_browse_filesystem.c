@@ -6,10 +6,7 @@
 #include "editor.h"
 #include "file_browser.h"
 #include "common.h"
-
-#include <curses.h>
-#include "curses_helpers.h"
-#include "custom_keys.h"
+#include "draw.h"
 
 #include <dirent.h>
 #include <libgen.h>
@@ -27,19 +24,14 @@ void browse_filesystem(void) {
 	input.len = 0;
 }
 
-void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
-	WINDOW* win = win_;
+void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	(void)args;
 
-	int height = ed_globals->height;
-	int width = ed_globals->width;
+	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	usz start_height = height - 1 - MAX_ENTRY_COUNT;
-
-	wattr_set(win, 0, PAIR_BROWSE_FILES_INPUT, NULL);
-	mvwprintw(win, start_height, 0, " %.*s", (int)input.len, input.str);
-	wcursyncup(win);
-	waddnch(win, width - getcurx(win), ' ');
+	rec_goto(2, start_height);
+	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_lstr(input.str, input.len);
 
 	char dir_path[PATH_MAX_LEN + 1];
 	memcpy(dir_path, input.str, input.len);
@@ -73,38 +65,39 @@ void draw_browse_filesystem(global_t* ed_globals, void* win_, void* args) {
 			if (strncmp(entry->d_name, inp_name, inp_name_len) != 0)
 				continue;
 
+			rec_goto(2, start_height + ++found_count);
 			if (entry->d_type == DT_DIR || entry->d_type == DT_LNK)
-				wattr_set(win, 0, PAIR_BROWSE_FILES_SEL, NULL);
+				rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
 			else
-				wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
-
-			mvwprintw(win, start_height + found_count++ + 1, 0, " %s", entry->d_name);
-			waddnch(win, width - getcurx(win), ' ');
+				rec_clearline(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+			rec_str(entry->d_name);
 		}
 	}
 
-	wattr_set(win, 0, PAIR_BROWSE_FILES_ENTRY, NULL);
-	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i)
-		waddnch(win, width, ' ');
+	rec_str(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i) {
+		rec_goto(0, start_height + i + 1);
+		rec_clearline("");
+	}
 }
 
-void input_browse_filesystem(global_t* ed_global, int c) {
+void input_browse_filesystem(global_t* ed_global, u32 c) {
 	editor_t* ed = *ed_global->ed;
 
 	switch (c) {
-	case KEY_ENTER: case '\n': {
+	case '\n': {
 		editor_t* new_ed = fb_open(ed_global, input);
 		edit_file(ed_global, new_ed ? new_ed : ed);
 	}	break;
 
-	case KEY_BACKSPACE:
+	case LT_TERM_KEY_BSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		else
 			input.len--;
 		break;
 
-	case KEY_CBACKSPACE:
+	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!input.len)
 			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '/')
