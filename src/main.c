@@ -139,6 +139,14 @@ void draw_editor(editor_t* ed) {
 					rec_c(line.str[j++]);
 			}
 		}
+
+		for (isz i = line_count; i < EDITOR_HEIGHT; ++i) {
+			rec_goto(1, EDITOR_VSTART + i + 1);
+			rec_clearline(clr_strs[CLR_EDITOR]);
+			rec_str(clr_strs[CLR_LINENUM_UFLOW]);
+			rec_str("     ");
+		}
+		rec_str(clr_strs[CLR_EDITOR]);
 	}
 
 	rec_goto(ed_cx_to_screen_x(ed, ed->cx, ed->cy) + EDITOR_HSTART + 1, ed->cy - line_top + EDITOR_VSTART + 1);

@@ -5,8 +5,6 @@
 #include "common.h"
 #include "conf.h"
 
-#include <curses.h>
-
 #include <string.h>
 
 char* clr_strs[256];
@@ -15,6 +13,7 @@ void clr_load(conf_t* clr_conf) {
 	// Generate color pairs
 	clr_strs[CLR_LINENUM] = "\x1B[22;37;100m";
 	clr_strs[CLR_LINENUM_SEL] = "\x1B[22;30;47m";
+	clr_strs[CLR_LINENUM_UFLOW] = "\x1B[22;37;100m";
 	clr_strs[CLR_HEADER_TAB] = "\x1B[22;30;47m";
 	clr_strs[CLR_HEADER_BG] = "\x1B[22;30;100m";
 	clr_strs[CLR_EDITOR] = "\x1B[22;37;40m";
@@ -23,8 +22,8 @@ void clr_load(conf_t* clr_conf) {
 	// Syntax highlighting pairs
 	clr_strs[CLR_SYNTAX_UNKNOWN] = "\x1B[22;37;40m";
 
-	clr_strs[CLR_SYNTAX_STRING] = "\x1B[22;31;40m";
-	clr_strs[CLR_SYNTAX_CHAR] = "\x1B[22;31;40m";
+	clr_strs[CLR_SYNTAX_STRING] = "\x1B[22;33;40m";
+	clr_strs[CLR_SYNTAX_CHAR] = "\x1B[22;33;40m";
 	clr_strs[CLR_SYNTAX_NUMBER] = "\x1B[22;37;40m";
 
 	clr_strs[CLR_SYNTAX_IDENTIFIER] = "\x1B[22;97;40m";
@@ -34,9 +33,9 @@ void clr_load(conf_t* clr_conf) {
 
 	clr_strs[CLR_SYNTAX_HASH] = "\x1B[22;37;40m";
 	clr_strs[CLR_SYNTAX_OPERATOR] = "\x1B[22;36;40m";
-	clr_strs[CLR_SYNTAX_PUNCTUATION] = "\x1B[22;36;40m";
+	clr_strs[CLR_SYNTAX_PUNCTUATION] = "\x1B[22;31;40m";
 
-	clr_strs[CLR_SYNTAX_FUNCTION] = "\x1B[1;37;40m";
+	clr_strs[CLR_SYNTAX_FUNCTION] = "\x1B[1;97;40m";
 
 	clr_strs[CLR_SYNTAX_TRAIL_INDENT] = "\x1B[22;30;41m";
 

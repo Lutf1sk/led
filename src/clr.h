@@ -5,6 +5,7 @@
 #define CLR_H
 
 #define CLR_LINENUM 1
+#define CLR_LINENUM_UFLOW 2
 #define CLR_LINENUM_SEL 3
 #define CLR_HEADER_TAB 4
 #define CLR_EDITOR 5
