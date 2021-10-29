@@ -31,11 +31,11 @@ void find_local(isz start_y_, isz start_x_) {
 
 void draw_find_local(global_t* ed_global, void* args) {
 	rec_goto(2, lt_term_height - 1);
-	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
 
 	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 	char buf[128];
 	sprintf(buf, "Result %zu/%zu", selected_index + 1, result_count);
 	rec_str(buf);

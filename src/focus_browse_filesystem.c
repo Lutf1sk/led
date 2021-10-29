@@ -30,7 +30,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
 	rec_goto(2, start_height);
-	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
 
 	char dir_path[PATH_MAX_LEN + 1];
@@ -67,14 +67,14 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 
 			rec_goto(2, start_height + ++found_count);
 			if (entry->d_type == DT_DIR || entry->d_type == DT_LNK)
-				rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+				rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 			else
-				rec_clearline(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+				rec_clearline(clr_strs[CLR_LIST_ENTRY]);
 			rec_str(entry->d_name);
 		}
 	}
 
-	rec_str(clr_strs[CLR_BROWSE_FILES_ENTRY]);
+	rec_str(clr_strs[CLR_LIST_ENTRY]);
 	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");

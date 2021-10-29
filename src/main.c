@@ -222,11 +222,13 @@ int main(int argc, char** argv) {
 
 	ed_globals.ed = &ed;
 
+	aframe_t* write_arena = aframe_alloc(GB(1));
+
 	conf_t* colors_cf = conf_find(&config, CLSTR("colors"), CONF_OBJECT);
-	if (!colors_cf)
-		ferr("No 'colors' object found in config file\n");
-	clr_load(colors_cf);
+	clr_load(write_arena, colors_cf);
 	free(conf_data);
+
+	write_buf = aframe_reserve(write_arena, 0);
 
 	// Load documents
 	for (usz i = 1; i < argc; ++i)
@@ -237,9 +239,6 @@ int main(int argc, char** argv) {
 	on_exit(cleanup, NULL);
 
 	edit_file(&ed_globals, ed);
-
-	aframe_t* write_arena = aframe_alloc(GB(1));
-	write_buf = aframe_reserve(write_arena, 0);
 
 	for (;;) {
 		ed_globals.width = EDITOR_WIDTH;

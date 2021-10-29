@@ -344,6 +344,9 @@ void conf_fwrite(FILE* fp, conf_t node) {
 }
 
 conf_t* conf_find(conf_t* obj, lstr_t name, conf_stype_t stype) {
+	if (!obj)
+		return NULL;
+
 	for (usz i = 0; i < obj->child_count; ++i) {
 		if (obj->child_names[i].len != name.len)
 			continue;

@@ -62,14 +62,14 @@ void goto_line(void) {
 
 void draw_goto(global_t* ed_global, void* args) {
 	rec_goto(2, lt_term_height - 1);
-	rec_clearline(clr_strs[CLR_BROWSE_FILES_INPUT]);
+	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
 
 	b8 sync_selection; char dir; usz line;
 	line = interp_str(*ed_global->ed, input, &sync_selection, &dir);
 
 	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_BROWSE_FILES_SEL]);
+	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 	rec_str(sync_selection ? " Jump" : " Select");
 	if (line) {
 		char buf[64];
