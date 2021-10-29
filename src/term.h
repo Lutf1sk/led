@@ -1,3 +1,6 @@
+// Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
+// SPDX-License-Identifier: GPL-2.0+
+
 #ifndef LT_TERM_H
 #define LT_TERM_H 1
 
