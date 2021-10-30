@@ -96,7 +96,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	}	break;
 
 	case 'D' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
-		ed->sel_x = 0;
+		ed->sel_x = ed_find_indent(ed);
 		ed->sel_y = ed->cy;
 		ed->cx = ed->doc.lines[ed->cy].len;
 	}	break;
@@ -179,7 +179,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT | LT_TERM_MOD_CTRL:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: sync_selection = 0;
-	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: sync_target_y = 1; modified = 0; {
+	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: sync_target_x = 0; modified = 0; {
 		isz move_h = ed->global->height / 2;
 		if (ed->cy >= ed->line_top + move_h || ed->line_top == 0)
 			ed_goto_line(ed, ed->cy - move_h + ed->global->scroll_offs);
@@ -217,7 +217,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT | LT_TERM_MOD_CTRL:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: sync_selection = 0;
-	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: sync_target_y = 1; modified = 0; {
+	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: sync_target_x = 0; modified = 0; {
 		isz move_h = ed->global->height / 2;
 
 		if (ed->cy <= ed->line_top + move_h || ed->line_top + ed->global->height > ed->doc.line_count)
