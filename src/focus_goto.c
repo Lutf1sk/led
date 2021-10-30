@@ -17,17 +17,12 @@ static lstr_t input = LSTR(input_buf, 0);
 
 static
 isz interp_str(editor_t* ed, lstr_t str) {
-	b8 sync_selection = 1;
 	char fwd = 1;
 	isz line = 0;
 
 	for (usz i = 0; i < input.len; ++i) {
 		char c = input.str[i];
 		switch (c) {
-		case 's':
-			sync_selection = 0;
-			break;
-
 		case 'e': line += ed->doc.line_count; break;
 		case 'b': line += -ed->doc.line_count; break;
 		case '\\':
