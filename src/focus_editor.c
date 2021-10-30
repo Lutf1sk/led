@@ -220,7 +220,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: sync_target_x = 0; modified = 0; {
 		isz move_h = ed->global->height / 2;
 
-		if (ed->cy <= ed->line_top + move_h || ed->line_top + ed->global->height > ed->doc.line_count)
+		if (ed->cy <= ed->line_top + move_h || ed->line_top + ed->global->height >= ed->doc.line_count)
 			ed_goto_line(ed, ed->cy + move_h - ed->global->scroll_offs);
 		ed_center_line(ed, ed->cy);
 	}	break;
