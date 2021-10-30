@@ -82,7 +82,7 @@ void input_browse_files(global_t* ed_global, u32 c) {
 		break;
 
 	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!input.len)
+		if (!input.len) case LT_TERM_KEY_ESC:
 			edit_file(ed_global, ed);
 		while (input.len && input.str[--input.len] != '.')
 			;
