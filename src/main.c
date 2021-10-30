@@ -92,7 +92,11 @@ void draw_editor(editor_t* ed) {
 		lstr_t line = ed->doc.lines[line_top + i];
 		highl_t* hl = ed->highl_lines[line_top + i];
 
-		sprintf(line_num_buf, "%4zu ", (line_top + i + 1) % 10000);
+		isz linenum = i - ed->cy + line_top;
+		if (i == ed->cy - line_top)
+			linenum = (line_top + i + 1) % 10000;
+		sprintf(line_num_buf, "%4zi ", linenum);
+
 		u8 sel = (i >= sel_start_y) && (i <= sel_end_y);
 		rec_str(clr_strs[sel ? CLR_LINENUM_SEL : CLR_LINENUM]);
 		rec_str(line_num_buf);

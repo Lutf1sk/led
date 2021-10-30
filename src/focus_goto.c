@@ -16,11 +16,10 @@ static char input_buf[64];
 static lstr_t input = LSTR(input_buf, 0);
 
 static
-usz interp_str(editor_t* ed, lstr_t str, b8* out_sync_selection, char* out_dir) {
+isz interp_str(editor_t* ed, lstr_t str) {
 	b8 sync_selection = 1;
-	char dir = 0;
-
-	usz line = 0;
+	char fwd = 1;
+	isz line = 0;
 
 	for (usz i = 0; i < input.len; ++i) {
 		char c = input.str[i];
@@ -29,16 +28,10 @@ usz interp_str(editor_t* ed, lstr_t str, b8* out_sync_selection, char* out_dir) 
 			sync_selection = 0;
 			break;
 
-		case 'u': case'd':
-			dir = c;
-			break;
-
-		case 'e':
-			line = ed->doc.line_count + 1;
-			break;
-
-		case 'b':
-			line = 1;
+		case 'e': line += ed->doc.line_count; break;
+		case 'b': line += -ed->doc.line_count; break;
+		case '\\':
+			fwd = 0;
 			break;
 
 		default:
@@ -50,9 +43,10 @@ usz interp_str(editor_t* ed, lstr_t str, b8* out_sync_selection, char* out_dir) 
 		}
 	}
 
-	*out_sync_selection = sync_selection;
-	*out_dir = dir;
-	return line;
+	if (fwd)
+		return ed->cy + line;
+	else
+		return ed->cy - line;
 }
 
 void goto_line(void) {
@@ -61,42 +55,15 @@ void goto_line(void) {
 }
 
 void draw_goto(global_t* ed_global, void* args) {
-	rec_goto(2, lt_term_height - 1);
+	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
-
-	b8 sync_selection; char dir; usz line;
-	line = interp_str(*ed_global->ed, input, &sync_selection, &dir);
-
-	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-	rec_str(sync_selection ? " Jump" : " Select");
-	if (line) {
-		char buf[64];
-		if (dir == 0)
-			sprintf(buf, " to line %zu", line);
-		else if (dir == 'u')
-			sprintf(buf, " UP %zu lines", line);
-		else if (dir == 'd')
-			sprintf(buf, " DOWN %zu lines", line);
-		rec_str(buf);
-	}
 }
 
 void input_goto(global_t* ed_global, u32 c) {
 	editor_t* ed = *ed_global->ed;
 
 	switch (c) {
-	case 's':
-		if (!input.len)
-			input.str[input.len++] = 's';
-		break;
-
-	case 'u': case 'd':
-		if (input.len == 0 || (input.str[0] == 's' && input.len == 1))
-			input.str[input.len++] = c;
-		break;
-
 	case LT_TERM_KEY_BSPACE:
 		if (!input.len)
 			edit_file(ed_global, ed);
@@ -107,40 +74,21 @@ void input_goto(global_t* ed_global, u32 c) {
 	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!input.len)
 			edit_file(ed_global, ed);
-		while (input.len && is_digit(input.str[--input.len]))
-			;
+		input.len = 0;
 		break;
 
 	case '\n': {
-		b8 sync_selection; char dir; usz line;
-		line = interp_str(ed, input, &sync_selection, &dir);
-
-		if (dir == 'u')
-			ed_goto_line(ed, max(ed->cy - line, 0));
-		else if (dir == 'd')
-			ed_goto_line(ed, ed->cy + line);
-		else if (line)
-			ed_goto_line(ed, line - 1);
-
-		if (sync_selection)
-			ed_sync_selection(ed);
-
+		isz line = interp_str(ed, input);
+		ed_goto_line(ed, line);
+		ed_sync_selection(ed);
 		edit_file(ed_global, ed);
+
+		if (line < ed->line_top || line > ed->line_top + ed->global->height)
+			ed_center_line(ed, line);
 	}	break;
 
-	case 'b': case 'e':
-		if (input.len && (is_digit(input.str[input.len - 1]) || input.str[input.len - 1] == 'e' || input.str[input.len - 1] == 'b'))
-			break;
-
-		if (input.len < sizeof(input_buf))
-			input.str[input.len++] = c;
-		break;
-
 	default:
-		if (input.len && (input.str[input.len - 1] == 'e' || input.str[input.len - 1] == 'b'))
-			break;
-
-		if (is_digit(c) && input.len < sizeof(input_buf))
+		if (input.len < sizeof(input_buf))
 			input.str[input.len++] = c;
 		break;
 	}

@@ -113,7 +113,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed_delete_selection_prefix(ed, CLSTR("// // "));
 		break;
 
-	case 'L' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
+	case '\\' | LT_TERM_MOD_CTRL: modified = 0;
 		goto_line();
 		break;
 
@@ -181,11 +181,9 @@ void input_editor(global_t* ed_globals, u32 c) {
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: sync_selection = 0;
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: sync_target_y = 1; modified = 0; {
 		isz move_h = ed->global->height / 2;
-
-		if (ed->cy < ed->line_top + move_h && ed->line_top != 0)
-			ed_goto_line(ed, ed->cy);
-		else
-			ed_goto_line(ed, ed->cy - move_h);
+		if (ed->cy >= ed->line_top + move_h || ed->line_top == 0)
+			ed_goto_line(ed, ed->cy - move_h + ed->global->scroll_offs);
+		ed_center_line(ed, ed->cy);
 	}	break;
 
 	// ----- DOWN
@@ -222,10 +220,9 @@ void input_editor(global_t* ed_globals, u32 c) {
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: sync_target_y = 1; modified = 0; {
 		isz move_h = ed->global->height / 2;
 
-		if (ed->cy > ed->line_top + move_h && ed->line_top + ed->global->height < ed->doc.line_count)
-			ed_goto_line(ed, ed->cy);
-		else
-			ed_goto_line(ed, ed->cy + move_h);
+		if (ed->cy <= ed->line_top + move_h || ed->line_top + ed->global->height > ed->doc.line_count)
+			ed_goto_line(ed, ed->cy + move_h - ed->global->scroll_offs);
+		ed_center_line(ed, ed->cy);
 	}	break;
 
 	// ----- RIGHT

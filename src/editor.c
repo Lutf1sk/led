@@ -22,15 +22,20 @@ void ed_move_to_selection_end(editor_t* ed) {
 	ed->cy = end_y;
 }
 
-void ed_goto_line(editor_t* ed, usz line) {
+void ed_center_line(editor_t* ed, usz line) {
 	line = clamp(line, 0, ed->doc.line_count - 1);
 
 	usz line_top = max(line - ed->global->height / 2, 0);
 	if (line_top + ed->global->height >= ed->doc.line_count)
 		line_top = max(ed->doc.line_count - ed->global->height, 0);
 
-	ed->cy = line;
 	ed->line_top = line_top;
+}
+
+void ed_goto_line(editor_t* ed, usz line) {
+	line = clamp(line, 0, ed->doc.line_count - 1);
+
+	ed->cy = line;
 	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
 }
 

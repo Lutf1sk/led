@@ -22,7 +22,7 @@ lutcreator is only developed for personal use, so I don't see a point in adding 
 | CTRL+V    | Paste clipboard       |
 | CTRL+E    | Exit lutcreator       |
 | CTRL+O    | Open file             |
-| CTRL+L    | Goto line             |
+| CTRL+\    | Goto line             |
 | CTRL+K    | Browse open files     |
 | CTRL+Q    | Close current file    |
 | CTRL+F    | Local find string     |
