@@ -123,12 +123,14 @@ void input_find_local(global_t* ed_global, u32 c) {
 	if (selected_index >= 0) {
 		doc_pos_t result = results[selected_index];
 		ed_goto_line(ed, result.y);
+		ed_center_line(ed, result.y);
 		ed->cx = result.x;
 		ed->sel_y = result.y;
 		ed->sel_x = result.x + input.len;
 	}
 	else {
 		ed_goto_line(ed, start_y);
+		ed_center_line(ed, start_y);
 		ed->cx = start_x;
 		ed_sync_selection(ed);
 	}
