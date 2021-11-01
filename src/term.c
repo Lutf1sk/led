@@ -17,12 +17,7 @@ static struct termios old_term;
 u32 lt_term_width = 0, lt_term_height = 0;
 i32 lt_term_mouse_x = 0, lt_term_mouse_y = 0;
 
-static u8 resized = 0;
-
-static
-void lt_handle_winch(int sig) {
-	resized = 1;
-}
+static volatile u8 resized = 0;
 
 static
 void lt_update_term_dimensions(void) {
@@ -31,6 +26,11 @@ void lt_update_term_dimensions(void) {
 
 	lt_term_width = wsz.ws_col;
 	lt_term_height = wsz.ws_row;
+}
+
+static
+void lt_handle_winch(int sig) {
+	resized = 1;
 }
 
 void lt_term_init(lt_term_flags_t flags) {
@@ -81,9 +81,10 @@ void lt_term_restore(void) {
 }
 
 static
-char lt_getc(void) {
-	char c;
-	read(STDIN_FILENO, &c, 1);
+int lt_getc(void) {
+	unsigned char c;
+	if (read(STDIN_FILENO, &c, 1) < 0)
+		return 0;
 	return c;
 }
 
