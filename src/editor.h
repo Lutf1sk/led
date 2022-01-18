@@ -25,6 +25,7 @@ struct global {
 
 	u8 predict_brackets;
 	u8 await_utf8;
+	u8 relative_linenums;
 } global_t;
 
 typedef

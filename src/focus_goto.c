@@ -17,7 +17,7 @@ static lstr_t input = LSTR(input_buf, 0);
 
 static
 isz interp_str(editor_t* ed, lstr_t str) {
-	char fwd = 1;
+	u8 mode = 'A';
 	isz line = 0;
 
 	for (usz i = 0; i < input.len; ++i) {
@@ -25,9 +25,8 @@ isz interp_str(editor_t* ed, lstr_t str) {
 		switch (c) {
 		case 'e': line += ed->doc.line_count; break;
 		case 'b': line += -ed->doc.line_count; break;
-		case '\\':
-			fwd = 0;
-			break;
+		case '\\': mode = 'D'; break;
+		case '-': mode = 'U'; break;
 
 		default:
 			if (is_digit(c)) {
@@ -38,10 +37,11 @@ isz interp_str(editor_t* ed, lstr_t str) {
 		}
 	}
 
-	if (fwd)
-		return ed->cy + line;
-	else
-		return ed->cy - line;
+	switch (mode) {
+	case 'A': return line - 1;
+	case 'D': return ed->cy + line;
+	case 'U': return ed->cy - line;
+	}
 }
 
 void goto_line(void) {

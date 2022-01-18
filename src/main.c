@@ -92,7 +92,9 @@ void draw_editor(editor_t* ed) {
 		lstr_t line = ed->doc.lines[line_top + i];
 		highl_t* hl = ed->highl_lines[line_top + i];
 
-		isz linenum = i - ed->cy + line_top;
+		isz linenum = i + line_top + 1;
+		if (ed->global->relative_linenums)
+			linenum -= ed->cy + 1;
 		if (i == ed->cy - line_top)
 			linenum = (line_top + i + 1) % 10000;
 		sprintf(line_num_buf, "%4zi ", linenum);
@@ -223,6 +225,7 @@ int main(int argc, char** argv) {
 	ed_globals.vstep = conf_find_int_default(editor_cf, CLSTR("vstep"), 4);
 	ed_globals.predict_brackets = conf_find_bool_default(editor_cf, CLSTR("predict_brackets"), 0);
 	ed_globals.await_utf8 = 0;
+	ed_globals.relative_linenums = conf_find_bool_default(editor_cf, CLSTR("relative_linenums"), 0);
 
 	ed_globals.ed = &ed;
 
