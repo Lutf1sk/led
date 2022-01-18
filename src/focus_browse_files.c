@@ -6,6 +6,7 @@
 #include "clr.h"
 #include "editor.h"
 #include "common.h"
+#include "algo.h"
 
 #include "draw.h"
 
@@ -36,6 +37,8 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 
 	editor_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, input);
+
+	selected_index = clamp(selected_index, 0, found_count - 1);
 
 	selected = NULL;
 
