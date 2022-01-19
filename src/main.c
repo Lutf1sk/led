@@ -95,6 +95,7 @@ void draw_editor(editor_t* ed) {
 		isz linenum = i + line_top + 1;
 		if (ed->global->relative_linenums)
 			linenum -= ed->cy + 1;
+		linenum %= 10000;
 		if (i == ed->cy - line_top)
 			linenum = (line_top + i + 1) % 10000;
 		sprintf(line_num_buf, "%4zi ", linenum);
