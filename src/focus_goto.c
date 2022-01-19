@@ -16,15 +16,18 @@ static char input_buf[64];
 static lstr_t input = LSTR(input_buf, 0);
 
 static
-isz interp_str(editor_t* ed, lstr_t str) {
+isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 	u8 mode = 'A';
 	isz line = 0;
+
+	*sync = 1;
 
 	for (usz i = 0; i < input.len; ++i) {
 		char c = input.str[i];
 		switch (c) {
 		case 'e': line += ed->doc.line_count; break;
 		case 'b': line += -ed->doc.line_count; break;
+		case 's': *sync = 0; break;
 		case '\\': mode = 'D'; break;
 		case '-': mode = 'U'; break;
 
@@ -41,6 +44,8 @@ isz interp_str(editor_t* ed, lstr_t str) {
 	case 'A': return line - 1;
 	case 'D': return ed->cy + line;
 	case 'U': return ed->cy - line;
+	default:
+		return 0;
 	}
 }
 
@@ -73,9 +78,11 @@ void input_goto(global_t* ed_global, u32 c) {
 		break;
 
 	case '\n': {
-		isz line = interp_str(ed, input);
+		u8 sync;
+		isz line = interp_str(ed, input, &sync);
 		ed_goto_line(ed, line);
-		ed_sync_selection(ed);
+		if (sync)
+			ed_sync_selection(ed);
 		edit_file(ed_global, ed);
 
 		if (line < ed->line_top || line > ed->line_top + ed->global->height)
