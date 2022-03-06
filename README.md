@@ -1,11 +1,11 @@
 # led
 
-A QTCreator-like text editor in the terminal with C syntax highlighting.
+A text editor in the terminal with C syntax highlighting.
 
 Only alacritty is officially supported, but most modern terminal emulators should work well enough.
 
 ## Config
-Before launching lutcreator, copy the ```example.conf``` file to ```~/.config/led/led.conf```.
+Before launching led, copy the ```example.conf``` file to ```~/.config/led/led.conf```.
 
 Available options are listed within the example config.
 
