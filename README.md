@@ -1,4 +1,4 @@
-# lutcreator
+# led
 
 A QTCreator-like text editor in the terminal with C syntax highlighting.
 
@@ -11,7 +11,7 @@ Available options are listed within the example config.
 
 ## Keybinds
 
-lutcreator is only developed for personal use, so I don't see a point in adding customizable keybinds.
+led is only developed for personal use, so I don't see a point in adding customizable keybinds.
 
 | Key       | Description           |
 | :-------: | :-------------------: |
