@@ -107,7 +107,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 		break;
 
 	case '/' | LT_TERM_MOD_CTRL: sync_selection = 0;
-		ed_prefix_selection(ed, CLSTR("// "));
+		ed_prefix_nonempty_selection(ed, CLSTR("// "));
 		// This is a pretty hackish way of toggling a comment,
 		// might want to improve this later
 		ed_delete_selection_prefix(ed, CLSTR("// // "));
@@ -377,7 +377,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	case LT_TERM_KEY_TAB:
 		if (ed_selection_available(ed)) {
 			sync_selection = 0;
-			ed_prefix_selection(ed, CLSTR("\t"));
+			ed_prefix_nonempty_selection(ed, CLSTR("\t"));
 		}
 		else
 			doc_insert_char(&ed->doc, ed->cy, ed->cx++, '\t');

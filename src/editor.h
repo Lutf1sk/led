@@ -69,6 +69,7 @@ void ed_goto_line(editor_t* ed, usz line);
 
 void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx);
 void ed_prefix_selection(editor_t* ed, lstr_t pfx);
+void ed_prefix_nonempty_selection(editor_t* ed, lstr_t pfx);
 
 b8 ed_selection_available(editor_t* ed);
 void ed_delete_selection(editor_t* ed);

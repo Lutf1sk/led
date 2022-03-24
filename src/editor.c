@@ -67,6 +67,21 @@ void ed_prefix_selection(editor_t* ed, lstr_t pfx) {
 	ed->sel_x += pfx.len;
 }
 
+void ed_prefix_nonempty_selection(editor_t* ed, lstr_t pfx) {
+	isz start_y, start_x, end_y, end_x;
+	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
+
+	for (isz i = start_y; i <= end_y; ++i) {
+		if (ed->doc.lines[i].len) {
+			if (i == ed->cy) {
+				ed->cx += pfx.len;
+				ed->sel_x += pfx.len;
+			}
+			doc_insert_str(&ed->doc, i, 0, pfx);
+		}
+	}
+}
+
 b8 ed_selection_available(editor_t* ed) {
 	return ed->cx != ed->sel_x || ed->cy != ed->sel_y;
 }
