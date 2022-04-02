@@ -20,7 +20,7 @@ led is only developed for personal use, so I don't see a point in adding customi
 | CTRL+C    | Copy selection        |
 | CTRL+X    | Cut selection         |
 | CTRL+V    | Paste clipboard       |
-| CTRL+E    | Exit lutcreator       |
+| CTRL+E    | Exit                  |
 | CTRL+O    | Open file             |
 | CTRL+\    | Goto line             |
 | CTRL+K    | Browse open files     |
@@ -34,7 +34,6 @@ led is only developed for personal use, so I don't see a point in adding customi
 | Page Down | Move down one page    |
 | Home      | Jump to start of line |
 | End       | Jump to end of line   |
-| Shift+TAB | Unindent selection    |
 | F4        | Switch header/source  |
 
 The cursor is moved with the arrow keys.
