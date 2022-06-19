@@ -114,4 +114,6 @@ void ed_paren_match(editor_t* ed);
 isz ed_find_indent_pfx(editor_t* ed);
 isz ed_find_indent(editor_t* ed);
 
+void ed_expand_selection(editor_t* ed);
+
 #endif

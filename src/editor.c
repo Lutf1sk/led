@@ -528,3 +528,17 @@ isz ed_find_indent(editor_t* ed) {
 	return cx;
 }
 
+void ed_expand_selection(editor_t* ed) {
+	isz start_y, start_x, end_y, end_x;
+	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
+
+	ed->sel_x = start_x;
+	ed->sel_y = start_y;
+
+	ed->cy = start_y;
+	ed->sel_x = ed_find_indent_pfx(ed);
+
+	ed->cy = end_y;
+	ed->cx = ed->doc.lines[ed->cy].len;
+}
+

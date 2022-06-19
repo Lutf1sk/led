@@ -96,9 +96,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	}	break;
 
 	case 'D' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
-		ed->sel_x = ed_find_indent(ed);
-		ed->sel_y = ed->cy;
-		ed->cx = ed->doc.lines[ed->cy].len;
+		ed_expand_selection(ed);
 	}	break;
 
 	case 'S' | LT_TERM_MOD_CTRL: modified = 0;

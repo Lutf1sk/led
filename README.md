@@ -16,7 +16,7 @@ led is only developed for personal use, so I don't see a point in adding customi
 | Key       | Description           |
 | :-------: | :-------------------: |
 | CTRL+S    | Save current file     |
-| CTRL+D    | Select current line   |
+| CTRL+D    | Expand selection      |
 | CTRL+C    | Copy selection        |
 | CTRL+X    | Cut selection         |
 | CTRL+V    | Paste clipboard       |
@@ -29,7 +29,6 @@ led is only developed for personal use, so I don't see a point in adding customi
 | CTRL+/    | Comment selection     |
 | ALT+P     | Move to other bracket |
 | TAB       | Intent selection      |
-| Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
 | Page Down | Move down one page    |
 | Home      | Jump to start of line |
