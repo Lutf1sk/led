@@ -29,6 +29,7 @@ led is only developed for personal use, so I don't see a point in adding customi
 | CTRL+/    | Comment selection     |
 | ALT+P     | Move to other bracket |
 | TAB       | Intent selection      |
+| Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
 | Page Down | Move down one page    |
 | Home      | Jump to start of line |
