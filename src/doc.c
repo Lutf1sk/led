@@ -31,6 +31,30 @@ usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos) {
 	return found_count;
 }
 
+usz doc_replace_str(doc_t* doc, lstr_t str, lstr_t repl) {
+	if (!str.len)
+		return 0;
+
+	usz occ = 0;
+	for (usz i = 0; i < doc->line_count; ++i) {
+		lstr_t* line = &doc->lines[i];
+
+		// Search every possible offset in the line
+		for (usz j = 0; j + str.len <= line->len;) {
+			if (memcmp(&line->str[j], str.str, str.len) == 0) {
+				++occ;
+				doc_erase_str(doc, i, j, str.len);
+				doc_insert_str(doc, i, j, repl);
+				j += repl.len;
+			}
+			else
+				++j;
+		}
+	}
+
+	return occ;
+}
+
 void doc_insert_char(doc_t* doc, usz line_index, usz index, char ch) {
 	doc->unsaved = 1;
 

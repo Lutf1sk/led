@@ -41,6 +41,7 @@ doc_t doc_make(char* path, char* name) {
 }
 
 usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos);
+usz doc_replace_str(doc_t* doc, lstr_t str, lstr_t repl);
 
 void doc_insert_char(doc_t* doc, usz line_index, usz index, char ch);
 void doc_erase_char(doc_t* doc, usz line_index, usz index);
