@@ -22,9 +22,9 @@ char* conf_clr_default(aframe_t* arena, conf_t* conf, lstr_t key, char* default_
 	*it++ = '[';
 	it += sprintf(it, "%s", conf_find_bool_default(conf, CLSTR("bold"), 0) ? "1" : "22");
 	*it++ = ';';
-	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("fg"), 37));
+	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("fg"), 39));
 	*it++ = ';';
-	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("bg"), 40));
+	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("bg"), 49));
 	*it++ = 'm';
 	*it++ = 0;
 
@@ -32,7 +32,7 @@ char* conf_clr_default(aframe_t* arena, conf_t* conf, lstr_t key, char* default_
 }
 
 void clr_load(aframe_t* arena, conf_t* conf) {
-	// Generate color pairs
+	// Generate color
 	clr_strs[CLR_LINENUM] 		= conf_clr_default(arena, conf, CLSTR("linenum"),			"\x1B[22;37;100m");
 	clr_strs[CLR_LINENUM_SEL]	= conf_clr_default(arena, conf, CLSTR("linenum_selected"),	"\x1B[22;30;47m");
 	clr_strs[CLR_LINENUM_UFLOW]	= conf_clr_default(arena, conf, CLSTR("linenum_underflow"),	"\x1B[22;37;100m");
@@ -41,7 +41,7 @@ void clr_load(aframe_t* arena, conf_t* conf) {
 	clr_strs[CLR_EDITOR]		= conf_clr_default(arena, conf, CLSTR("editor"),			"\x1B[22;37;40m");
 	clr_strs[CLR_EDITOR_SEL]	= conf_clr_default(arena, conf, CLSTR("editor_selection"),	"\x1B[22;30;46m");
 
-	// Syntax highlighting pairs
+	// Syntax highlighting
 	clr_strs[CLR_SYNTAX_UNKNOWN]		= conf_clr_default(arena, conf, CLSTR("syntax_unknown"),	"\x1B[22;37;40m");
 
 	clr_strs[CLR_SYNTAX_STRING]			= conf_clr_default(arena, conf, CLSTR("syntax_string"),		"\x1B[22;33;40m");
@@ -61,10 +61,10 @@ void clr_load(aframe_t* arena, conf_t* conf) {
 
 	clr_strs[CLR_SYNTAX_TRAIL_INDENT]	= conf_clr_default(arena, conf, CLSTR("syntax_trail_indent"),"\x1B[22;30;41m");
 
-	// Notification pairs
+	// Notification
 	clr_strs[CLR_NOTIFY_ERROR]	= conf_clr_default(arena, conf, CLSTR("error"), "\x1B[1;30;41m");
 
-	// File browser pairs
+	// File browser
 	clr_strs[CLR_LIST_HEAD]		= conf_clr_default(arena, conf, CLSTR("list_head"),			"\x1B[22;30;47m");
 	clr_strs[CLR_LIST_ENTRY]	= conf_clr_default(arena, conf, CLSTR("list_entry"),		"\x1B[22;37;40m");
 	clr_strs[CLR_LIST_HIGHL]	= conf_clr_default(arena, conf, CLSTR("list_highlighted"),	"\x1B[22;37;100m");

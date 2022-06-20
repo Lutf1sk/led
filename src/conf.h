@@ -28,7 +28,7 @@ struct conf {
 	union {
 		lstr_t* child_names;
 		double float_val;
-		long int_val;
+		i64 int_val;
 		lstr_t str_val;
 		char char_val;
 		b8 bool_val;
