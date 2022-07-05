@@ -52,6 +52,10 @@ b8 is_keyword(lstr_t str) {
 		if (lstreq(str, CLSTR("for"))) return 1;
 		break;
 
+	case 'g':
+		if (lstreq(str, CLSTR("goto"))) return 1;
+		break;
+
 	case 'i':
 		if (lstreq(str, CLSTR("if"))) return 1;
 		if (lstreq(str, CLSTR("inline"))) return 1;
