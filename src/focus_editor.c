@@ -53,6 +53,8 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
 		usz sel_len = ed_selection_len(ed);
+		if (!sel_len)
+			break;
 
 		if (sel_len > clipboard_alloc_len) {
 			clipboard = realloc(clipboard, sel_len);
