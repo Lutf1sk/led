@@ -38,7 +38,6 @@ b8 is_keyword(lstr_t str) {
 		if (lstreq(str, CLSTR("default"))) return 1;
 		if (lstreq(str, CLSTR("do"))) return 1;
 		if (lstreq(str, CLSTR("define"))) return 1;
-		if (lstreq(str, CLSTR("def"))) return 1;
 		break;
 
 	case 'e':
@@ -60,12 +59,9 @@ b8 is_keyword(lstr_t str) {
 		if (lstreq(str, CLSTR("if"))) return 1;
 		if (lstreq(str, CLSTR("inline"))) return 1;
 		if (lstreq(str, CLSTR("include"))) return 1;
+		if (lstreq(str, CLSTR("import"))) return 1;
 		if (lstreq(str, CLSTR("ifdef"))) return 1;
 		if (lstreq(str, CLSTR("ifndef"))) return 1;
-		break;
-
-	case 'l':
-		if (lstreq(str, CLSTR("let"))) return 1;
 		break;
 
 	case 'n':
