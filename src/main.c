@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
 	clr_load(colors_cf);
 	lt_conf_free(&config);
 
-	write_buf = lt_malloc(alloc, LT_MB(2));
+	write_buf = lt_malloc(alloc, LT_MB(4));
 	ed_globals.highl_arena = arena;
 	ed_globals.highl_restore = lt_amsave(arena);
 

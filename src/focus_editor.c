@@ -21,9 +21,10 @@ static usz clipboard_len = 0;
 static usz clipboard_alloc_len = 0;
 
 void edit_file(global_t* ed_global, editor_t* ed) {
-	ed_regenerate_highl(ed);
 	focus = focus_editor;
 	*ed_global->ed = ed;
+	if (ed)
+		ed_regenerate_highl(ed);
 }
 
 void input_editor(global_t* ed_globals, u32 c) {
@@ -43,7 +44,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	switch (c) {
 	case 'Q' | LT_TERM_MOD_CTRL: modified = 0;
 		fb_close(ed);
-		*ed_globals->ed = fb_first_file();
+		edit_file(ed_globals, fb_first_file());
 		return;
 
 	case 'K' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
