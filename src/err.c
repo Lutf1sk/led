@@ -3,12 +3,12 @@
 
 #include "common.h"
 
-#if defined(PLATFORM_LINUX)
+#if defined(LT_UNIX)
 #	include <errno.h>
 #	include <string.h>
 
 #	define LAST_ERROR_STR() strerror(errno)
-#elif defined(PLATFORM_WINDOWS)
+#elif defined(LT_WINDOWS)
 #	include <windows.h>
 
 #define LAST_ERROR_STR() strerror(GetLastError())

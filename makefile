@@ -1,16 +1,13 @@
-
 OUT = led
-
-RUN_ARGS = test.txt
 
 OBJS = \
 	src/main.o \
 	src/clr.o \
 	src/doc.o \
-	src/utf8.o \
 	src/highlight.o \
 	src/editor.o \
 	src/file_browser.o \
+	src/focus_terminal.o \
 	src/focus_editor.o \
 	src/focus_error.o \
 	src/focus_browse_files.o \
@@ -19,62 +16,39 @@ OBJS = \
 	src/focus_exit.o \
 	src/focus_find_local.o \
 	src/focus.o \
-	src/fhl.o \
 	src/err.o \
-	src/allocators.o \
-	src/arena.o \
-	src/conf.o \
-	src/assert.o \
-	src/term.o \
 	src/draw.o
 
-CC_FLAGS = -O2
+LT_PATH = lt/
+LT_LIB = $(LT_PATH)/bin/lt.a
 
-ifdef DEBUG
-	CC_FLAGS += -rdynamic -g
-	LNK_FLAGS += -rdynamic -g
-endif
-
-# ----------==========
+DEPS = $(patsubst %.o,%.deps,$(OBJS))
 
 CC = cc
+CC_FLAGS += -g -O2 -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
+
 LNK = cc
+LNK_FLAGS += -o $(OUT) -g -rdynamic
+LNK_LIBS += -lpthread -ldl -lm
 
-DEPS = $(patsubst %.o,%.d,$(OBJS))
+all: $(OUT)
 
-CC_FLAGS += -Wall
-LNK_FLAGS +=
-
-OUT_PATH = bin/$(OUT)
-
-all: $(OUT_PATH)
-
-.PHONY: install
 install: all
-	cp $(OUT_PATH) /usr/local/bin/$(OUT)
+	cp $(OUT) /usr/local/bin/
 
-LNK_CMD = $(LNK) $(LNK_FLAGS) -o $(OUT_PATH) $(OBJS) $(LNK_LIBS)
-$(OUT_PATH): $(OBJS)
-	@-mkdir -p bin
-	@printf "Linking %-25s (%s)\n" "$(OUT)" "$(LNK_CMD)"
-	@$(LNK_CMD)
+$(LT_LIB):
+	make -C $(LT_PATH)
 
-run: all
-	$(OUT_PATH) $(RUN_ARGS)
+$(OUT):	$(LT_LIB) $(OBJS)
+	$(LNK) $(LNK_FLAGS) $(OBJS) $(LT_LIB) $(LNK_LIBS)
 
-.PHONY: clean all run analyze
-
-clean:
-	-rm $(OBJS) $(DEPS) $(OUT_PATH)
-
-analyze:
-	@clang-check --analyze $(patsubst %.o,%.c,$(OBJS))
-
-%.o: %.c
-	@printf "Compiling %-25s (%s)\n" "$<" "$(CC) -c $< -o $@ $(CC_FLAGS)"
-	@$(CC) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $< $(CC_FLAGS)
-	@$(CC) -c $< -o $@ $(CC_FLAGS)
+%.o: %.c makefile
+	$(CC) $(CC_FLAGS) -MM -MT $@ -MF $(patsubst %.o,%.deps,$@) $<
+	$(CC) $(CC_FLAGS) -c $< -o $@
 
 -include $(DEPS)
 
+clean:
+	-rm $(OUT) $(OBJS) $(DEPS)
 
+.PHONY: all install clean

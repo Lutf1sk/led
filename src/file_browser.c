@@ -4,8 +4,6 @@
 #include "file_browser.h"
 #include "editor.h"
 #include "highlight.h"
-#include "allocators.h"
-#include "highlight.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -75,13 +73,11 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	path_nt[path.len] = 0;
 
 	editor_t* new = &editors[file_count];
-	*new = ed_make();
+	memset(new, 0, sizeof(editor_t));
 	new->doc = doc_make(path_nt, basename(path_nt));
 	doc_load(&new->doc);
-	new->highl_arena = aframe_alloc(GB(1));
 	new->global = ed_global;
-	new->restore = arestore_make(new->highl_arena);
-	new->highl_lines = highl_generate(new->highl_arena, &new->doc);
+	new->highl_lines = NULL;
 
 	++file_count;
 	return new;
@@ -89,7 +85,6 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 
 void fb_close(editor_t* ed) {
 	free(ed->doc.path);
-	aframe_free(ed->highl_arena);
 	doc_free(&ed->doc);
 
 	--file_count;

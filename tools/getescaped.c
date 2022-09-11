@@ -19,7 +19,7 @@ int main() {
 	for (;;) {
 		char c = getchar();
 		if (c == '\n')
-			printf("\\n");
+			return 0;
 		else if (c <= 31 || c >= 127)
 			printf("\\x%0.2x", c);
 		else if (c == '\b')

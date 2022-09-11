@@ -1,13 +1,14 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
+#include <lt/term.h>
+#include <lt/mem.h>
+
 #include "focus.h"
 #include "editor.h"
 #include "clr.h"
-#include "chartypes.h"
 #include "algo.h"
 #include "draw.h"
-#include "highlight.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,10 +148,7 @@ void input_find_local(global_t* ed_global, u32 c) {
 
 		if (replace) {
 			doc_replace_str(&ed->doc, find_str, replace_str);
-
-			aframe_restore(ed->highl_arena, &ed->restore);
-			ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
-
+			ed_regenerate_highl(ed);
 			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
 		}
 		ed_sync_selection(ed);

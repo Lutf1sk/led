@@ -1,10 +1,9 @@
+#include <lt/ctype.h>
+#include <lt/str.h>
+#include <lt/mem.h>
+
 #include "highlight.h"
 #include "doc.h"
-#include "token_chars.h"
-#include "chartypes.h"
-#include "allocators.h"
-
-#include <string.h>
 
 typedef
 enum multiline_mode {
@@ -13,80 +12,73 @@ enum multiline_mode {
 } multiline_mode_t;
 
 static
-b8 lstreq(lstr_t s1, lstr_t s2) {
-	if (s1.len != s2.len)
-		return 0;
-	return memcmp(s1.str, s2.str, s1.len) == 0;
-}
-
-static
 b8 is_keyword(lstr_t str) {
 	if (!str.len)
 		return 0;
 
 	switch (str.str[0]) {
 	case 'b':
-		if (lstreq(str, CLSTR("break"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("break"))) return 1;
 		break;
 
 	case 'c':
-		if (lstreq(str, CLSTR("continue"))) return 1;
-		if (lstreq(str, CLSTR("case"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("continue"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("case"))) return 1;
 		break;
 
 	case 'd':
-		if (lstreq(str, CLSTR("default"))) return 1;
-		if (lstreq(str, CLSTR("do"))) return 1;
-		if (lstreq(str, CLSTR("define"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("default"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("do"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("define"))) return 1;
 		break;
 
 	case 'e':
-		if (lstreq(str, CLSTR("else"))) return 1;
-		if (lstreq(str, CLSTR("endif"))) return 1;
-		if (lstreq(str, CLSTR("extern"))) return 1;
-		if (lstreq(str, CLSTR("elif"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("else"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("endif"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("extern"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("elif"))) return 1;
 		break;
 
 	case 'f':
-		if (lstreq(str, CLSTR("for"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("for"))) return 1;
 		break;
 
 	case 'g':
-		if (lstreq(str, CLSTR("goto"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("goto"))) return 1;
 		break;
 
 	case 'i':
-		if (lstreq(str, CLSTR("if"))) return 1;
-		if (lstreq(str, CLSTR("inline"))) return 1;
-		if (lstreq(str, CLSTR("include"))) return 1;
-		if (lstreq(str, CLSTR("import"))) return 1;
-		if (lstreq(str, CLSTR("ifdef"))) return 1;
-		if (lstreq(str, CLSTR("ifndef"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("if"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("inline"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("include"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("import"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("ifdef"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("ifndef"))) return 1;
 		break;
 
 	case 'n':
-		if (lstreq(str, CLSTR("null"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("null"))) return 1;
 		break;
 
 	case 'r':
-		if (lstreq(str, CLSTR("return"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("return"))) return 1;
 		break;
 
 	case 's':
-		if (lstreq(str, CLSTR("switch"))) return 1;
-		if (lstreq(str, CLSTR("static"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("switch"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("static"))) return 1;
 		break;
 
 	case 't':
-		if (lstreq(str, CLSTR("typedef"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("typedef"))) return 1;
 		break;
 
 	case 'u':
-		if (lstreq(str, CLSTR("undef"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("undef"))) return 1;
 		break;
 
 	case 'w':
-		if (lstreq(str, CLSTR("while"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("while"))) return 1;
 		break;
 
 	default:
@@ -102,60 +94,60 @@ b8 is_datatype(lstr_t str) {
 
 	switch (str.str[0]) {
 	case 'b':
-		if (lstreq(str, CLSTR("b8"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("b8"))) return 1;
 		break;
 
 	case 'c':
-		if (lstreq(str, CLSTR("const"))) return 1;
-		if (lstreq(str, CLSTR("char"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("const"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("char"))) return 1;
 		break;
 
 	case 'd':
-		if (lstreq(str, CLSTR("double"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("double"))) return 1;
 		break;
 
 	case 'e':
-		if (lstreq(str, CLSTR("enum"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("enum"))) return 1;
 		break;
 
 	case 'f':
-		if (lstreq(str, CLSTR("float"))) return 1;
-		if (lstreq(str, CLSTR("f32"))) return 1;
-		if (lstreq(str, CLSTR("f64"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("float"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("f32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("f64"))) return 1;
 		break;
 
 	case 'i':
-		if (lstreq(str, CLSTR("int"))) return 1;
-		if (lstreq(str, CLSTR("isz"))) return 1;
-		if (lstreq(str, CLSTR("i8"))) return 1;
-		if (lstreq(str, CLSTR("i16"))) return 1;
-		if (lstreq(str, CLSTR("i32"))) return 1;
-		if (lstreq(str, CLSTR("i64"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("int"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("isz"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i8"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i16"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i64"))) return 1;
 		break;
 
 	case 'l':
-		if (lstreq(str, CLSTR("long"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("long"))) return 1;
 		break;
 
 	case 's':
-		if (lstreq(str, CLSTR("signed"))) return 1;
-		if (lstreq(str, CLSTR("short"))) return 1;
-		if (lstreq(str, CLSTR("struct"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("signed"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("short"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("struct"))) return 1;
 		break;
 
 	case 'u':
-		if (lstreq(str, CLSTR("union"))) return 1;
-		if (lstreq(str, CLSTR("unsigned"))) return 1;
-		if (lstreq(str, CLSTR("usz"))) return 1;
-		if (lstreq(str, CLSTR("u8"))) return 1;
-		if (lstreq(str, CLSTR("u16"))) return 1;
-		if (lstreq(str, CLSTR("u32"))) return 1;
-		if (lstreq(str, CLSTR("u64"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("union"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("unsigned"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("usz"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u8"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u16"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u64"))) return 1;
 		break;
 
 	case 'v':
-		if (lstreq(str, CLSTR("volatile"))) return 1;
-		if (lstreq(str, CLSTR("void"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("volatile"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("void"))) return 1;
 		break;
 
 	default:
@@ -165,7 +157,7 @@ b8 is_datatype(lstr_t str) {
 }
 
 static
-highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
+highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 	highl_t* head = NULL;
 	highl_t** node = &head;
 	int c = 0;
@@ -243,21 +235,21 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 			break;
 
 		default:
-			if (is_space(c)) {
+			if (lt_is_space(c)) {
 				while (i < line.len) {
 					c = line.str[i];
-					if (!is_space(c))
+					if (!lt_is_space(c))
 						break;
 					++i;
 				}
 				mode = HLM_INDENT;
 			}
-			else if (is_ident_head(c)) {
+			else if (lt_is_ident_head(c)) {
 				mode = HLM_IDENTIFIER;
 
 				while (i < line.len) {
 					c = line.str[i];
-					if (!is_ident_body(c)) {
+					if (!lt_is_ident_body(c)) {
 						if (c == '(')
 							mode = HLM_FUNCTION;
 						break;
@@ -272,22 +264,22 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 				else if (is_datatype(tk))
 					mode = HLM_DATATYPE;
 			}
-			else if (is_numeric_head(c)) {
+			else if (lt_is_numeric_head(c)) {
 				while (i < line.len) {
-					if (!is_numeric_body(line.str[i]))
+					if (!lt_is_numeric_body(line.str[i]))
 						break;
 					++i;
 				}
 				mode = HLM_NUMBER;
 			}
-			else if (is_operator(c))
+			else if (lt_is_operator(c))
 				mode = HLM_OPERATOR;
-			else if (is_punc(c))
+			else if (lt_is_punc(c))
 				mode = HLM_PUNCTUATION;
 			break;
 		}
 
-		highl_t* new = aframe_reserve(arena, sizeof(highl_t));
+		highl_t* new = lt_malloc(alloc, sizeof(highl_t));
 		new->len = i - start;
 		new->mode = mode;
 
@@ -299,14 +291,14 @@ highl_t* gen_line(aframe_t* arena, lstr_t line, multiline_mode_t* ml_mode) {
 	return head;
 }
 
-highl_t** highl_generate(aframe_t* arena, doc_t* doc) {
-	highl_t** lines = aframe_reserve(arena, doc->line_count * sizeof(highl_t*));
+highl_t** highl_generate(doc_t* doc, lt_alloc_t* alloc) {
+	highl_t** lines = lt_malloc(alloc, doc->line_count * sizeof(highl_t*));
 
 	multiline_mode_t mode = MLMODE_NONE;
 	usz line_count = doc->line_count;
 
 	for (usz i = 0; i < line_count; ++i)
-		lines[i] = gen_line(arena, doc->lines[i], &mode);
+		lines[i] = gen_line(doc->lines[i], &mode, alloc);
 
 	return lines;
 }

@@ -1,10 +1,12 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
+#include <lt/term.h>
+#include <lt/ctype.h>
+
 #include "focus.h"
 #include "editor.h"
 #include "clr.h"
-#include "token_chars.h"
 #include "algo.h"
 #include "draw.h"
 
@@ -32,7 +34,7 @@ isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 		case '-': mode = 'U'; break;
 
 		default:
-			if (is_digit(c)) {
+			if (lt_is_digit(c)) {
 				line *= 10;
 				line += c - '0';
 			}

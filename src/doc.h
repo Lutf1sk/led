@@ -26,7 +26,7 @@ struct doc_pos {
 	usz x;
 } doc_pos_t;
 
-static inline INLINE
+static LT_INLINE
 doc_t doc_make(char* path, char* name) {
 	doc_t doc;
 	doc.path = path;

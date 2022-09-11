@@ -4,9 +4,9 @@
 #ifndef EDITOR_H
 #define EDITOR_H 1
 
-#include "common.h"
+#include <lt/fwd.h>
+
 #include "doc.h"
-#include "allocators.h"
 
 typedef struct highl highl_t;
 
@@ -19,13 +19,20 @@ struct global {
 	isz tab_size;
 	isz scroll_offs;
 	isz vstep;
+	u64 vstep_timeout_ms;
 
 	isz width, height;
 	isz hstart, vstart;
 
 	u8 predict_brackets;
-	u8 await_utf8;
 	u8 relative_linenums;
+
+	lt_arena_t* highl_arena;
+	void* highl_restore;
+	u64 vstep_timeout_at_ms;
+	u8 await_utf8;
+	usz consec_cup;
+	usz consec_cdn;
 } global_t;
 
 typedef
@@ -38,28 +45,10 @@ struct editor {
 	isz target_cx, target_cy_offs;
 	isz sel_x, sel_y;
 
-	arestore_t restore;
-	aframe_t* highl_arena;
 	highl_t** highl_lines;
 
 	doc_t doc;
 } editor_t;
-
-static inline INLINE
-editor_t ed_make(void) {
-	editor_t ed;
-	ed.global = NULL;
-	ed.line_top = 0;
-	ed.cx = 0;
-	ed.cy = 0;
-	ed.target_cx = 0;
-	ed.target_cy_offs = 0;
-	ed.sel_x = 0;
-	ed.sel_y = 0;
-	ed.highl_arena = NULL;
-	ed.highl_lines = NULL;
-	return ed;
-}
 
 void ed_move_to_selection_start(editor_t* ed);
 void ed_move_to_selection_end(editor_t* ed);
@@ -84,7 +73,7 @@ void ed_sync_selection(editor_t* ed);
 void ed_sync_target_cx(editor_t* ed);
 void ed_sync_target_cy(editor_t* ed);
 
-static inline INLINE
+static LT_INLINE
 void ed_sync_target(editor_t* ed) {
 	ed_sync_target_cx(ed);
 	ed_sync_target_cy(ed);
@@ -115,5 +104,7 @@ isz ed_find_indent_pfx(editor_t* ed);
 isz ed_find_indent(editor_t* ed);
 
 void ed_expand_selection(editor_t* ed);
+
+void ed_regenerate_highl(editor_t* ed);
 
 #endif

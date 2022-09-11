@@ -3,7 +3,8 @@
 
 #include "draw.h"
 
-#include <stdio.h>
+#include <lt/io.h>
+
 #include <string.h>
 
 char* write_buf;
@@ -31,7 +32,7 @@ void rec_nc(usz n, char c) {
 
 
 void rec_goto(u32 x, u32 y) {
-	write_it += sprintf(write_it, "\x1B[%d;%dH", y, x);
+	write_it += lt_str_printf(write_it, "\x1B[%ud;%udH", y, x);
 }
 
 

@@ -1,5 +1,6 @@
 /src/**/*.o
-/src/**/*.d
-/bin/*
+/src/**/*.deps
+/getesc
+/led
 gmon.out
 test.txt

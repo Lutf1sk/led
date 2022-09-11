@@ -1,10 +1,13 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
+#include <lt/utf8.h>
+#include <lt/ctype.h>
+#include <lt/mem.h>
+
 #include "editor.h"
-#include "token_chars.h"
 #include "algo.h"
-#include "utf8.h"
+#include "highlight.h"
 
 #include <string.h>
 
@@ -201,7 +204,7 @@ usz ed_screen_x_to_cx(editor_t* ed, isz x, isz cy) {
 			++i;
 		}
 		else {
-			i += utf8_decode_len(c);
+			i += lt_utf8_decode_len(c);
 			++screen_x;
 		}
 		if (screen_x > x)
@@ -227,7 +230,7 @@ usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy) {
 			++i;
 		}
 		else {
-			i += utf8_decode_len(c);
+			i += lt_utf8_decode_len(c);
 			++screen_x;
 		}
 	}
@@ -256,7 +259,7 @@ void ed_cur_right(editor_t* ed) {
 		return;
 	}
 
-	usz utf8_len = utf8_decode_len(line.str[ed->cx]);
+	usz utf8_len = lt_utf8_decode_len(line.str[ed->cx]);
 
 	if (ed->cx + utf8_len <= line.len)
 		ed->cx += utf8_len;
@@ -313,22 +316,22 @@ usz ed_find_word_fwd(editor_t* ed) {
 	char* str = line->str;
 
 	// Skip whitespace
-	while (cx < line->len && is_space(str[cx]))
+	while (cx < line->len && lt_is_space(str[cx]))
 		++cx;
 
 	if (cx == line->len)
 		return cx;
 	char c = str[cx];
 
-	if (is_ident_head(c) || is_numeric_head(c)) {
+	if (lt_is_ident_head(c) || lt_is_numeric_head(c)) {
 		// Skip underscores
 		while (cx < line->len && str[cx] == '_')
 			++cx;
-		while (cx < line->len && is_numeric_body(str[cx]))
-			cx += utf8_decode_len(str[cx]);
+		while (cx < line->len && lt_is_numeric_body(str[cx]))
+			cx += lt_utf8_decode_len(str[cx]);
 	}
 	else {
-		while (cx < line->len && !is_ident_body(str[cx]) && !is_space(str[cx]))
+		while (cx < line->len && !lt_is_ident_body(str[cx]) && !lt_is_space(str[cx]))
 			++cx;
 	}
 
@@ -341,25 +344,25 @@ usz ed_find_word_bwd(editor_t* ed) {
 	char* str = line->str;
 
 	// Skip whitespace
-	while (cx && is_space(str[cx - 1]))
+	while (cx && lt_is_space(str[cx - 1]))
 		--cx;
 
 	if (!cx)
 		return 0;
 	char c = str[cx - 1];
 
-	if (is_ident_head(c) || is_numeric_head(c)) {
+	if (lt_is_ident_head(c) || lt_is_numeric_head(c)) {
 		// Skip underscores
 		while (cx && str[cx - 1] == '_')
 			--cx;
-		while (cx && is_numeric_body(str[cx - 1])) {
+		while (cx && lt_is_numeric_body(str[cx - 1])) {
 			--cx;
 			while ((str[cx - 1] & 0xC0) == 0x80)
 				--cx;
 		}
 	}
 	else {
-		while (cx && !is_ident_body(str[cx - 1]) && !is_space(str[cx - 1]))
+		while (cx && !lt_is_ident_body(str[cx - 1]) && !lt_is_space(str[cx - 1]))
 			--cx;
 	}
 
@@ -507,7 +510,7 @@ isz ed_find_indent_pfx(editor_t* ed) {
 	isz cx = 0;
 
 	for (usz i = 0; i < line.len && i < ed->cx; ++i) {
-		if (!is_space(line.str[i]))
+		if (!lt_is_space(line.str[i]))
 			break;
 		++cx;
 	}
@@ -520,7 +523,7 @@ isz ed_find_indent(editor_t* ed) {
 	isz cx = 0;
 
 	for (usz i = 0; i < line.len; ++i) {
-		if (!is_space(line.str[i]))
+		if (!lt_is_space(line.str[i]))
 			break;
 		++cx;
 	}
@@ -540,5 +543,10 @@ void ed_expand_selection(editor_t* ed) {
 
 	ed->cy = end_y;
 	ed->cx = ed->doc.lines[ed->cy].len;
+}
+
+void ed_regenerate_highl(editor_t* ed) {
+	lt_amrestore(ed->global->highl_arena, ed->global->highl_restore);
+	ed->highl_lines = highl_generate(&ed->doc, (lt_alloc_t*)ed->global->highl_arena);
 }
 

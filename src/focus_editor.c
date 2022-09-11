@@ -1,13 +1,15 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
+#include <lt/utf8.h>
+#include <lt/term.h>
+#include <lt/mem.h>
+
 #include "focus.h"
 #include "file_browser.h"
 #include "editor.h"
 #include "algo.h"
-#include "utf8.h"
 #include "highlight.h"
-#include "term.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -19,6 +21,7 @@ static usz clipboard_len = 0;
 static usz clipboard_alloc_len = 0;
 
 void edit_file(global_t* ed_global, editor_t* ed) {
+	ed_regenerate_highl(ed);
 	focus = focus_editor;
 	*ed_global->ed = ed;
 }
@@ -47,9 +50,13 @@ void input_editor(global_t* ed_globals, u32 c) {
 		browse_files();
 		break;
 
-	case 'F' | LT_TERM_MOD_CTRL: modified = 0; {
+	case 'F' | LT_TERM_MOD_CTRL: modified = 0;
 		find_local(ed->cy, ed->cx);
-	}	break;
+		break;
+
+	case 'R' | LT_TERM_MOD_CTRL: modified = 0;
+		terminal();
+		break;
 
 	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
 		usz sel_len = ed_selection_len(ed);
@@ -161,20 +168,22 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
 		break;
 
-	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL: sync_target_x = 0; modified = 0;
+	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL: sync_target_x = 0; modified = 0; {
 		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_start(ed);
 			break;
 		}
 
-		for (usz i = 0; i < ed_globals->vstep; ++i)
+		usz vstep = ++ed_globals->consec_cup * ed_globals->vstep;
+		for (usz i = 0; i < vstep; ++i)
 			ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
-		break;
+	}	break;
 
-	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: sync_selection = 0; sync_target_x = 0; modified = 0;
-		for (usz i = 0; i < ed_globals->vstep; ++i)
+	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: sync_selection = 0; sync_target_x = 0; modified = 0; {
+		usz vstep = ++ed_globals->consec_cup * ed_globals->vstep;
+		for (usz i = 0; i < vstep; ++i)
 			ed_cur_up(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy - 1));
-		break;
+	}	break;
 
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT | LT_TERM_MOD_CTRL:
@@ -200,18 +209,20 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 		break;
 
-	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL: sync_target_x = 0; modified = 0;
+	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL: sync_target_x = 0; modified = 0; {
 		if (ed_selection_available(ed) && ed->cy != ed->sel_y) {
 			ed_move_to_selection_end(ed);
 			break;
 		}
 
-		for (usz i = 0; i < ed_globals->vstep; ++i)
+		usz vstep = ++ed_globals->consec_cdn * ed_globals->vstep;
+		for (usz i = 0; i < vstep; ++i)
 			ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
-		break;
+	}	break;
 
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: sync_selection = 0; sync_target_x = 0; modified = 0; {
-		for (usz i = 0; i < ed_globals->vstep; ++i)
+		usz vstep = ++ed_globals->consec_cdn * ed_globals->vstep;
+		for (usz i = 0; i < vstep; ++i)
 			ed_cur_down(ed, ed_screen_x_to_cx(ed, ed->target_cx, ed->cy + 1));
 	}	break;
 
@@ -333,7 +344,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 		if (ed_selection_available(ed))
 			ed_delete_selection(ed);
 		else if (ed->cx < ed->doc.lines[ed->cy].len)
-			doc_erase_str(&ed->doc, ed->cy, ed->cx, utf8_decode_len(ed->doc.lines[ed->cy].str[ed->cx]));
+			doc_erase_str(&ed->doc, ed->cy, ed->cx, lt_utf8_decode_len(ed->doc.lines[ed->cy].str[ed->cx]));
 		else if (ed->cy + 1 < ed->doc.line_count)
 			doc_merge_line(&ed->doc, ed->cy + 1);
 		break;
@@ -438,7 +449,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	default:
  		if ((c >= 32 && c < 127) || (c & 0xE0) == 0xC0) {
 			if ((c & 0xE0) == 0xC0)
-				ed->global->await_utf8 = utf8_decode_len(c) - 1;
+				ed->global->await_utf8 = lt_utf8_decode_len(c) - 1;
 
 			ed_delete_selection_if_available(ed);
 			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
@@ -463,6 +474,11 @@ void input_editor(global_t* ed_globals, u32 c) {
 		break;
 	}
 
+	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL))
+		ed_globals->consec_cdn = 0;
+	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL))
+		ed_globals->consec_cup = 0;
+
 	if (sync_target_x)
 		ed_sync_target_cx(ed);
 	if (sync_target_y)
@@ -484,9 +500,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed->line_top = min(ed->line_top, max(0, ed->doc.line_count - ed->global->height));
 	}
 
-	if (modified) {
-		aframe_restore(ed->highl_arena, &ed->restore);
-		ed->highl_lines = highl_generate(ed->highl_arena, &ed->doc);
-	}
+	if (modified)
+		ed_regenerate_highl(ed);
 }
 

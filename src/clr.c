@@ -2,71 +2,93 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "clr.h"
-#include "common.h"
-#include "conf.h"
-#include "allocators.h"
 
-#include <string.h>
+#include <lt/conf.h>
+#include <lt/io.h>
 
-char* clr_strs[CLR_COUNT];
+char clr_strs[CLR_COUNT][128] = {
+	[CLR_LINENUM] = "\x1B[22;37;100m",
+	[CLR_LINENUM_UFLOW] = "\x1B[22;37;100m",
+	[CLR_LINENUM_SEL] = "\x1B[22;30;47m",
 
-char* conf_clr_default(aframe_t* arena, conf_t* conf, lstr_t key, char* default_) {
-	conf = conf_find(conf, key, CONF_OBJECT);
+	[CLR_HEADER_TAB] = "\x1B[22;30;47m",
+	[CLR_HEADER_BG] = "\x1B[22;30;100m",
+
+	[CLR_EDITOR] = "\x1B[22;37;40m",
+	[CLR_EDITOR_SEL] = "\x1B[22;30;46m",
+
+	[CLR_SYNTAX_UNKNOWN] = "\x1B[22;37;40m",
+
+	[CLR_SYNTAX_STRING] = "\x1B[22;33;40m",
+	[CLR_SYNTAX_CHAR] = "\x1B[22;33;40m",
+	[CLR_SYNTAX_NUMBER] = "\x1B[22;37;40m",
+
+	[CLR_SYNTAX_IDENTIFIER] = "\x1B[22;97;40m",
+	[CLR_SYNTAX_KEYWORD] = "\x1B[22;93;40m",
+	[CLR_SYNTAX_COMMENT] = "\x1B[22;32;40m",
+	[CLR_SYNTAX_DATATYPE] = "\x1B[22;31;40m",
+
+	[CLR_SYNTAX_HASH] = "\x1B[22;37;40m",
+	[CLR_SYNTAX_OPERATOR] = "\x1B[22;36;40m",
+	[CLR_SYNTAX_PUNCTUATION] = "\x1B[22;31;40m",
+
+	[CLR_SYNTAX_FUNCTION] = "\x1B[1;97;40m",
+
+	[CLR_NOTIFY_ERROR] = "\x1B[1;30;41m",
+
+	[CLR_LIST_HEAD] = "\x1B[22;30;47m",
+	[CLR_LIST_ENTRY] = "\x1B[22;37;40m",
+	[CLR_LIST_HIGHL] = "\x1B[22;37;100m",
+
+	[CLR_SYNTAX_TRAIL_INDENT] = "\x1B[22;30;41m",
+};
+
+static
+void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
+	conf = lt_conf_find(conf, key);
 	if (!conf)
-		return default_;
+		return;
 
-	char* str = aframe_reserve(arena, 0);
-	char* it = str;
-
-	*it++ = 0x1B;
-	*it++ = '[';
-	it += sprintf(it, "%s", conf_find_bool_default(conf, CLSTR("bold"), 0) ? "1" : "22");
-	*it++ = ';';
-	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("fg"), 39));
-	*it++ = ';';
-	it += sprintf(it, "%ld", conf_find_int_default(conf, CLSTR("bg"), 49));
-	*it++ = 'm';
-	*it++ = 0;
-
-	return aframe_reserve(arena, it - str);
+	lt_str_printf(clr_strs[clr], "\x1B[%s;%iq;%iqm%c",
+			lt_conf_bool(lt_conf_find(conf, CLSTR("bold")), 0) ? "1" : "22",
+			lt_conf_int(lt_conf_find(conf, CLSTR("fg")), 39),
+			lt_conf_int(lt_conf_find(conf, CLSTR("bg")), 49), 0);
 }
 
-void clr_load(aframe_t* arena, conf_t* conf) {
-	// Generate color
-	clr_strs[CLR_LINENUM] 		= conf_clr_default(arena, conf, CLSTR("linenum"),			"\x1B[22;37;100m");
-	clr_strs[CLR_LINENUM_SEL]	= conf_clr_default(arena, conf, CLSTR("linenum_selected"),	"\x1B[22;30;47m");
-	clr_strs[CLR_LINENUM_UFLOW]	= conf_clr_default(arena, conf, CLSTR("linenum_underflow"),	"\x1B[22;37;100m");
-	clr_strs[CLR_HEADER_TAB]	= conf_clr_default(arena, conf, CLSTR("header_label"),		"\x1B[22;30;47m");
-	clr_strs[CLR_HEADER_BG]		= conf_clr_default(arena, conf, CLSTR("header"),			"\x1B[22;30;100m");
-	clr_strs[CLR_EDITOR]		= conf_clr_default(arena, conf, CLSTR("editor"),			"\x1B[22;37;40m");
-	clr_strs[CLR_EDITOR_SEL]	= conf_clr_default(arena, conf, CLSTR("editor_selection"),	"\x1B[22;30;46m");
+void clr_load(lt_conf_t* conf) {
+	load_clr(CLR_LINENUM, conf, CLSTR("linenum"));
+	load_clr(CLR_LINENUM_UFLOW, conf, CLSTR("linenum_underflow"));
+	load_clr(CLR_LINENUM_SEL, conf, CLSTR("linenum_selected"));
 
-	// Syntax highlighting
-	clr_strs[CLR_SYNTAX_UNKNOWN]		= conf_clr_default(arena, conf, CLSTR("syntax_unknown"),	"\x1B[22;37;40m");
+	load_clr(CLR_HEADER_TAB, conf, CLSTR("header_label"));
+	load_clr(CLR_HEADER_BG, conf, CLSTR("header"));
 
-	clr_strs[CLR_SYNTAX_STRING]			= conf_clr_default(arena, conf, CLSTR("syntax_string"),		"\x1B[22;33;40m");
-	clr_strs[CLR_SYNTAX_CHAR]			= conf_clr_default(arena, conf, CLSTR("syntax_char"),		"\x1B[22;33;40m");
-	clr_strs[CLR_SYNTAX_NUMBER]			= conf_clr_default(arena, conf, CLSTR("syntax_number"),		"\x1B[22;37;40m");
+	load_clr(CLR_EDITOR, conf, CLSTR("editor"));
+	load_clr(CLR_EDITOR_SEL, conf, CLSTR("editor_selection"));
 
-	clr_strs[CLR_SYNTAX_IDENTIFIER]		= conf_clr_default(arena, conf, CLSTR("syntax_identifier"),	"\x1B[22;97;40m");
-	clr_strs[CLR_SYNTAX_KEYWORD]		= conf_clr_default(arena, conf, CLSTR("syntax_keyword"),	"\x1B[22;93;40m");
-	clr_strs[CLR_SYNTAX_COMMENT]		= conf_clr_default(arena, conf, CLSTR("syntax_comment"),	"\x1B[22;32;40m");
-	clr_strs[CLR_SYNTAX_DATATYPE]		= conf_clr_default(arena, conf, CLSTR("syntax_datatype"),	"\x1B[22;31;40m");
+	load_clr(CLR_SYNTAX_UNKNOWN, conf, CLSTR("syntax_unknown"));
 
-	clr_strs[CLR_SYNTAX_HASH]			= conf_clr_default(arena, conf, CLSTR("syntax_hash"),		"\x1B[22;37;40m");
-	clr_strs[CLR_SYNTAX_OPERATOR]		= conf_clr_default(arena, conf, CLSTR("syntax_operator"),	"\x1B[22;36;40m");
-	clr_strs[CLR_SYNTAX_PUNCTUATION]	= conf_clr_default(arena, conf, CLSTR("syntax_punctuation"),"\x1B[22;31;40m");
+	load_clr(CLR_SYNTAX_STRING, conf, CLSTR("syntax_string"));
+	load_clr(CLR_SYNTAX_CHAR, conf, CLSTR("syntax_char"));
+	load_clr(CLR_SYNTAX_NUMBER, conf, CLSTR("syntax_number"));
 
-	clr_strs[CLR_SYNTAX_FUNCTION]		= conf_clr_default(arena, conf, CLSTR("syntax_function"),	"\x1B[1;97;40m");
+	load_clr(CLR_SYNTAX_IDENTIFIER, conf, CLSTR("syntax_identifier"));
+	load_clr(CLR_SYNTAX_KEYWORD, conf, CLSTR("syntax_keyword"));
+	load_clr(CLR_SYNTAX_COMMENT, conf, CLSTR("syntax_comment"));
+	load_clr(CLR_SYNTAX_DATATYPE, conf, CLSTR("syntax_datatype"));
 
-	clr_strs[CLR_SYNTAX_TRAIL_INDENT]	= conf_clr_default(arena, conf, CLSTR("syntax_trail_indent"),"\x1B[22;30;41m");
+	load_clr(CLR_SYNTAX_HASH, conf, CLSTR("syntax_hash"));
+	load_clr(CLR_SYNTAX_OPERATOR, conf, CLSTR("syntax_operator"));
+	load_clr(CLR_SYNTAX_PUNCTUATION, conf, CLSTR("syntax_punctuation"));
 
-	// Notification
-	clr_strs[CLR_NOTIFY_ERROR]	= conf_clr_default(arena, conf, CLSTR("error"), "\x1B[1;30;41m");
+	load_clr(CLR_SYNTAX_FUNCTION, conf, CLSTR("syntax_function"));
 
-	// File browser
-	clr_strs[CLR_LIST_HEAD]		= conf_clr_default(arena, conf, CLSTR("list_head"),			"\x1B[22;30;47m");
-	clr_strs[CLR_LIST_ENTRY]	= conf_clr_default(arena, conf, CLSTR("list_entry"),		"\x1B[22;37;40m");
-	clr_strs[CLR_LIST_HIGHL]	= conf_clr_default(arena, conf, CLSTR("list_highlighted"),	"\x1B[22;37;100m");
+	load_clr(CLR_NOTIFY_ERROR, conf, CLSTR("error"));
+
+	load_clr(CLR_LIST_HEAD, conf, CLSTR("list_head"));
+	load_clr(CLR_LIST_ENTRY, conf, CLSTR("list_entry"));
+	load_clr(CLR_LIST_HIGHL, conf, CLSTR("list_highlighted"));
+
+	load_clr(CLR_SYNTAX_TRAIL_INDENT, conf, CLSTR("syntax_trail_indent"));
 }
 

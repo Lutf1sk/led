@@ -4,7 +4,7 @@
 #ifndef HIGHLIGHT_H
 #define HIGHLIGHT_H 1
 
-#include "common.h"
+#include <lt/fwd.h>
 
 typedef
 enum highl_mode {
@@ -35,9 +35,8 @@ struct highl {
 	struct highl* next;
 } highl_t;
 
-typedef struct aframe aframe_t;
 typedef struct doc doc_t;
 
-highl_t** highl_generate(aframe_t* arena, doc_t* doc);
+highl_t** highl_generate(doc_t* doc, lt_alloc_t* alloc);
 
 #endif

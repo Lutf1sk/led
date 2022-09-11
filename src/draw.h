@@ -4,7 +4,7 @@
 #ifndef DRAW_H
 #define DRAW_H 1
 
-#include "term.h"
+#include <lt/lt.h>
 
 #define HEADER_HEIGHT 1
 #define LINENUM_WIDTH 5

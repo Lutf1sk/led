@@ -72,4 +72,11 @@ void goto_line(void);
 void draw_goto(global_t* ed_global, void* args);
 void input_goto(global_t* ed_global, u32 c);
 
+// Terminal
+
+void terminal(void);
+
+void draw_terminal(global_t* ed_global, void* args);
+void input_terminal(global_t* ed_global, u32 c);
+
 #endif

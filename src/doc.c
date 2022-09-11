@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "doc.h"
-#include "fhl.h"
+
+#include <lt/io.h>
+#include <lt/mem.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -163,19 +165,17 @@ void doc_merge_line(doc_t* doc, usz line_index) {
 	--doc->line_count;
 }
 
-void doc_load(doc_t* doc) {
-	void* fp = fhl_fopen_r(doc->path);
-	usz size = 0;
-	char* data = NULL;
-	if (fp) {
-		size = fhl_fsize(fp);
-		data = malloc(size);
-		if (fhl_fread(fp, data, size) != size)
-			ferrf("Failed to read from '%s'\n", doc->path);
-		fhl_fclose(fp);
+#include <unistd.h>
 
-		if (!fhl_permit_w(doc->path))
+void doc_load(doc_t* doc) {
+	lstr_t file;
+	char* data = NULL;
+	usz size = 0;
+	if (lt_file_read_entire(doc->path, &file, lt_libc_heap)) {
+		if (access((doc->path), W_OK) != 0)
 			doc->read_only = 1;
+		data = file.str;
+		size = file.len;
 	}
 	else
 		doc->new = 1;
@@ -203,7 +203,7 @@ void doc_load(doc_t* doc) {
 			ferrf("Failed to allocate memory: %s\n", os_err_str());
 		doc->lines[0] = NLSTR();
 
-		free(data);
+		lt_mfree(lt_libc_heap, data);
 		return;
 	}
 
@@ -227,23 +227,23 @@ void doc_load(doc_t* doc) {
 		doc->lines[line_i++] = LSTR(str, len);
 	}
 
-	free(data);
+	lt_mfree(lt_libc_heap, data);
 }
 
 b8 doc_save(doc_t* doc) {
-	void* fp = fhl_fopen_w(doc->path);
-	if (!fp)
+	lt_file_t* f = lt_file_open(doc->path, LT_FILE_W, 0, lt_libc_heap);
+	if (!f)
 		return 0;
-
-	for (usz i = 0; i < doc->line_count; ++i)
-		fprintf(fp, "%.*s\n", (int)doc->lines[i].len, doc->lines[i].str);
-
-	fhl_fclose(fp);
+	for (usz i = 0; i < doc->line_count; ++i) {
+		lstr_t line = doc->lines[i];
+		if (lt_file_write(f, line.str, line.len) != line.len || lt_file_write(f, "\n", 1) != 1)
+			return 0;
+	}
+	lt_file_close(f, lt_libc_heap);
 
 	doc->unsaved = 0;
 	doc->new = 0;
 	doc->read_only = 0;
-
 	return 1;
 }
 

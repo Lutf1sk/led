@@ -1,19 +1,21 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include <stdlib.h>
-#include <string.h>
+#include <lt/io.h>
+#include <lt/conf.h>
+#include <lt/utf8.h>
+#include <lt/mem.h>
+#include <lt/term.h>
 
-#include "fhl.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "algo.h"
-#include "conf.h"
-#include "allocators.h"
 #include "clr.h"
 #include "highlight.h"
 #include "editor.h"
 #include "file_browser.h"
 #include "focus.h"
-#include "utf8.h"
 
 #include "draw.h"
 
@@ -90,7 +92,9 @@ void draw_editor(editor_t* ed) {
 		rec_goto(0, EDITOR_VSTART + i + 1);
 
 		lstr_t line = ed->doc.lines[line_top + i];
-		highl_t* hl = ed->highl_lines[line_top + i];
+		highl_t* hl = NULL;
+		if (ed->highl_lines)
+			hl = ed->highl_lines[line_top + i];
 
 		isz linenum = i + line_top + 1;
 		if (ed->global->relative_linenums)
@@ -125,7 +129,7 @@ void draw_editor(editor_t* ed) {
 				sel = 0;
 			}
 
-			while (j >= next_hl) {
+			while (hl && j >= next_hl) {
 				hl = hl->next;
 				if (!sel)
 					rec_str(get_highl(hl));
@@ -141,7 +145,7 @@ void draw_editor(editor_t* ed) {
 			}
 			else {
 				++scr_x;
-				usz end = j + utf8_decode_len(c);
+				usz end = j + lt_utf8_decode_len(c);
 				while (j < end)
 					rec_c(line.str[j++]);
 			}
@@ -162,7 +166,13 @@ void draw_editor(editor_t* ed) {
 static
 const lstr_t conf_subpath = CLSTR("/.config/led/led.conf");
 
-FILE* fopen_config(void) {
+i64 lt_conf_find_int(lt_conf_t* cf, lstr_t key, i64 default_) { return lt_conf_int(lt_conf_find(cf, key), default_); }
+u64 lt_conf_find_uint(lt_conf_t* cf, lstr_t key, u64 default_) { return lt_conf_uint(lt_conf_find(cf, key), default_); }
+f64 lt_conf_find_float(lt_conf_t* cf, lstr_t key, f64 default_) { return lt_conf_float(lt_conf_find(cf, key), default_); }
+b8 lt_conf_find_bool(lt_conf_t* cf, lstr_t key, b8 default_) { return lt_conf_bool(lt_conf_find(cf, key), default_); }
+lstr_t lt_conf_find_str(lt_conf_t* cf, lstr_t key, lstr_t default_) { return lt_conf_str(lt_conf_find(cf, key), default_); }
+
+char* get_config_path(void) {
 	const char* home_dir;
 	if (!(home_dir = getenv("HOME")))
 		return NULL;
@@ -171,16 +181,12 @@ FILE* fopen_config(void) {
 	if (home_len + conf_subpath.len + 1 >= PATH_MAX_LEN)
 		ferr("Wtf, why is your home path that long?\n");
 
-	char path_buf[PATH_MAX_LEN] = "";
+	static char path_buf[PATH_MAX_LEN] = "";
 	memcpy(path_buf, home_dir, home_len);
 	memcpy(path_buf + home_len, conf_subpath.str, conf_subpath.len);
 	path_buf[home_len + conf_subpath.len] = 0;
 
-	FILE* fp = fhl_fopen_r(path_buf);
-	if (fp)
-		return fp;
-
-	return NULL;
+	return path_buf;
 }
 
 void cleanup(int code, void* args) {
@@ -191,8 +197,11 @@ void cleanup(int code, void* args) {
 	lt_term_restore();
 }
 
+void on_exit(void*, void*);
+
 int main(int argc, char** argv) {
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
+	on_exit(cleanup, NULL);
 
 // 	u32 c = 0;
 // 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
@@ -202,49 +211,49 @@ int main(int argc, char** argv) {
 // 	lt_term_restore();
 // 	return 0;
 
-	allocators_initialize();
+	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
+	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
-	// Read config
-	FILE* conf_fp = fopen_config();
-	if (!conf_fp)
+	char* cpath = get_config_path();
+	lstr_t conf_file;
+	if (!lt_file_read_entire(cpath, &conf_file, alloc))
 		ferr("No config file available in default locations\n");
 
-	usz conf_len = fhl_fsize(conf_fp);
-	char* conf_data = malloc(conf_len);
-	if (!conf_data)
-		ferrf("Memory allocation failed: %s\n", os_err_str());
-	fhl_fread(conf_fp, conf_data, conf_len);
+	lt_conf_t config;
+	if (!lt_conf_parse(&config, conf_file))
+		ferr("Failed to parse config file\n");
 
-	conf_t config = conf_parse(LSTR(conf_data, conf_len));
+	lt_conf_write(&config, lt_stderr);
 
-	conf_t* editor_cf = conf_find(&config, CLSTR("editor"), CONF_OBJECT);
+	lt_conf_t* editor_cf = lt_conf_find(&config, CLSTR("editor"));
 	if (!editor_cf)
 		ferr("Missing required option 'editor'\n");
 
-	ed_globals.scroll_offs = conf_find_int_default(editor_cf, CLSTR("scroll_offset"), 2);
-	ed_globals.tab_size = conf_find_int_default(editor_cf, CLSTR("tab_size"), 4);
-	ed_globals.vstep = conf_find_int_default(editor_cf, CLSTR("vstep"), 4);
-	ed_globals.predict_brackets = conf_find_bool_default(editor_cf, CLSTR("predict_brackets"), 0);
-	ed_globals.await_utf8 = 0;
-	ed_globals.relative_linenums = conf_find_bool_default(editor_cf, CLSTR("relative_linenums"), 0);
+	memset(&ed_globals, 0, sizeof(ed_globals));
+	ed_globals.scroll_offs = lt_conf_find_int(editor_cf, CLSTR("scroll_offset"), 2);
+	ed_globals.tab_size = lt_conf_find_int(editor_cf, CLSTR("tab_size"), 4);
+	ed_globals.vstep = lt_conf_find_int(editor_cf, CLSTR("vstep"), 2);
+	ed_globals.vstep_timeout_ms = lt_conf_find_int(editor_cf, CLSTR("vstep_timeout_ms"), 250);
+	ed_globals.predict_brackets = lt_conf_find_bool(editor_cf, CLSTR("predict_brackets"), 0);
+	ed_globals.relative_linenums = lt_conf_find_bool(editor_cf, CLSTR("relative_linenums"), 0);
 
 	ed_globals.ed = &ed;
 
-	aframe_t* write_arena = aframe_alloc(GB(1));
+	lt_conf_t* colors_cf = lt_conf_find(&config, CLSTR("colors"));
+	if (!colors_cf)
+		ferr("Missing required option 'editor'\n");
+	clr_load(colors_cf);
+	lt_conf_free(&config);
 
-	conf_t* colors_cf = conf_find(&config, CLSTR("colors"), CONF_OBJECT);
-	clr_load(write_arena, colors_cf);
-	free(conf_data);
-
-	write_buf = aframe_reserve(write_arena, 0);
+	write_buf = lt_malloc(alloc, LT_MB(2));
+	ed_globals.highl_arena = arena;
+	ed_globals.highl_restore = lt_amsave(arena);
 
 	// Load documents
 	for (usz i = 1; i < argc; ++i)
-		fb_open(&ed_globals, CLSTR(argv[i]));
+		fb_open(&ed_globals, LSTR(argv[i], strlen(argv[i])));
 
 	ed = fb_first_file();
-
-	on_exit(cleanup, NULL);
 
 	edit_file(&ed_globals, ed);
 
@@ -264,7 +273,7 @@ int main(int argc, char** argv) {
 			if (ed)
 				draw_editor(ed);
 			if (focus.draw)
-					focus.draw(&ed_globals, focus.draw_args);
+				focus.draw(&ed_globals, focus.draw_args);
 			lt_term_write_direct(write_buf, write_it - write_buf);
 		}
 
