@@ -41,6 +41,11 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 	static b8 m1_pressed = 0;
 
+	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+		ed_globals->consec_cdn = 0;
+	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+		ed_globals->consec_cup = 0;
+
 	switch (c) {
 	case 'Q' | LT_TERM_MOD_CTRL: modified = 0;
 		fb_close(ed);
@@ -474,11 +479,6 @@ void input_editor(global_t* ed_globals, u32 c) {
  		}
 		break;
 	}
-
-	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL))
-		ed_globals->consec_cdn = 0;
-	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL))
-		ed_globals->consec_cup = 0;
 
 	if (sync_target_x)
 		ed_sync_target_cx(ed);
