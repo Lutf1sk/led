@@ -6,6 +6,7 @@
 #include <lt/utf8.h>
 #include <lt/mem.h>
 #include <lt/term.h>
+#include <lt/arg.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,8 +19,6 @@
 #include "focus.h"
 
 #include "draw.h"
-
-editor_t* ed = NULL;
 
 global_t ed_globals;
 
@@ -200,9 +199,6 @@ void cleanup(int code, void* args) {
 void on_exit(void*, void*);
 
 int main(int argc, char** argv) {
-	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
-	on_exit(cleanup, NULL);
-
 // 	u32 c = 0;
 // 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
 // 		c = lt_term_getkey();
@@ -211,19 +207,42 @@ int main(int argc, char** argv) {
 // 	lt_term_restore();
 // 	return 0;
 
+	char* cpath = NULL;
+
+	lt_arg_iterator_t arg_it = lt_arg_iterator_create(argc, argv);
+	while (lt_arg_next(&arg_it)) {
+		if (lt_arg_flag(&arg_it, 'h', CLSTR("help"))) {
+			lt_printf(
+				"usage: led [OPTIONS] FILE...\n"
+				"  -h, --help           Display this information.\n"
+				"  -c, --config=CONFIG  Use a custom config path located at PATH.\n"
+			);
+			return 0;
+		}
+
+		if (lt_arg_str(&arg_it, 'c', CLSTR("config"), &cpath))
+			continue;
+
+		fb_open(&ed_globals, LSTR(*arg_it.it, arg_it.arg_len));
+	}
+
+	if (!cpath)
+		cpath = get_config_path();
+
 	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
-	char* cpath = get_config_path();
+	lt_printf("conf: %s\n", cpath);
+
 	lstr_t conf_file;
 	if (!lt_file_read_entire(cpath, &conf_file, alloc))
-		ferr("No config file available in default locations\n");
+		ferr("Failed to read config file\n");
 
 	lt_conf_t config;
 	if (!lt_conf_parse(&config, conf_file))
 		ferr("Failed to parse config file\n");
 
-	lt_conf_write(&config, lt_stderr);
+// 	lt_conf_write(&config, lt_stderr);
 
 	lt_conf_t* editor_cf = lt_conf_find(&config, CLSTR("editor"));
 	if (!editor_cf)
@@ -237,8 +256,6 @@ int main(int argc, char** argv) {
 	ed_globals.predict_brackets = lt_conf_find_bool(editor_cf, CLSTR("predict_brackets"), 0);
 	ed_globals.relative_linenums = lt_conf_find_bool(editor_cf, CLSTR("relative_linenums"), 0);
 
-	ed_globals.ed = &ed;
-
 	lt_conf_t* colors_cf = lt_conf_find(&config, CLSTR("colors"));
 	if (!colors_cf)
 		ferr("Missing required option 'editor'\n");
@@ -249,13 +266,10 @@ int main(int argc, char** argv) {
 	ed_globals.highl_arena = arena;
 	ed_globals.highl_restore = lt_amsave(arena);
 
-	// Load documents
-	for (usz i = 1; i < argc; ++i)
-		fb_open(&ed_globals, LSTR(argv[i], strlen(argv[i])));
+	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
+	on_exit(cleanup, NULL);
 
-	ed = fb_first_file();
-
-	edit_file(&ed_globals, ed);
+	edit_file(&ed_globals, fb_first_file());
 
 	for (;;) {
 		ed_globals.width = EDITOR_WIDTH;
@@ -268,10 +282,10 @@ int main(int argc, char** argv) {
 			write_it = write_buf;
 
 			rec_clear(clr_strs[CLR_EDITOR]);
-			draw_header(ed);
+			draw_header(ed_globals.ed);
 
-			if (ed)
-				draw_editor(ed);
+			if (ed_globals.ed)
+				draw_editor(ed_globals.ed);
 			if (focus.draw)
 				focus.draw(&ed_globals, focus.draw_args);
 			lt_term_write_direct(write_buf, write_it - write_buf);

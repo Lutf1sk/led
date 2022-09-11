@@ -33,7 +33,7 @@ void draw_exit(global_t* ed_global, void* args) {
 void input_exit(global_t* ed_global, u32 c) {
 	switch (c) {
 	case 'N': case 'n':
-		edit_file(ed_global, *ed_global->ed);
+		edit_file(ed_global, ed_global->ed);
 		break;
 
 	case 'y': case 'Y':

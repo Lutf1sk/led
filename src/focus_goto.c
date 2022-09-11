@@ -63,7 +63,7 @@ void draw_goto(global_t* ed_global, void* args) {
 }
 
 void input_goto(global_t* ed_global, u32 c) {
-	editor_t* ed = *ed_global->ed;
+	editor_t* ed = ed_global->ed;
 
 	switch (c) {
 	case LT_TERM_KEY_BSPACE:

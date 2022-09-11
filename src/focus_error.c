@@ -24,6 +24,6 @@ void draw_notify_error(global_t* ed_global, void* args) {
 
 void input_notify_error(global_t* ed_global, u32 c) {
 	(void)ed_global;
-	edit_file(ed_global, *ed_global->ed);
+	edit_file(ed_global, ed_global->ed);
 }
 

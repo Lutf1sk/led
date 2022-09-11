@@ -86,7 +86,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 }
 
 void input_browse_filesystem(global_t* ed_global, u32 c) {
-	editor_t* ed = *ed_global->ed;
+	editor_t* ed = ed_global->ed;
 
 	switch (c) {
 	case '\n': {

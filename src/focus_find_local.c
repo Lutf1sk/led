@@ -104,7 +104,7 @@ void switch_repl(void) {
 }
 
 void input_find_local(global_t* ed_global, u32 c) {
-	editor_t* ed = *ed_global->ed;
+	editor_t* ed = ed_global->ed;
 
 	b8 changed = 0;
 

@@ -14,7 +14,7 @@ typedef struct editor editor_t;
 
 typedef
 struct global {
-	editor_t** ed;
+	editor_t* ed;
 
 	isz tab_size;
 	isz scroll_offs;

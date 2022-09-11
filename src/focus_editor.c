@@ -22,13 +22,13 @@ static usz clipboard_alloc_len = 0;
 
 void edit_file(global_t* ed_global, editor_t* ed) {
 	focus = focus_editor;
-	*ed_global->ed = ed;
+	ed_global->ed = ed;
 	if (ed)
 		ed_regenerate_highl(ed);
 }
 
 void input_editor(global_t* ed_globals, u32 c) {
-	editor_t* ed = *ed_globals->ed;
+	editor_t* ed = ed_globals->ed;
 
 	if (!ed)
 		return;
