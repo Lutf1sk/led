@@ -438,7 +438,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 		editor_t* file = fb_find_file(LSTR(name_buf, len));
 		if (file)
-			*ed->global->ed = file;
+			edit_file(ed_globals, file);
 	}	break;
 
 	case LT_TERM_KEY_BPASTE: {
