@@ -232,8 +232,6 @@ int main(int argc, char** argv) {
 	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
-	lt_printf("conf: %s\n", cpath);
-
 	lstr_t conf_file;
 	if (!lt_file_read_entire(cpath, &conf_file, alloc))
 		ferr("Failed to read config file\n");
