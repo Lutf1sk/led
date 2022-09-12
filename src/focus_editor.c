@@ -24,7 +24,7 @@ void edit_file(global_t* ed_global, editor_t* ed) {
 	focus = focus_editor;
 	ed_global->ed = ed;
 	if (ed)
-		ed_regenerate_highl(ed);
+		ed_regenerate_hl(ed);
 }
 
 void input_editor(global_t* ed_globals, u32 c) {
@@ -502,6 +502,6 @@ void input_editor(global_t* ed_globals, u32 c) {
 	}
 
 	if (modified)
-		ed_regenerate_highl(ed);
+		ed_regenerate_hl(ed);
 }
 

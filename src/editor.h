@@ -27,8 +27,8 @@ struct global {
 	u8 predict_brackets;
 	u8 relative_linenums;
 
-	lt_arena_t* highl_arena;
-	void* highl_restore;
+	lt_arena_t* hl_arena;
+	void* hl_restore;
 	u64 vstep_timeout_at_ms;
 	u8 await_utf8;
 	usz consec_cup;
@@ -45,7 +45,7 @@ struct editor {
 	isz target_cx, target_cy_offs;
 	isz sel_x, sel_y;
 
-	highl_t** highl_lines;
+	highl_t** hl_lines;
 	u32 hl_mode;
 
 	doc_t doc;
@@ -106,6 +106,6 @@ isz ed_find_indent(editor_t* ed);
 
 void ed_expand_selection(editor_t* ed);
 
-void ed_regenerate_highl(editor_t* ed);
+void ed_regenerate_hl(editor_t* ed);
 
 #endif

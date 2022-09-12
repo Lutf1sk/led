@@ -170,7 +170,7 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 		c = line.str[i];
 		start = i++;
 
-		highl_mode_t mode = HLM_UNKNOWN;
+		hl_mode_t mode = HLM_UNKNOWN;
 
 		switch (c) {
 		case '/':
@@ -291,7 +291,7 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 	return head;
 }
 
-highl_t** highl_generate_c(doc_t* doc, lt_alloc_t* alloc) {
+highl_t** hl_generate_c(doc_t* doc, lt_alloc_t* alloc) {
 	highl_t** lines = lt_malloc(alloc, doc->line_count * sizeof(highl_t*));
 
 	multiline_mode_t mode = MLMODE_NONE;

@@ -148,7 +148,7 @@ void input_find_local(global_t* ed_global, u32 c) {
 
 		if (replace) {
 			doc_replace_str(&ed->doc, find_str, replace_str);
-			ed_regenerate_highl(ed);
+			ed_regenerate_hl(ed);
 			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
 		}
 		ed_sync_selection(ed);

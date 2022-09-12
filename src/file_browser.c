@@ -77,7 +77,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	new->doc = doc_make(path_nt, basename(path_nt));
 	doc_load(&new->doc);
 	new->global = ed_global;
-	new->highl_lines = NULL;
+	new->hl_lines = NULL;
 	new->hl_mode = hl_find_mode(path);
 
 	++file_count;

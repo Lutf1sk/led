@@ -92,8 +92,8 @@ void draw_editor(editor_t* ed) {
 
 		lstr_t line = ed->doc.lines[line_top + i];
 		highl_t* hl = NULL;
-		if (ed->highl_lines)
-			hl = ed->highl_lines[line_top + i];
+		if (ed->hl_lines)
+			hl = ed->hl_lines[line_top + i];
 
 		isz linenum = i + line_top + 1;
 		if (ed->global->relative_linenums)
@@ -261,8 +261,8 @@ int main(int argc, char** argv) {
 	lt_conf_free(&config);
 
 	write_buf = lt_malloc(alloc, LT_MB(4));
-	ed_globals.highl_arena = arena;
-	ed_globals.highl_restore = lt_amsave(arena);
+	ed_globals.hl_arena = arena;
+	ed_globals.hl_restore = lt_amsave(arena);
 
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
 	on_exit(cleanup, NULL);
