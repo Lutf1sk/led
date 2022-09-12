@@ -547,6 +547,6 @@ void ed_expand_selection(editor_t* ed) {
 
 void ed_regenerate_highl(editor_t* ed) {
 	lt_amrestore(ed->global->highl_arena, ed->global->highl_restore);
-	ed->highl_lines = highl_generate(&ed->doc, (lt_alloc_t*)ed->global->highl_arena);
+	ed->highl_lines = highl_generate(&ed->doc, ed->hl_mode, (lt_alloc_t*)ed->global->highl_arena);
 }
 

@@ -46,6 +46,7 @@ struct editor {
 	isz sel_x, sel_y;
 
 	highl_t** highl_lines;
+	u32 hl_mode;
 
 	doc_t doc;
 } editor_t;

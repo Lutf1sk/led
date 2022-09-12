@@ -5,6 +5,7 @@ OBJS = \
 	src/clr.o \
 	src/doc.o \
 	src/highlight.o \
+	src/highlight_c.o \
 	src/editor.o \
 	src/file_browser.o \
 	src/focus_terminal.o \
