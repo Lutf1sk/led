@@ -36,6 +36,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
+	rec_str(" ");
 
 	char dir_path[PATH_MAX_LEN + 1];
 	memcpy(dir_path, input.str, input.len);
@@ -83,6 +84,8 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}
+
+	rec_goto(2 + input.len, start_height);
 }
 
 void input_browse_filesystem(global_t* ed_global, u32 c) {

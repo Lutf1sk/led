@@ -36,6 +36,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_lstr(input.str, input.len);
+	rec_str(" ");
 
 	editor_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, input);
@@ -67,6 +68,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}
+	rec_goto(2 + input.len, start_height);
 
 	max_index = found_count;
 }
