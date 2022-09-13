@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
 			lt_printf(
 				"usage: led [OPTIONS] FILE...\n"
 				"  -h, --help           Display this information.\n"
-				"  -c, --config=CONFIG  Use a custom config path located at PATH.\n"
+				"  -c, --config=CONFIG  Use a custom config path located at CONFIG.\n"
 			);
 			return 0;
 		}
