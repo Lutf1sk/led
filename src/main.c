@@ -214,6 +214,7 @@ int main(int argc, char** argv) {
 		if (lt_arg_flag(&arg_it, 'h', CLSTR("help"))) {
 			lt_printf(
 				"usage: led [OPTIONS] FILE...\n"
+				"options:\n"
 				"  -h, --help           Display this information.\n"
 				"  -c, --config=CONFIG  Use a custom config path located at CONFIG.\n"
 			);
