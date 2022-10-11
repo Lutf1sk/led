@@ -6,6 +6,7 @@ OBJS = \
 	src/doc.o \
 	src/hl.o \
 	src/hl_c.o \
+	src/hl_onyx.o \
 	src/editor.o \
 	src/file_browser.o \
 	src/focus_terminal.o \

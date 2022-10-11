@@ -59,6 +59,8 @@ struct {
 	{ CLSTR(".c"),		HL_C },
 	{ CLSTR(".cpp"),	HL_C },
 	{ CLSTR(".h"),		HL_C },
+	{ CLSTR(".hpp"),	HL_C },
+	{ CLSTR(".nyx"),	HL_ONYX },
 	{ CLSTR("COMMIT_EDITMSG"), HL_GIT_COMMIT },
 };
 
@@ -72,6 +74,7 @@ hl_mode_t hl_find_mode(lstr_t path) {
 highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {
 	switch (mode) {
 	case HL_C: return hl_generate_c(doc, alloc);
+	case HL_ONYX: return hl_generate_onyx(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
 	case HL_UNKNOWN: return NULL;
 	default: LT_ASSERT_NOT_REACHED(); return NULL;
