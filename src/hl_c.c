@@ -17,6 +17,10 @@ b8 is_keyword(lstr_t str) {
 		return 0;
 
 	switch (str.str[0]) {
+	case 'a':
+		if (lt_lstr_eq(str, CLSTR("alignof"))) return 1;
+		break;
+
 	case 'b':
 		if (lt_lstr_eq(str, CLSTR("break"))) return 1;
 		break;
@@ -51,13 +55,8 @@ b8 is_keyword(lstr_t str) {
 		if (lt_lstr_eq(str, CLSTR("if"))) return 1;
 		if (lt_lstr_eq(str, CLSTR("inline"))) return 1;
 		if (lt_lstr_eq(str, CLSTR("include"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("import"))) return 1;
 		if (lt_lstr_eq(str, CLSTR("ifdef"))) return 1;
 		if (lt_lstr_eq(str, CLSTR("ifndef"))) return 1;
-		break;
-
-	case 'n':
-		if (lt_lstr_eq(str, CLSTR("null"))) return 1;
 		break;
 
 	case 'r':
@@ -67,6 +66,7 @@ b8 is_keyword(lstr_t str) {
 	case 's':
 		if (lt_lstr_eq(str, CLSTR("switch"))) return 1;
 		if (lt_lstr_eq(str, CLSTR("static"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("sizeof"))) return 1;
 		break;
 
 	case 't':
