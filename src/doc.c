@@ -5,10 +5,13 @@
 
 #include <lt/io.h>
 #include <lt/mem.h>
+#include <lt/str.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define BYTE_ORDER_MARK CLSTR("\xEF\xBB\xBF")
 
 usz doc_find_str(doc_t* doc, lstr_t str, doc_pos_t* out_pos) {
 	if (!str.len)
@@ -207,9 +210,15 @@ void doc_load(doc_t* doc) {
 		return;
 	}
 
+	// Skip byte order mark if present
+	usz line_i = 0, i = 0;
+	if (lt_lstr_startswith(file, BYTE_ORDER_MARK)) {
+		doc->leading_bom = 1;
+		i += BYTE_ORDER_MARK.len;
+	}
+
 	// Create lines
-	int line_i = 0;
-	for (usz i = 0; i < size;) {
+	while (i < size) {
 		usz start = i;
 		while (i < size && data[i] != '\n')
 			++i;
@@ -234,10 +243,12 @@ b8 doc_save(doc_t* doc) {
 	lt_file_t* f = lt_file_open(doc->path, LT_FILE_W, 0, lt_libc_heap);
 	if (!f)
 		return 0;
+	if (doc->leading_bom && lt_file_write(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len)
+		goto err0;
 	for (usz i = 0; i < doc->line_count; ++i) {
 		lstr_t line = doc->lines[i];
 		if (lt_file_write(f, line.str, line.len) != line.len || lt_file_write(f, "\n", 1) != 1)
-			return 0;
+			goto err0;
 	}
 	lt_file_close(f, lt_libc_heap);
 
@@ -245,6 +256,10 @@ b8 doc_save(doc_t* doc) {
 	doc->new = 0;
 	doc->read_only = 0;
 	return 1;
+
+err0:
+	lt_file_close(f, lt_libc_heap);
+	return 0;
 }
 
 void doc_free(doc_t* doc) {

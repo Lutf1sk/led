@@ -18,6 +18,7 @@ struct doc {
 	b8 unsaved;
 	b8 read_only;
 	b8 new;
+	b8 leading_bom;
 } doc_t;
 
 typedef
@@ -37,6 +38,7 @@ doc_t doc_make(char* path, char* name) {
 	doc.new = 0;
 	doc.unsaved = 0;
 	doc.read_only = 0;
+	doc.leading_bom = 0;
 	return doc;
 }
 
