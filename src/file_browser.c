@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <libgen.h>
+#include <ctype.h>
 
 static usz file_count = 0;
 static editor_t* editors = NULL;
@@ -24,6 +25,13 @@ editor_t* fb_first_file(void) {
 	return file_count ? editors : NULL;
 }
 
+b8 streq_case_insensitive(char* str1, char* str2, usz len) {
+	for (usz i = 0; i < len; ++i)
+		if (toupper(*str1++) != toupper(*str2++))
+			return 0;
+	return 1;
+}
+
 usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
 	usz buf_it = 0;
 
@@ -33,7 +41,7 @@ usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
 
 		// Search at every possible offset
 		for (usz j = 0; j + str.len <= len; ++j) {
-			if (len >= str.len && memcmp(str.str, name + j, str.len) == 0) {
+			if (len >= str.len && streq_case_insensitive(str.str, name + j, str.len)) {
 				out[buf_it++] = &editors[i];
 				break;
 			}
