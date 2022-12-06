@@ -175,7 +175,12 @@ void doc_load(doc_t* doc) {
 	char* data = NULL;
 	usz size = 0;
 	if (lt_file_read_entire(doc->path, &file, lt_libc_heap)) {
-		if (access((doc->path), W_OK) != 0)
+		char cstr_path[LT_PATH_MAX];
+		LT_ASSERT(doc->path.len + 1 < LT_PATH_MAX);
+		memcpy(cstr_path, doc->path.str, doc->path.len);
+		cstr_path[doc->path.len] = 0;
+
+		if (access(cstr_path, W_OK) != 0)
 			doc->read_only = 1;
 		data = file.str;
 		size = file.len;

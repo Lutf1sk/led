@@ -8,8 +8,8 @@
 
 typedef
 struct doc {
-	char* path;
-	char* name;
+	lstr_t path;
+	lstr_t name;
 
 	usz line_count;
 	usz line_alloc_count;
@@ -28,7 +28,7 @@ struct doc_pos {
 } doc_pos_t;
 
 static LT_INLINE
-doc_t doc_make(char* path, char* name) {
+doc_t doc_make(lstr_t path, lstr_t name) {
 	doc_t doc;
 	doc.path = path;
 	doc.name = name;

@@ -51,7 +51,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		if (i == selected_index) {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			rec_str(found[i]->doc.path);
+			rec_lstr(found[i]->doc.path.str, found[i]->doc.path.len);
 			rec_str(clr_strs[CLR_LIST_ENTRY]);
 
 			selected = found[selected_index];
@@ -59,7 +59,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		else {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline("");
-			rec_str(found[i]->doc.path);
+			rec_lstr(found[i]->doc.path.str, found[i]->doc.path.len);
 		}
 	}
 

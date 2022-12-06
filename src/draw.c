@@ -32,7 +32,7 @@ void rec_nc(usz n, char c) {
 
 
 void rec_goto(u32 x, u32 y) {
-	write_it += lt_str_printf(write_it, "\x1B[%ud;%udH", y, x);
+	write_it += lt_sprintf(write_it, "\x1B[%ud;%udH", y, x);
 }
 
 

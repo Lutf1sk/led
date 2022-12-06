@@ -5,6 +5,10 @@
 #include "editor.h"
 #include "highlight.h"
 
+#include <lt/str.h>
+#include <lt/mem.h>
+#include <lt/io.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <libgen.h>
@@ -36,12 +40,11 @@ usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
 	usz buf_it = 0;
 
 	for (usz i = 0; buf_it < out_count && i < file_count; ++i) {
-		char* name = editors[i].doc.name;
-		usz len = strlen(name);
+		lstr_t name = editors[i].doc.name;
 
 		// Search at every possible offset
-		for (usz j = 0; j + str.len <= len; ++j) {
-			if (len >= str.len && streq_case_insensitive(str.str, name + j, str.len)) {
+		for (usz j = 0; j + str.len <= name.len; ++j) {
+			if (name.len >= str.len && streq_case_insensitive(str.str, name.str + j, str.len)) {
 				out[buf_it++] = &editors[i];
 				break;
 			}
@@ -53,10 +56,9 @@ usz fb_find_files(editor_t** out, usz out_count, lstr_t str) {
 
 editor_t* fb_find_file(lstr_t str) {
 	for (usz i = 0; i < file_count; ++i) {
-		char* name = editors[i].doc.name;
-		usz len = strlen(name);
+		lstr_t name = editors[i].doc.name;
 
-		if (len == str.len && memcmp(str.str, name, str.len) == 0)
+		if (lt_lstr_eq(name, str))
 			return &editors[i];
 	}
 
@@ -73,16 +75,13 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 	if (!editors)
 		ferrf("Memory allocation failed: %s\n", os_err_str());
 
-	// Allocate null terminated copy of path
-	char* path_nt = malloc(path.len + 1);
-	if (!path_nt)
-		ferrf("Memory allocation failed: %s\n", os_err_str());
-	memcpy(path_nt, path.str, path.len);
-	path_nt[path.len] = 0;
+	lstr_t new_path = LSTR(lt_malloc(lt_libc_heap, path.len), path.len);
+	LT_ASSERT(new_path.str);
+	memcpy(new_path.str, path.str, path.len);
 
 	editor_t* new = &editors[file_count];
 	memset(new, 0, sizeof(editor_t));
-	new->doc = doc_make(path_nt, basename(path_nt));
+	new->doc = doc_make(new_path, lt_lstr_split_bwd(new_path, '/'));
 	doc_load(&new->doc);
 	new->global = ed_global;
 	new->hl_lines = NULL;
@@ -93,7 +92,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 }
 
 void fb_close(editor_t* ed) {
-	free(ed->doc.path);
+	free(ed->doc.path.str);
 	doc_free(&ed->doc);
 
 	--file_count;

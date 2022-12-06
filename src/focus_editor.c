@@ -416,14 +416,13 @@ void input_editor(global_t* ed_globals, u32 c) {
 	}	break;
 
 	case LT_TERM_KEY_F4: modified = 0; {
-		char* name = ed->doc.name;
-		usz len = strlen(name);
+		lstr_t name = ed->doc.name;
 		char name_buf[PATH_MAX_LEN];
 
-		if (len < 2 || name[len - 2] != '.')
+		if (name.len < 2 || name.str[name.len - 2] != '.')
 			break;
 
-		char ext = name[len - 1];
+		char ext = name.str[name.len - 1];
 
 		char new_ext = 0;
 		if (ext == 'c')
@@ -433,10 +432,10 @@ void input_editor(global_t* ed_globals, u32 c) {
 		else
 			break;
 
-		memcpy(name_buf, ed->doc.name, len);
-		name_buf[len - 1] = new_ext;
+		memcpy(name_buf, name.str, name.len);
+		name_buf[name.len - 1] = new_ext;
 
-		editor_t* file = fb_find_file(LSTR(name_buf, len));
+		editor_t* file = fb_find_file(LSTR(name_buf, name.len));
 		if (file)
 			edit_file(ed_globals, file);
 	}	break;

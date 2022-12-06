@@ -60,7 +60,7 @@ void draw_header(editor_t* ed) {
 	rec_str(clr_strs[CLR_HEADER_TAB]);
 	rec_c(' ');
 	if (ed) {
-		rec_str(ed->doc.path);
+		rec_lstr(ed->doc.path.str, ed->doc.path.len);
 	 	if (ed->doc.unsaved)
 			rec_c('*');
 		if (ed->doc.new)
@@ -165,16 +165,10 @@ void draw_editor(editor_t* ed) {
 static
 const lstr_t conf_subpath = CLSTR("/.config/led/led.conf");
 
-i64 lt_conf_find_int(lt_conf_t* cf, lstr_t key, i64 default_) { return lt_conf_int(lt_conf_find(cf, key), default_); }
-u64 lt_conf_find_uint(lt_conf_t* cf, lstr_t key, u64 default_) { return lt_conf_uint(lt_conf_find(cf, key), default_); }
-f64 lt_conf_find_float(lt_conf_t* cf, lstr_t key, f64 default_) { return lt_conf_float(lt_conf_find(cf, key), default_); }
-b8 lt_conf_find_bool(lt_conf_t* cf, lstr_t key, b8 default_) { return lt_conf_bool(lt_conf_find(cf, key), default_); }
-lstr_t lt_conf_find_str(lt_conf_t* cf, lstr_t key, lstr_t default_) { return lt_conf_str(lt_conf_find(cf, key), default_); }
-
-char* get_config_path(void) {
+lstr_t get_config_path(void) {
 	const char* home_dir;
 	if (!(home_dir = getenv("HOME")))
-		return NULL;
+		return NLSTR();
 
 	usz home_len = strlen(home_dir);
 	if (home_len + conf_subpath.len + 1 >= PATH_MAX_LEN)
@@ -183,9 +177,8 @@ char* get_config_path(void) {
 	static char path_buf[PATH_MAX_LEN] = "";
 	memcpy(path_buf, home_dir, home_len);
 	memcpy(path_buf + home_len, conf_subpath.str, conf_subpath.len);
-	path_buf[home_len + conf_subpath.len] = 0;
 
-	return path_buf;
+	return LSTR(path_buf, home_len + conf_subpath.len);
 }
 
 void cleanup(int code, void* args) {
@@ -207,7 +200,7 @@ int main(int argc, char** argv) {
 // 	lt_term_restore();
 // 	return 0;
 
-	char* cpath = NULL;
+	lstr_t cpath = NLSTR();
 
 	lt_arg_iterator_t arg_it = lt_arg_iterator_create(argc, argv);
 	while (lt_arg_next(&arg_it)) {
@@ -221,44 +214,36 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 
-		if (lt_arg_str(&arg_it, 'c', CLSTR("config"), &cpath))
+		if (lt_arg_lstr(&arg_it, 'c', CLSTR("config"), &cpath))
 			continue;
 
 		fb_open(&ed_globals, LSTR(*arg_it.it, arg_it.arg_len));
 	}
 
-	if (!cpath)
+	if (!cpath.str)
 		cpath = get_config_path();
 
 	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
+	memset(&ed_globals, 0, sizeof(ed_globals));
+
 	lstr_t conf_file;
 	if (!lt_file_read_entire(cpath, &conf_file, alloc))
 		ferr("Failed to read config file\n");
-
 	lt_conf_t config;
 	if (!lt_conf_parse(&config, conf_file))
 		ferr("Failed to parse config file\n");
 
-// 	lt_conf_write(&config, lt_stderr);
+	ed_globals.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
+	ed_globals.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);
+	ed_globals.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
+	ed_globals.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
+	ed_globals.predict_brackets = lt_conf_find_bool_default(&config, CLSTR("editor.predict_brackets"), 0);
+	ed_globals.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
 
-	lt_conf_t* editor_cf = lt_conf_find(&config, CLSTR("editor"));
-	if (!editor_cf)
-		ferr("Missing required option 'editor'\n");
+	clr_load(&config);
 
-	memset(&ed_globals, 0, sizeof(ed_globals));
-	ed_globals.scroll_offs = lt_conf_find_int(editor_cf, CLSTR("scroll_offset"), 2);
-	ed_globals.tab_size = lt_conf_find_int(editor_cf, CLSTR("tab_size"), 4);
-	ed_globals.vstep = lt_conf_find_int(editor_cf, CLSTR("vstep"), 2);
-	ed_globals.vstep_timeout_ms = lt_conf_find_int(editor_cf, CLSTR("vstep_timeout_ms"), 250);
-	ed_globals.predict_brackets = lt_conf_find_bool(editor_cf, CLSTR("predict_brackets"), 0);
-	ed_globals.relative_linenums = lt_conf_find_bool(editor_cf, CLSTR("relative_linenums"), 0);
-
-	lt_conf_t* colors_cf = lt_conf_find(&config, CLSTR("colors"));
-	if (!colors_cf)
-		ferr("Missing required option 'editor'\n");
-	clr_load(colors_cf);
 	lt_conf_free(&config);
 
 	write_buf = lt_malloc(alloc, LT_MB(4));

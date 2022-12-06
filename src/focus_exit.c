@@ -13,7 +13,7 @@
 
 focus_t focus_exit = { draw_exit, NULL, input_exit };
 
-static char* unsaved_path = NULL;
+static lstr_t unsaved_path = NLSTR();
 
 void notify_exit(void) {
 	focus = focus_exit;
