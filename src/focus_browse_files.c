@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include <lt/term.h>
+#include <lt/textedit.h>
 
 #include "focus.h"
 #include "file_browser.h"
@@ -16,8 +17,6 @@ focus_t focus_browse_files = { draw_browse_files, NULL, input_browse_files };
 
 #define MAX_ENTRY_COUNT 15
 
-static char input_buf[PATH_MAX_LEN];
-static lstr_t input = LSTR(input_buf, 0);
 static editor_t* selected = NULL;
 static usz selected_index = 0;
 static usz max_index = 0;
@@ -25,13 +24,15 @@ static usz max_index = 0;
 void browse_files(void) {
 	focus = focus_browse_files;
 	selected_index = 0;
-	input.len = 0;
+	lt_lineedit_clear(line_input);
 }
 
 void draw_browse_files(global_t* ed_globals, void* args) {
 	(void)args;
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
+
+	lstr_t input = lt_lineedit_getstr(line_input);
 
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
@@ -68,7 +69,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}
-	rec_goto(2 + input.len, start_height);
+	rec_goto(2 + input_cursor_pos(line_input), start_height);
 
 	max_index = found_count;
 }
@@ -81,20 +82,6 @@ void input_browse_files(global_t* ed_global, u32 c) {
 		edit_file(ed_global, selected ? selected : ed);
 		break;
 
-	case LT_TERM_KEY_BSPACE:
-		if (!input.len)
-			edit_file(ed_global, ed);
-		else
-			--input.len;
-		break;
-
-	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!input.len) case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
-		while (input.len && input.str[--input.len] != '.')
-			;
-		break;
-
 	case LT_TERM_KEY_UP:
 		if (selected_index)
 			--selected_index;
@@ -105,9 +92,12 @@ void input_browse_files(global_t* ed_global, u32 c) {
 			++selected_index;
 		break;
 
+	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
+		if (!lt_darr_count(line_input->str))
+	case LT_TERM_KEY_ESC:
+			edit_file(ed_global, ed);
 	default:
-		if (c >= 32 && c < 127 && input.len < PATH_MAX_LEN)
-			input.str[input.len++] = c;
+		input_term_key(line_input, c);
 		break;
 	}
 }

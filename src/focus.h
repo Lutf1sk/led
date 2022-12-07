@@ -6,6 +6,8 @@
 
 #include "common.h"
 
+#include <lt/fwd.h>
+
 // Common
 
 typedef struct global global_t;
@@ -23,6 +25,11 @@ struct focus {
 } focus_t;
 
 extern focus_t focus;
+extern lt_lineedit_t* line_input;
+
+void focus_init(void);
+b8 input_term_key(lt_lineedit_t* ed, u32 key);
+usz input_cursor_pos(lt_lineedit_t* ed);
 
 // File browser
 
@@ -45,6 +52,8 @@ void edit_file(global_t* ed_global, editor_t* ed);
 void input_editor(global_t* ed, u32 c);
 
 // Local find
+
+void find_local_init(void);
 
 void find_local(isz start_x, isz start_y);
 

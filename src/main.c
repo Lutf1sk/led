@@ -253,6 +253,9 @@ int main(int argc, char** argv) {
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
 	on_exit(cleanup, NULL);
 
+	focus_init();
+	find_local_init();
+
 	edit_file(&ed_globals, fb_first_file());
 
 	for (;;) {

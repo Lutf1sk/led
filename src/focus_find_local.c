@@ -3,6 +3,8 @@
 
 #include <lt/term.h>
 #include <lt/mem.h>
+#include <lt/textedit.h>
+#include <lt/io.h>
 
 #include "focus.h"
 #include "editor.h"
@@ -15,15 +17,8 @@
 
 focus_t focus_find_local = { draw_find_local, NULL, input_find_local };
 
-#define BUFSZ 512
-
-static char find_buf[BUFSZ];
-static lstr_t find_str = LSTR(find_buf, 0);
-
-static char replace_buf[BUFSZ];
-static lstr_t replace_str = LSTR(replace_buf, 0);
-
-static lstr_t* input = NULL;
+static lt_lineedit_t repl_input;
+static lt_lineedit_t* curr_input;
 
 static usz start_y, start_x;
 
@@ -33,31 +28,38 @@ static doc_pos_t* results = NULL;
 
 static u8 replace = 0;
 
+void find_local_init(void) {
+	lt_lineedit_create(&repl_input, lt_libc_heap);
+}
+
 void find_local(isz start_y_, isz start_x_) {
-	input = &find_str;
 	replace = 0;
-	find_str.len = 0;
-	replace_str.len = 0;
 	focus = focus_find_local;
 	start_y = start_y_;
 	start_x = start_x_;
+
+	lt_lineedit_clear(line_input);
+	lt_lineedit_clear(&repl_input);
+	curr_input = line_input;
 }
 
 void draw_find_local(global_t* ed_global, void* args) {
+	lstr_t input = lt_lineedit_getstr(curr_input);
+
 	rec_goto(2, lt_term_height - 1);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_lstr(input->str, input->len);
+	rec_lstr(input.str, input.len);
 	rec_str(" ");
 
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-	char buf[128 + BUFSZ];
+	char buf[128 + 512]; // !!
 	if (!replace)
-		sprintf(buf, "Result %zu/%zu (CTRL+R to replace)", selected_index + 1, result_count);
+		lt_sprintf(buf, "Result %uz/%uz (CTRL+R to replace)", selected_index + 1, result_count);
 	else
-		sprintf(buf, "Replace %zu occurences of '%.*s'", result_count, (int)find_str.len, find_str.str);
+		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_lineedit_getstr(line_input));
 	rec_str(buf);
-	rec_goto(2 + input->len, lt_term_height - 1);
+	rec_goto(2 + input_cursor_pos(curr_input), lt_term_height - 1);
 }
 
 static
@@ -78,6 +80,7 @@ isz find_index(void) {
 
 static
 void update_results(editor_t* ed) {
+	lstr_t find_str = lt_lineedit_getstr(line_input);
 	usz new_count = doc_find_str(&ed->doc, find_str, NULL);
 	if (new_count) {
 		if (new_count > result_count) {
@@ -95,11 +98,11 @@ void update_results(editor_t* ed) {
 void switch_repl(void) {
 	if (!replace) {
 		replace = 1;
-		input = &replace_str;
+		curr_input = &repl_input;
 	}
 	else {
 		replace = 0;
-		input = &find_str;
+		curr_input = line_input;
 	}
 }
 
@@ -109,27 +112,16 @@ void input_find_local(global_t* ed_global, u32 c) {
 	b8 changed = 0;
 
 	switch (c) {
-	case LT_TERM_KEY_BSPACE:
-		if (!input->len)
-			edit_file(ed_global, ed);
-		else {
-			--input->len;
-			changed = 1;
-		}
-		break;
+	case '\n':
+		edit_file(ed_global, ed);
 
-	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!input->len) case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
-		else {
-			input->len = 0;
-			changed = 1;
+		if (replace) {
+			doc_replace_str(&ed->doc, lt_lineedit_getstr(line_input), lt_lineedit_getstr(&repl_input));
+			ed_regenerate_hl(ed);
+			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
 		}
-		break;
-
-	case 'R' | LT_TERM_MOD_CTRL:
-		switch_repl();
-		break;
+		ed_sync_selection(ed);
+		return;
 
 	case LT_TERM_KEY_UP:
 		if (selected_index > 0)
@@ -143,22 +135,16 @@ void input_find_local(global_t* ed_global, u32 c) {
 			selected_index = 0;
 		break;
 
-	case '\n':
-		edit_file(ed_global, ed);
+	case 'R' | LT_TERM_MOD_CTRL:
+		switch_repl();
+		break;
 
-		if (replace) {
-			doc_replace_str(&ed->doc, find_str, replace_str);
-			ed_regenerate_hl(ed);
-			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
-		}
-		ed_sync_selection(ed);
-		return;
-
+	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
+		if (!lt_darr_count(curr_input->str))
+	case LT_TERM_KEY_ESC:
+			edit_file(ed_global, ed);
 	default:
-		if (c >= 32 && c < 127 && input->len < BUFSZ) {
-			input->str[input->len++] = c;
-			changed = 1;
-		}
+		changed = input_term_key(curr_input, c);
 		break;
 	}
 
@@ -171,7 +157,7 @@ void input_find_local(global_t* ed_global, u32 c) {
 		ed_center_line(ed, result.y);
 		ed->cx = result.x;
 		ed->sel_y = result.y;
-		ed->sel_x = result.x + find_str.len;
+		ed->sel_x = result.x + lt_darr_count(line_input->str);
 	}
 	else {
 		ed_goto_line(ed, start_y);

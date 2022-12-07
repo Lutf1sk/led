@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 
 #include <lt/term.h>
+#include <lt/textedit.h>
 
 #include "focus.h"
 #include "clr.h"
@@ -20,18 +21,17 @@ focus_t focus_browse_filesystem = { draw_browse_filesystem, NULL, input_browse_f
 
 #define MAX_ENTRY_COUNT 15
 
-static char input_buf[PATH_MAX_LEN + 1];
-static lstr_t input = LSTR(input_buf, 0);
-
 void browse_filesystem(void) {
 	focus = focus_browse_filesystem;
-	input.len = 0;
+	lt_lineedit_clear(line_input);
 }
 
 void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	(void)args;
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
+
+	lstr_t input = lt_lineedit_getstr(line_input);
 
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
@@ -85,7 +85,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 		rec_clearline("");
 	}
 
-	rec_goto(2 + input.len, start_height);
+	rec_goto(2 + input_cursor_pos(line_input), start_height);
 }
 
 void input_browse_filesystem(global_t* ed_global, u32 c) {
@@ -93,27 +93,16 @@ void input_browse_filesystem(global_t* ed_global, u32 c) {
 
 	switch (c) {
 	case '\n': {
-		editor_t* new_ed = fb_open(ed_global, input);
+		editor_t* new_ed = fb_open(ed_global, lt_lineedit_getstr(line_input));
 		edit_file(ed_global, new_ed ? new_ed : ed);
 	}	break;
 
-	case LT_TERM_KEY_BSPACE:
-		if (!input.len)
+	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
+		if (!lt_darr_count(line_input->str))
+	case LT_TERM_KEY_ESC:
 			edit_file(ed_global, ed);
-		else
-			input.len--;
-		break;
-
-	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!input.len) case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
-		while (input.len && input.str[--input.len] != '/')
-			;
-		break;
-
 	default:
-		if (c >= 32 && c < 127 && input.len < PATH_MAX_LEN)
-			input.str[input.len++] = c;
+		input_term_key(line_input, c);
 		break;
 	}
 }
