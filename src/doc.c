@@ -134,8 +134,7 @@ void doc_split_line(doc_t* doc, usz line_index, usz index) {
 	// Allocate new line and copy content
 	if (new_line.len) {
 		new_line.str = malloc(new_line.len);
-		if (!new_line.str)
-			ferrf("Failed to allocate memory: %s\n", os_err_str());
+		LT_ASSERT(new_line.str);
 		memcpy(new_line.str, &old_line->str[index], new_line.len);
 	}
 
@@ -155,8 +154,7 @@ void doc_merge_line(doc_t* doc, usz line_index) {
 	usz new_len = new_line->len + old_line.len;
 	if (new_len) {
 		new_line->str = realloc(new_line->str, new_len);
-		if (!new_line->str)
-			ferrf("Failed to allocate memory: %s\n", os_err_str());
+		LT_ASSERT(new_line->str);
 		memcpy(new_line->str + new_line->len, old_line.str, old_line.len);
 		new_line->len = new_len;
 	}
@@ -174,7 +172,7 @@ void doc_load(doc_t* doc) {
 	lstr_t file;
 	char* data = NULL;
 	usz size = 0;
-	if (lt_file_read_entire(doc->path, &file, lt_libc_heap)) {
+	if (!lt_file_read_entire(doc->path, &file, lt_libc_heap)) {
 		char cstr_path[LT_PATH_MAX];
 		LT_ASSERT(doc->path.len + 1 < LT_PATH_MAX);
 		memcpy(cstr_path, doc->path.str, doc->path.len);

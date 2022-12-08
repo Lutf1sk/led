@@ -229,10 +229,10 @@ int main(int argc, char** argv) {
 	memset(&ed_globals, 0, sizeof(ed_globals));
 
 	lstr_t conf_file;
-	if (!lt_file_read_entire(cpath, &conf_file, alloc))
+	if (lt_file_read_entire(cpath, &conf_file, alloc))
 		ferr("Failed to read config file\n");
 	lt_conf_t config;
-	if (!lt_conf_parse(&config, conf_file))
+	if (lt_conf_parse(&config, conf_file))
 		ferr("Failed to parse config file\n");
 
 	ed_globals.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);

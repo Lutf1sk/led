@@ -72,8 +72,7 @@ editor_t* fb_open(global_t* ed_global, lstr_t path) {
 		ferrf("Path '%s' is too long\n", path);
 
 	editors = realloc(editors, sizeof(editor_t) * (file_count + 1));
-	if (!editors)
-		ferrf("Memory allocation failed: %s\n", os_err_str());
+	LT_ASSERT(editors);
 
 	lstr_t new_path = LSTR(lt_malloc(lt_libc_heap, path.len), path.len);
 	LT_ASSERT(new_path.str);

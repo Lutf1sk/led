@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include <lt/term.h>
-#include <lt/textedit.h>
+#include <lt/texted.h>
 
 #include "focus.h"
 #include "file_browser.h"
@@ -24,7 +24,7 @@ static usz max_index = 0;
 void browse_files(void) {
 	focus = focus_browse_files;
 	selected_index = 0;
-	lt_lineedit_clear(line_input);
+	lt_led_clear(line_input);
 }
 
 void draw_browse_files(global_t* ed_globals, void* args) {
@@ -32,7 +32,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	lstr_t input = lt_lineedit_getstr(line_input);
+	lstr_t input = lt_led_getstr(line_input);
 
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);

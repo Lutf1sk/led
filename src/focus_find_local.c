@@ -3,7 +3,7 @@
 
 #include <lt/term.h>
 #include <lt/mem.h>
-#include <lt/textedit.h>
+#include <lt/texted.h>
 #include <lt/io.h>
 
 #include "focus.h"
@@ -17,8 +17,8 @@
 
 focus_t focus_find_local = { draw_find_local, NULL, input_find_local };
 
-static lt_lineedit_t repl_input;
-static lt_lineedit_t* curr_input;
+static lt_led_t repl_input;
+static lt_led_t* curr_input;
 
 static usz start_y, start_x;
 
@@ -29,7 +29,7 @@ static doc_pos_t* results = NULL;
 static u8 replace = 0;
 
 void find_local_init(void) {
-	lt_lineedit_create(&repl_input, lt_libc_heap);
+	LT_ASSERT(!lt_led_create(&repl_input, lt_libc_heap));
 }
 
 void find_local(isz start_y_, isz start_x_) {
@@ -38,13 +38,13 @@ void find_local(isz start_y_, isz start_x_) {
 	start_y = start_y_;
 	start_x = start_x_;
 
-	lt_lineedit_clear(line_input);
-	lt_lineedit_clear(&repl_input);
+	lt_led_clear(line_input);
+	lt_led_clear(&repl_input);
 	curr_input = line_input;
 }
 
 void draw_find_local(global_t* ed_global, void* args) {
-	lstr_t input = lt_lineedit_getstr(curr_input);
+	lstr_t input = lt_led_getstr(curr_input);
 
 	rec_goto(2, lt_term_height - 1);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
@@ -57,7 +57,7 @@ void draw_find_local(global_t* ed_global, void* args) {
 	if (!replace)
 		lt_sprintf(buf, "Result %uz/%uz (CTRL+R to replace)", selected_index + 1, result_count);
 	else
-		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_lineedit_getstr(line_input));
+		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_led_getstr(line_input));
 	rec_str(buf);
 	rec_goto(2 + input_cursor_pos(curr_input), lt_term_height - 1);
 }
@@ -80,7 +80,7 @@ isz find_index(void) {
 
 static
 void update_results(editor_t* ed) {
-	lstr_t find_str = lt_lineedit_getstr(line_input);
+	lstr_t find_str = lt_led_getstr(line_input);
 	usz new_count = doc_find_str(&ed->doc, find_str, NULL);
 	if (new_count) {
 		if (new_count > result_count) {
@@ -116,7 +116,7 @@ void input_find_local(global_t* ed_global, u32 c) {
 		edit_file(ed_global, ed);
 
 		if (replace) {
-			doc_replace_str(&ed->doc, lt_lineedit_getstr(line_input), lt_lineedit_getstr(&repl_input));
+			doc_replace_str(&ed->doc, lt_led_getstr(line_input), lt_led_getstr(&repl_input));
 			ed_regenerate_hl(ed);
 			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
 		}

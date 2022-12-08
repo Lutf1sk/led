@@ -4,7 +4,7 @@
 #define _GNU_SOURCE
 
 #include <lt/term.h>
-#include <lt/textedit.h>
+#include <lt/texted.h>
 
 #include "focus.h"
 #include "clr.h"
@@ -23,7 +23,7 @@ focus_t focus_browse_filesystem = { draw_browse_filesystem, NULL, input_browse_f
 
 void browse_filesystem(void) {
 	focus = focus_browse_filesystem;
-	lt_lineedit_clear(line_input);
+	lt_led_clear(line_input);
 }
 
 void draw_browse_filesystem(global_t* ed_globals, void* args) {
@@ -31,7 +31,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	lstr_t input = lt_lineedit_getstr(line_input);
+	lstr_t input = lt_led_getstr(line_input);
 
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
@@ -93,7 +93,7 @@ void input_browse_filesystem(global_t* ed_global, u32 c) {
 
 	switch (c) {
 	case '\n': {
-		editor_t* new_ed = fb_open(ed_global, lt_lineedit_getstr(line_input));
+		editor_t* new_ed = fb_open(ed_global, lt_led_getstr(line_input));
 		edit_file(ed_global, new_ed ? new_ed : ed);
 	}	break;
 
