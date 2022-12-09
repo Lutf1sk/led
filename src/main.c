@@ -192,6 +192,8 @@ void cleanup(int code, void* args) {
 void on_exit(void*, void*);
 
 int main(int argc, char** argv) {
+// 	LT_ASSERT(!lt_term_init(0));
+
 // 	u32 c = 0;
 // 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
 // 		c = lt_term_getkey();
