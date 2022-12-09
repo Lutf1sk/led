@@ -19,6 +19,7 @@ struct doc {
 	b8 read_only;
 	b8 new;
 	b8 leading_bom;
+	b8 crlf;
 } doc_t;
 
 typedef
@@ -39,6 +40,7 @@ doc_t doc_make(lstr_t path, lstr_t name) {
 	doc.unsaved = 0;
 	doc.read_only = 0;
 	doc.leading_bom = 0;
+	doc.crlf = 0;
 	return doc;
 }
 

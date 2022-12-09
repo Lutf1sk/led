@@ -186,6 +186,11 @@ void doc_load(doc_t* doc) {
 	else
 		doc->new = 1;
 
+	// Find line ending type
+	usz first_line_len = lt_lstr_split(LSTR(data, size), '\n');
+	if (first_line_len >= 1 && data[first_line_len - 1] == '\r')
+		doc->crlf = 1;
+
 	// Count lines
 	doc->line_count = 0;
 	for (usz i = 0; i < size;) {
@@ -227,6 +232,9 @@ void doc_load(doc_t* doc) {
 			++i;
 		usz len = i++ - start;
 
+		if (len && data[start + len - 1] == '\r')
+			len--;
+
 		if (!len) {
 			doc->lines[line_i++] = NLSTR();
 			continue;
@@ -250,8 +258,14 @@ b8 doc_save(doc_t* doc) {
 		goto err0;
 	for (usz i = 0; i < doc->line_count; ++i) {
 		lstr_t line = doc->lines[i];
-		if (lt_file_write(f, line.str, line.len) != line.len || lt_file_write(f, "\n", 1) != 1)
-			goto err0;
+		if (!doc->crlf) {
+			if (lt_file_write(f, line.str, line.len) != line.len || lt_file_write(f, "\n", 1) != 1)
+				goto err0;
+		}
+		else {
+			if (lt_file_write(f, line.str, line.len) != line.len || lt_file_write(f, "\r\n", 2) != 2)
+				goto err0;
+		}
 	}
 	lt_file_close(f, lt_libc_heap);
 
