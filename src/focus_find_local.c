@@ -44,11 +44,9 @@ void find_local(isz start_y_, isz start_x_) {
 }
 
 void draw_find_local(global_t* ed_global, void* args) {
-	lstr_t input = lt_led_getstr(curr_input);
-
 	rec_goto(2, lt_term_height - 1);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_lstr(input.str, input.len);
+	rec_led(curr_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
 	rec_str(" ");
 
 	rec_goto(2, lt_term_height);
@@ -57,7 +55,7 @@ void draw_find_local(global_t* ed_global, void* args) {
 	if (!replace)
 		lt_sprintf(buf, "Result %uz/%uz (CTRL+R to replace)", selected_index + 1, result_count);
 	else
-		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_led_getstr(line_input));
+		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_led_get_str(line_input));
 	rec_str(buf);
 	rec_goto(2 + input_cursor_pos(curr_input), lt_term_height - 1);
 }
@@ -80,7 +78,7 @@ isz find_index(void) {
 
 static
 void update_results(editor_t* ed) {
-	lstr_t find_str = lt_led_getstr(line_input);
+	lstr_t find_str = lt_led_get_str(line_input);
 	usz new_count = doc_find_str(&ed->doc, find_str, NULL);
 	if (new_count) {
 		if (new_count > result_count) {
@@ -116,7 +114,7 @@ void input_find_local(global_t* ed_global, u32 c) {
 		edit_file(ed_global, ed);
 
 		if (replace) {
-			doc_replace_str(&ed->doc, lt_led_getstr(line_input), lt_led_getstr(&repl_input));
+			doc_replace_str(&ed->doc, lt_led_get_str(line_input), lt_led_get_str(&repl_input));
 			ed_regenerate_hl(ed);
 			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
 		}

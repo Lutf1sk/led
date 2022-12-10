@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "draw.h"
+#include "clr.h"
 
 #include <lt/io.h>
+#include <lt/texted.h>
 
 #include <string.h>
 
@@ -46,4 +48,15 @@ void rec_clearline(char* clr) {
 	rec_str("\x1B[2K");
 }
 
+void rec_led(lt_led_t* ed, char* sel_clr, char* normal_clr) {
+	usz x1, x2;
+	lt_led_get_selection(ed, &x1, &x2);
+
+	rec_str(normal_clr);
+	rec_lstr(ed->str, x1);
+	rec_str(sel_clr);
+	rec_lstr(ed->str + x1, x2 - x1);
+	rec_str(normal_clr);
+	rec_lstr(ed->str + x2, lt_darr_count(ed->str) - x2);
+}
 

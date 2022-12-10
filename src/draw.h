@@ -5,6 +5,7 @@
 #define DRAW_H 1
 
 #include <lt/lt.h>
+#include <lt/fwd.h>
 
 #define HEADER_HEIGHT 1
 #define LINENUM_WIDTH 5
@@ -27,5 +28,7 @@ void rec_goto(u32 x, u32 y);
 
 void rec_clear(char* clr);
 void rec_clearline(char* clr);
+
+void rec_led(lt_led_t* ed, char* sel_clr, char* normal_clr);
 
 #endif

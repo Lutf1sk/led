@@ -31,12 +31,12 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	lstr_t input = lt_led_getstr(line_input);
-
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_lstr(input.str, input.len);
+	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
 	rec_str(" ");
+
+	lstr_t input = lt_led_get_str(line_input);
 
 	char dir_path[PATH_MAX_LEN + 1];
 	memcpy(dir_path, input.str, input.len);
@@ -93,7 +93,7 @@ void input_browse_filesystem(global_t* ed_global, u32 c) {
 
 	switch (c) {
 	case '\n': {
-		editor_t* new_ed = fb_open(ed_global, lt_led_getstr(line_input));
+		editor_t* new_ed = fb_open(ed_global, lt_led_get_str(line_input));
 		edit_file(ed_global, new_ed ? new_ed : ed);
 	}	break;
 

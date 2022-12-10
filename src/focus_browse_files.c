@@ -32,15 +32,13 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 
 	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
 
-	lstr_t input = lt_led_getstr(line_input);
-
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_lstr(input.str, input.len);
+	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
 	rec_str(" ");
 
 	editor_t* found[MAX_ENTRY_COUNT];
-	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, input);
+	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_led_get_str(line_input));
 
 	selected_index = clamp(selected_index, 0, found_count - 1);
 

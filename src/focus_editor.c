@@ -10,15 +10,12 @@
 #include "editor.h"
 #include "algo.h"
 #include "highlight.h"
+#include "clipboard.h"
 
 #include <string.h>
 #include <stdlib.h>
 
 focus_t focus_editor = { NULL, NULL, input_editor };
-
-static char* clipboard = NULL;
-static usz clipboard_len = 0;
-static usz clipboard_alloc_len = 0;
 
 void edit_file(global_t* ed_global, editor_t* ed) {
 	focus = focus_editor;
@@ -64,42 +61,26 @@ void input_editor(global_t* ed_globals, u32 c) {
 		terminal();
 		break;
 
-	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
-		usz sel_len = ed_selection_len(ed);
-		if (!sel_len)
+	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
+		clipboard_clear();
+		if (!ed_selection_available(ed))
 			break;
-
-		if (sel_len > clipboard_alloc_len) {
-			clipboard = realloc(clipboard, sel_len);
-			if (sel_len && !clipboard)
-				ferrf("Memory allocation failed: %s\n", os_err_str());
-			clipboard_alloc_len = sel_len;
-		}
-		clipboard_len = sel_len;
-
-		ed_write_selection_str(ed, clipboard);
-	}	break;
+		ed_write_selection_str(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
+		break;
 
 	case 'X' | LT_TERM_MOD_CTRL: {
-		usz sel_len = ed_selection_len(ed);
-
-		if (sel_len > clipboard_alloc_len) {
-			clipboard = realloc(clipboard, sel_len);
-			if (sel_len && !clipboard)
-				ferrf("Memory allocation failed: %s\n", os_err_str());
-			clipboard_alloc_len = sel_len;
-		}
-		clipboard_len = sel_len;
-
-		ed_write_selection_str(ed, clipboard);
+		clipboard_clear();
+		if (!ed_selection_available(ed))
+			break;
+		ed_write_selection_str(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
 		ed_delete_selection(ed);
 	}	break;
 
 	case 'V' | LT_TERM_MOD_CTRL: {
 		ed_delete_selection_if_available(ed);
 
-		for (usz i = 0; i < clipboard_len; ++i) {
-			char c = clipboard[i];
+		for (usz i = 0; i < clipboard.str.len; ++i) {
+			char c = clipboard.str.str[i];
 
 			if (c == '\n') {
 				doc_split_line(&ed->doc, ed->cy, ed->cx);

@@ -3,6 +3,7 @@
 
 #include <lt/term.h>
 #include <lt/ctype.h>
+#include <lt/texted.h>
 
 #include "focus.h"
 #include "editor.h"
@@ -14,9 +15,6 @@
 
 focus_t focus_goto = { draw_goto, NULL, input_goto };
 
-static char input_buf[64];
-static lstr_t input = LSTR(input_buf, 0);
-
 static
 isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 	u8 mode = 'A';
@@ -24,8 +22,8 @@ isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 
 	*sync = 1;
 
-	for (usz i = 0; i < input.len; ++i) {
-		char c = input.str[i];
+	for (usz i = 0; i < str.len; ++i) {
+		char c = str.str[i];
 		switch (c) {
 		case 'e': line += ed->doc.line_count; break;
 		case 'b': line += -ed->doc.line_count; break;
@@ -52,36 +50,24 @@ isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 }
 
 void goto_line(void) {
-	input.len = 0;
+	lt_led_clear(line_input);
 	focus = focus_goto;
 }
 
 void draw_goto(global_t* ed_global, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_lstr(input.str, input.len);
+	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
+	rec_goto(2 + input_cursor_pos(line_input), lt_term_height);
 }
 
 void input_goto(global_t* ed_global, u32 c) {
 	editor_t* ed = ed_global->ed;
 
 	switch (c) {
-	case LT_TERM_KEY_BSPACE:
-		if (!input.len)
-			edit_file(ed_global, ed);
-		else
-			--input.len;
-		break;
-
-	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!input.len) case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
-		input.len = 0;
-		break;
-
 	case '\n': {
 		u8 sync;
-		isz line = interp_str(ed, input, &sync);
+		isz line = interp_str(ed, lt_led_get_str(line_input), &sync);
 		ed_goto_line(ed, line);
 		if (sync)
 			ed_sync_selection(ed);
@@ -91,9 +77,12 @@ void input_goto(global_t* ed_global, u32 c) {
 			ed_center_line(ed, line);
 	}	break;
 
+	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
+		if (!lt_darr_count(line_input->str))
+	case LT_TERM_KEY_ESC:
+			edit_file(ed_global, ed);
 	default:
-		if (input.len < sizeof(input_buf) && (c >= 32) && (c <= 127) )
-			input.str[input.len++] = c;
+		input_term_key(line_input, c);
 		break;
 	}
 }

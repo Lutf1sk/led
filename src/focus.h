@@ -29,6 +29,7 @@ extern lt_led_t* line_input;
 
 void focus_init(void);
 b8 input_term_key(lt_led_t* ed, u32 key);
+b8 texted_input_term_key(lt_texted_t* ed, u32 key);
 usz input_cursor_pos(lt_led_t* ed);
 
 // File browser

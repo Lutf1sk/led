@@ -17,6 +17,7 @@
 #include "editor.h"
 #include "file_browser.h"
 #include "focus.h"
+#include "clipboard.h"
 
 #include "draw.h"
 
@@ -191,13 +192,56 @@ void cleanup(int code, void* args) {
 
 void on_exit(void*, void*);
 
+#include <lt/texted.h>
+#include <lt/strstream.h>
+
 int main(int argc, char** argv) {
-// 	LT_ASSERT(!lt_term_init(0));
+// 	LT_ASSERT(!lt_term_init(LT_TERM_ALTBUF));
+
+// 	lt_strstream_t stream;
+// 	LT_ASSERT(!lt_strstream_create(&stream, lt_libc_heap));
+
+// 	lt_texted_t texted;
+// 	LT_ASSERT(!lt_texted_create(&texted, lt_libc_heap));
 
 // 	u32 c = 0;
 // 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
+// 		lt_strstream_clear(&stream);
+// 		LT_ASSERT(lt_texted_write_contents(&texted, &stream, (lt_io_callback_t)lt_strstream_write) >= 0);
+
+// 		lt_printf("\x1b[2J");
+// 		lt_printf("\x1b[%ud;%udH", 0, 0);
+
+// 		usz sx1, sy1, sx2, sy2;
+// 		lt_texted_get_selection(&texted, &sx1, &sy1, &sx2, &sy2);
+
+// 		char* start = stream.str.str, *it = start, *end = start + stream.str.len;
+// 		for (usz y = 0; y < sy1;)
+// 			if (*it++ == '\n')
+// 				++y;
+// 		it += sx1;
+// 		lt_printf("%S", LSTR(start, it - start));
+
+// 		start = it;
+// 		for (usz y = sy1; y < sy2;)
+// 			if (*it++ == '\n')
+// 				++y;
+// 		if (sy1 == sy2)
+// 			it -= sx1;
+// 		it += sx2;
+// 		lt_printf("\x1b[41m%S\x1b[0m", LSTR(start, it - start));
+// 		lt_printf("%S", LSTR(it, end - it));
+
+// 		lt_strstream_clear(&stream);
+// 		LT_ASSERT(lt_texted_write_selection(&texted, &stream, (lt_io_callback_t)lt_strstream_write) >= 0);
+
+// 		lt_printf("\nSELECTION: '%S'\n", stream.str);
+
+// 		lt_printf("\x1b[%uz;%uzH", texted.cursor_pos + 1, texted.lines[texted.cursor_pos].cursor_pos + 1);
+
 // 		c = lt_term_getkey();
-// 		printf("Key 0x%X, Mod 0x%X\n", c & LT_TERM_KEY_MASK, c & LT_TERM_MOD_MASK);
+// 		texted_input_term_key(&texted, c);
+// 		//lt_printf("Key 0x%hd, Mod 0x%hd\n", c & LT_TERM_KEY_MASK, c & LT_TERM_MOD_MASK);
 // 	}
 // 	lt_term_restore();
 // 	return 0;
@@ -255,6 +299,7 @@ int main(int argc, char** argv) {
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
 	on_exit(cleanup, NULL);
 
+	clipboard_init();
 	focus_init();
 	find_local_init();
 

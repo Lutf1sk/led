@@ -89,6 +89,26 @@ b8 ed_selection_available(editor_t* ed) {
 	return ed->cx != ed->sel_x || ed->cy != ed->sel_y;
 }
 
+usz ed_selection_len(editor_t* ed) {
+	isz start_y, start_x, end_y, end_x;
+	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
+
+	usz len = 0;
+
+	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
+		lstr_t* line = &ed->doc.lines[i];
+
+		if (i == end_y)
+			len += end_x - j;
+		else
+			len += line->len - j + 1;
+
+		j = 0;
+	}
+
+	return len;
+}
+
 void ed_delete_selection(editor_t* ed) {
 	usz sel_len = ed_selection_len(ed);
 
@@ -113,44 +133,19 @@ void ed_delete_selection_if_available(editor_t* ed) {
 		ed_delete_selection(ed);
 }
 
-usz ed_selection_len(editor_t* ed) {
+void ed_write_selection_str(editor_t* ed, void* usr, lt_io_callback_t callb) {
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 
-	usz len = 0;
-
-	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
-		lstr_t* line = &ed->doc.lines[i];
-
-		if (i == end_y)
-			len += end_x - j;
-		else
-			len += line->len - j + 1;
-
-		j = 0;
-	}
-
-	return len;
-}
-
-void ed_write_selection_str(editor_t* ed, char* str) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	char* it = str;
 	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
 		lstr_t* line = &ed->doc.lines[i];
 
 		if (i == end_y) {
-			usz bytes = end_x - j;
-			memcpy(it, &line->str[j], bytes);
-			it += bytes;
+			callb(usr, &line->str[j], end_x - j);
 		}
 		else {
-			usz bytes = line->len - j;
-			memcpy(it, &line->str[j], bytes);
-			it += bytes;
-			*(it++) = '\n';
+			callb(usr, &line->str[j], line->len - j);
+			callb(usr, "\n", 1);
 		}
 
 		j = 0;

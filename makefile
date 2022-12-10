@@ -2,6 +2,7 @@ OUT = led
 
 OBJS = \
 	src/main.o \
+	src/clipboard.o \
 	src/clr.o \
 	src/doc.o \
 	src/hl.o \
