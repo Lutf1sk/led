@@ -17,7 +17,7 @@ focus_t focus_goto = { draw_goto, NULL, input_goto };
 
 static
 isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
-	u8 mode = 'A';
+	u8 mode = 'D';
 	isz line = 0;
 
 	*sync = 1;
@@ -28,7 +28,7 @@ isz interp_str(editor_t* ed, lstr_t str, u8* sync) {
 		case 'e': line += ed->doc.line_count; break;
 		case 'b': line += -ed->doc.line_count; break;
 		case 's': *sync = 0; break;
-		case '\\': mode = 'D'; break;
+		case '\\': mode = 'A'; break;
 		case '-': mode = 'U'; break;
 
 		default:
