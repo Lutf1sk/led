@@ -8,6 +8,7 @@
 #include <lt/mem.h>
 #include <lt/term.h>
 #include <lt/utf8.h>
+#include <lt/ctype.h>
 
 focus_t focus = { NULL, NULL, NULL };
 
@@ -74,10 +75,14 @@ b8 input_term_key(lt_led_t* ed, u32 key) {
 		lt_led_gotox(ed, -1, 0);
 		return 0;
 
-	default:
-		if (key & LT_TERM_MOD_MASK)
+	default: {
+		if (lt_is_unicode_control_char(key) || (key & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK)))
 			return 0;
-		return lt_led_input_str(ed, LSTR((char*)&key, 1));
+
+		char utf8_buf[4];
+		lstr_t utf8_str = LSTR(utf8_buf, lt_utf8_encode(utf8_buf, key));
+		return lt_led_input_str(ed, utf8_str);
+	}
 	}
 }
 
@@ -139,10 +144,14 @@ b8 texted_input_term_key(lt_texted_t* ed, u32 key) {
 		lt_texted_gotox(ed, -1, 0);
 		return 0;
 
-	default:
-		if (key & LT_TERM_MOD_MASK)
+	default: {
+		if (lt_is_unicode_control_char(key) || (key & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK)))
 			return 0;
-		return lt_texted_input_str(ed, LSTR((char*)&key, 1));
+
+		char utf8_buf[4];
+		lstr_t utf8_str = LSTR(utf8_buf, lt_utf8_encode(utf8_buf, key));
+		return lt_texted_input_str(ed, utf8_str);
+	}
 	}
 }
 

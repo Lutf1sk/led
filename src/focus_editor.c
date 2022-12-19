@@ -4,6 +4,7 @@
 #include <lt/utf8.h>
 #include <lt/term.h>
 #include <lt/mem.h>
+#include <lt/ctype.h>
 
 #include "focus.h"
 #include "file_browser.h"
@@ -427,37 +428,39 @@ void input_editor(global_t* ed_globals, u32 c) {
 				doc_split_line(&ed->doc, ed->cy, ed->cx);
 				ed_cur_down(ed, 0);
 			}
-			else
-				doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
+			else {
+				char utf8_buf[4];
+				usz utf8_len = lt_utf8_encode(utf8_buf, c);
+				doc_insert_str(&ed->doc, ed->cy, ed->cx, LSTR(utf8_buf, utf8_len));
+				ed->cx += utf8_len;
+			}
 		}
 	}	break;
 
-	default:
- 		if ((c >= 32 && c < 127) || (c & 0xE0) == 0xC0) {
-			if ((c & 0xE0) == 0xC0)
-				ed->global->await_utf8 = lt_utf8_decode_len(c) - 1;
-
-			ed_delete_selection_if_available(ed);
-			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-
-			if (!ed_globals->predict_brackets)
-				break;
-			if (c == '(')
-				doc_insert_char(&ed->doc, ed->cy, ed->cx, ')');
-			else if (c == '{')
-				doc_insert_char(&ed->doc, ed->cy, ed->cx, '}');
-			else if (c == '[')
-				doc_insert_char(&ed->doc, ed->cy, ed->cx, ']');
-		}
-		else if ((c & 0xC0) == 0x80 && ed->global->await_utf8) {
-			--ed->global->await_utf8;
-			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-		}
- 		else {
+	default: {
+ 		if (lt_is_unicode_control_char(c) || (c & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK))) {
  			modified = 0;
  			sync_selection = 0;
+ 			break;
  		}
-		break;
+
+ 		ed_delete_selection_if_available(ed);
+
+		char utf8_buf[4];
+		usz utf8_len = lt_utf8_encode(utf8_buf, c);
+		doc_insert_str(&ed->doc, ed->cy, ed->cx, LSTR(utf8_buf, utf8_len));
+		ed->cx += utf8_len;
+
+		if (!ed_globals->predict_brackets)
+			break;
+
+		if (c == '(')
+			doc_insert_char(&ed->doc, ed->cy, ed->cx, ')');
+		else if (c == '{')
+			doc_insert_char(&ed->doc, ed->cy, ed->cx, '}');
+		else if (c == '[')
+			doc_insert_char(&ed->doc, ed->cy, ed->cx, ']');
+	}	break;
 	}
 
 	if (sync_target_x)

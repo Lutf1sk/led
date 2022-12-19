@@ -196,7 +196,10 @@ void on_exit(void*, void*);
 #include <lt/strstream.h>
 
 int main(int argc, char** argv) {
-// 	LT_ASSERT(!lt_term_init(LT_TERM_ALTBUF));
+// 	lstr_t str = CLSTR("a直a直直直直直直直直直");
+// 	lt_printf("'%S' : %uz,%uz\n", str, str.len, lt_utf8_glyph_count(str));
+// 	return 0;
+// 	LT_ASSERT(!lt_term_init(LT_TERM_ALTBUF | LT_TERM_UTF8));
 
 // 	lt_strstream_t stream;
 // 	LT_ASSERT(!lt_strstream_create(&stream, lt_libc_heap));
@@ -237,7 +240,8 @@ int main(int argc, char** argv) {
 
 // 		lt_printf("\nSELECTION: '%S'\n", stream.str);
 
-// 		lt_printf("\x1b[%uz;%uzH", texted.cursor_pos + 1, texted.lines[texted.cursor_pos].cursor_pos + 1);
+// 		usz cx = lt_utf8_glyph_count(LSTR(texted.lines[texted.cursor_pos].str, texted.lines[texted.cursor_pos].cursor_pos));
+// 		lt_printf("\x1b[%uz;%uzH", texted.cursor_pos + 1, cx + 1);
 
 // 		c = lt_term_getkey();
 // 		texted_input_term_key(&texted, c);
@@ -296,7 +300,7 @@ int main(int argc, char** argv) {
 	ed_globals.hl_arena = arena;
 	ed_globals.hl_restore = lt_amsave(arena);
 
-	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE);
+	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
 	on_exit(cleanup, NULL);
 
 	clipboard_init();
