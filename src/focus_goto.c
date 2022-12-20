@@ -58,7 +58,7 @@ void draw_goto(global_t* ed_global, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_goto(2 + input_cursor_pos(line_input), lt_term_height);
+	rec_crestore();
 }
 
 void input_goto(global_t* ed_global, u32 c) {

@@ -54,9 +54,21 @@ void rec_led(lt_led_t* ed, char* sel_clr, char* normal_clr) {
 
 	rec_str(normal_clr);
 	rec_lstr(ed->str, x1);
+	if (x1 == ed->cursor_pos)
+		rec_csave();
 	rec_str(sel_clr);
 	rec_lstr(ed->str + x1, x2 - x1);
+	if (x2 == ed->cursor_pos)
+		rec_csave();
 	rec_str(normal_clr);
 	rec_lstr(ed->str + x2, lt_darr_count(ed->str) - x2);
+}
+
+void rec_csave(void) {
+	rec_str("\x1B[s");
+}
+
+void rec_crestore(void) {
+	rec_str("\x1B[u");
 }
 

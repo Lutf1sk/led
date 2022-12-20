@@ -57,7 +57,7 @@ void draw_find_local(global_t* ed_global, void* args) {
 	else
 		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_led_get_str(line_input));
 	rec_str(buf);
-	rec_goto(2 + input_cursor_pos(curr_input), lt_term_height - 1);
+	rec_crestore();
 }
 
 static

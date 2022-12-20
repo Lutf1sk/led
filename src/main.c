@@ -196,9 +196,11 @@ void on_exit(void*, void*);
 #include <lt/strstream.h>
 
 int main(int argc, char** argv) {
-// 	lstr_t str = CLSTR("a直a直直直直直直直直直");
+// 	lstr_t str = CLSTR("åäö子");
 // 	lt_printf("'%S' : %uz,%uz\n", str, str.len, lt_utf8_glyph_count(str));
+// 	lt_printf("\x1b[%uz;%uzH", 1, 1);
 // 	return 0;
+
 // 	LT_ASSERT(!lt_term_init(LT_TERM_ALTBUF | LT_TERM_UTF8));
 
 // 	lt_strstream_t stream;
@@ -218,12 +220,17 @@ int main(int argc, char** argv) {
 // 		usz sx1, sy1, sx2, sy2;
 // 		lt_texted_get_selection(&texted, &sx1, &sy1, &sx2, &sy2);
 
+// 		usz cx = texted.lines[texted.cursor_pos].cursor_pos;
+
 // 		char* start = stream.str.str, *it = start, *end = start + stream.str.len;
 // 		for (usz y = 0; y < sy1;)
 // 			if (*it++ == '\n')
 // 				++y;
 // 		it += sx1;
 // 		lt_printf("%S", LSTR(start, it - start));
+
+// 		if (sx1 == cx && sy1 == texted.cursor_pos)
+// 			lt_printf("\x1b[s");
 
 // 		start = it;
 // 		for (usz y = sy1; y < sy2;)
@@ -233,15 +240,16 @@ int main(int argc, char** argv) {
 // 			it -= sx1;
 // 		it += sx2;
 // 		lt_printf("\x1b[41m%S\x1b[0m", LSTR(start, it - start));
+
+// 		if (sx2 == cx && sy2 == texted.cursor_pos)
+// 			lt_printf("\x1b[s");
+
 // 		lt_printf("%S", LSTR(it, end - it));
 
 // 		lt_strstream_clear(&stream);
 // 		LT_ASSERT(lt_texted_write_selection(&texted, &stream, (lt_io_callback_t)lt_strstream_write) >= 0);
 
-// 		lt_printf("\nSELECTION: '%S'\n", stream.str);
-
-// 		usz cx = lt_utf8_glyph_count(LSTR(texted.lines[texted.cursor_pos].str, texted.lines[texted.cursor_pos].cursor_pos));
-// 		lt_printf("\x1b[%uz;%uzH", texted.cursor_pos + 1, cx + 1);
+// 		lt_printf("\nSELECTION: '%S'\n\x1b[u", stream.str);
 
 // 		c = lt_term_getkey();
 // 		texted_input_term_key(&texted, c);

@@ -67,7 +67,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}
-	rec_goto(2 + input_cursor_pos(line_input), start_height);
+	rec_crestore();
 
 	max_index = found_count;
 }

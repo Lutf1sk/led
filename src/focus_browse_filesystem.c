@@ -85,7 +85,7 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 		rec_clearline("");
 	}
 
-	rec_goto(2 + input_cursor_pos(line_input), start_height);
+	rec_crestore();
 }
 
 void input_browse_filesystem(global_t* ed_global, u32 c) {

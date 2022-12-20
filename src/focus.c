@@ -144,6 +144,10 @@ b8 texted_input_term_key(lt_texted_t* ed, u32 key) {
 		lt_texted_gotox(ed, -1, 0);
 		return 0;
 
+	case '\n':
+		lt_texted_break_line(ed);
+		return 1;
+
 	default: {
 		if (lt_is_unicode_control_char(key) || (key & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK)))
 			return 0;

@@ -31,4 +31,7 @@ void rec_clearline(char* clr);
 
 void rec_led(lt_led_t* ed, char* sel_clr, char* normal_clr);
 
+void rec_csave(void);
+void rec_crestore(void);
+
 #endif
