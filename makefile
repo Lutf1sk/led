@@ -9,6 +9,7 @@ OBJS = \
 	src/hl_c.o \
 	src/hl_cs.o \
 	src/hl_onyx.o \
+	src/hl_js.o \
 	src/editor.o \
 	src/file_browser.o \
 	src/focus_terminal.o \

@@ -64,6 +64,7 @@ struct {
 	{ CLSTR(".razor"),	HL_CS },
 	{ CLSTR(".cshtml"),	HL_CS },
 	{ CLSTR(".nyx"),	HL_ONYX },
+	{ CLSTR(".js"),	HL_JS },
 	{ CLSTR("COMMIT_EDITMSG"), HL_GIT_COMMIT },
 };
 
@@ -79,6 +80,7 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {
 	case HL_C: return hl_generate_c(doc, alloc);
 	case HL_CS: return hl_generate_cs(doc, alloc);
 	case HL_ONYX: return hl_generate_onyx(doc, alloc);
+	case HL_JS: return hl_generate_js(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
 	case HL_UNKNOWN: return NULL;
 	default: LT_ASSERT_NOT_REACHED(); return NULL;

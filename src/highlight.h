@@ -43,6 +43,7 @@ enum hl_mode {
 	HL_C,
 	HL_CS,
 	HL_ONYX,
+	HL_JS,
 	HL_GIT_COMMIT,
 	HL_UNKNOWN,
 } hl_mode_t;
@@ -53,5 +54,6 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc);
 highl_t** hl_generate_c(doc_t* doc, lt_alloc_t* alloc);
 highl_t** hl_generate_cs(doc_t* doc, lt_alloc_t* alloc);
 highl_t** hl_generate_onyx(doc_t* doc, lt_alloc_t* alloc);
+highl_t** hl_generate_js(doc_t* doc, lt_alloc_t* alloc);
 
 #endif
