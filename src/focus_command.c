@@ -193,6 +193,7 @@ void execute(lstr_t cmd) {
 
 		case 'd':
 			ed_delete_selection_if_available(ed);
+			ed_sync_selection(ed);
 			break;
 
 		case 'l': {
