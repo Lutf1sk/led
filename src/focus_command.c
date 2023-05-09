@@ -177,27 +177,17 @@ void execute(lstr_t cmd) {
 
 		case 'c': {
 			usz clipboard = parse_uint(&cx);
-			clipboard_clear(clipboard);
-			if (!ed_selection_available(ed))
+			if (clipboard >= CLIPBOARD_COUNT)
 				break;
-			if (clipboard < CLIPBOARD_COUNT)
-				ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
+			clipboard_clear(clipboard);
+			ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
 		}	break;
 
 		case 'p': {
 			usz clipboard = parse_uint(&cx);
 			if (clipboard >= CLIPBOARD_COUNT)
 				break;
-			for (usz i = 0; i < clipboards[clipboard].str.len; ++i) {
-				char c = clipboards[clipboard].str.str[i];
-
-				if (c == '\n') {
-					doc_split_line(&ed->doc, ed->cy, ed->cx);
-					ed_cur_down(ed, 0);
-				}
-				else
-					doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-			}
+			ed_insert_string(ed, clipboards[clipboard].str);
 			ed_sync_selection(ed);
 		}	break;
 
@@ -213,17 +203,7 @@ void execute(lstr_t cmd) {
 		}	break;
 
 		case 'i':
-			lstr_t block = parse_block(&cx);
-			for (usz i = 0; i < block.len; ++i) {
-				char c = block.str[i];
-
-				if (c == '\n') {
-					doc_split_line(&ed->doc, ed->cy, ed->cx);
-					ed_cur_down(ed, 0);
-				}
-				else
-					doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-			}
+			ed_insert_string(ed, parse_block(&cx));
 			ed_sync_selection(ed);
 			break;
 		}

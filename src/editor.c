@@ -11,6 +11,19 @@
 
 #include <string.h>
 
+void ed_insert_string(editor_t* ed, lstr_t str) {
+	for (usz i = 0; i < str.len; ++i) {
+		char c = str.str[i];
+
+		if (c == '\n') {
+			doc_split_line(&ed->doc, ed->cy, ed->cx);
+			ed_cur_down(ed, 0);
+		}
+		else
+			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
+	}
+}
+
 void ed_move_to_selection_start(editor_t* ed) {
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);

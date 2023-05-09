@@ -75,17 +75,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 
 	case 'V' | LT_TERM_MOD_CTRL: {
 		ed_delete_selection_if_available(ed);
-
-		for (usz i = 0; i < clipboards[0].str.len; ++i) {
-			char c = clipboards[0].str.str[i];
-
-			if (c == '\n') {
-				doc_split_line(&ed->doc, ed->cy, ed->cx);
-				ed_cur_down(ed, 0);
-			}
-			else
-				doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-		}
+		ed_insert_string(ed, clipboards[0].str);
 	}	break;
 
 	case 'D' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {

@@ -52,6 +52,7 @@ struct editor {
 	doc_t doc;
 } editor_t;
 
+void ed_insert_string(editor_t* ed, lstr_t str);
 void ed_move_to_selection_start(editor_t* ed);
 void ed_move_to_selection_end(editor_t* ed);
 
