@@ -3,9 +3,11 @@
 
 #include <lt/strstream.h>
 
-extern lt_strstream_t clipboard;
+#define CLIPBOARD_COUNT 16
 
-void clipboard_clear(void);
+extern lt_strstream_t clipboards[CLIPBOARD_COUNT];
+
 void clipboard_init(void);
+void clipboard_clear(usz clipboard);
 
 #endif

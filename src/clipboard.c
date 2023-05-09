@@ -2,13 +2,16 @@
 
 #include <lt/mem.h>
 
-lt_strstream_t clipboard;
+lt_strstream_t clipboards[CLIPBOARD_COUNT];
 
 void clipboard_init(void) {
-	LT_ASSERT(!lt_strstream_create(&clipboard, lt_libc_heap));
+	for (usz i = 0; i < CLIPBOARD_COUNT; ++i)
+		LT_ASSERT(lt_strstream_create(&clipboards[i], lt_libc_heap) == LT_SUCCESS);
 }
 
-void clipboard_clear(void) {
-	lt_strstream_clear(&clipboard);
+void clipboard_clear(usz clipboard) {
+	if (clipboard >= CLIPBOARD_COUNT)
+		return;
+	lt_strstream_clear(&clipboards[clipboard]);
 }
 

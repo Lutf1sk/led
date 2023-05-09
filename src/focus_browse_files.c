@@ -3,6 +3,7 @@
 
 #include <lt/term.h>
 #include <lt/texted.h>
+#include <lt/math.h>
 
 #include "focus.h"
 #include "file_browser.h"
@@ -15,22 +16,26 @@
 
 focus_t focus_browse_files = { draw_browse_files, NULL, input_browse_files };
 
-#define MAX_ENTRY_COUNT 15
+#define MAX_ENTRY_COUNT 1024
+
+#define MAX_VISIBLE_ENTRIES 15
 
 static editor_t* selected = NULL;
 static usz selected_index = 0;
+static usz visible_index = 0;
 static usz max_index = 0;
 
 void browse_files(void) {
 	focus = focus_browse_files;
 	selected_index = 0;
+	visible_index = 0;
 	lt_led_clear(line_input);
 }
 
 void draw_browse_files(global_t* ed_globals, void* args) {
 	(void)args;
 
-	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
+	usz start_height = lt_term_height - MAX_VISIBLE_ENTRIES;
 
 	rec_goto(2, start_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
@@ -39,18 +44,23 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 
 	editor_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_led_get_str(line_input));
-
-	selected_index = clamp(selected_index, 0, found_count - 1);
+	usz visible_count = lt_min_usz(found_count, MAX_VISIBLE_ENTRIES);
 
 	selected = NULL;
 
+	selected_index = clamp(selected_index, 0, found_count - 1);
+	visible_index = clamp(visible_index, selected_index - visible_count + 1, selected_index);
+	visible_index = clamp(visible_index, 0, found_count - visible_count);
+
 	// Draw available files
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
-	for (usz i = 0; i < found_count; ++i) {
-		if (i == selected_index) {
+	for (usz i = 0; i < visible_count; ++i) {
+		usz index = visible_index + i;
+
+		if (index == selected_index) {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			rec_lstr(found[i]->doc.path.str, found[i]->doc.path.len);
+			rec_lstr(found[index]->doc.path.str, found[index]->doc.path.len);
 			rec_str(clr_strs[CLR_LIST_ENTRY]);
 
 			selected = found[selected_index];
@@ -58,12 +68,12 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		else {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline("");
-			rec_lstr(found[i]->doc.path.str, found[i]->doc.path.len);
+			rec_lstr(found[index]->doc.path.str, found[index]->doc.path.len);
 		}
 	}
 
 	// Fill underflowed slots
-	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i) {
+	for (usz i = visible_count; i < MAX_VISIBLE_ENTRIES; ++i) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}

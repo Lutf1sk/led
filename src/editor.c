@@ -157,17 +157,25 @@ b8 ed_get_selection(editor_t* ed, isz* out_start_y, isz* out_start_x, isz* out_e
 	//	return 0;
 
 	if (ed->cy < ed->sel_y || (ed->cy == ed->sel_y && ed->cx < ed->sel_x)) {
-		*out_start_y = ed->cy;
-		*out_start_x = ed->cx;
-		*out_end_y = ed->sel_y;
-		*out_end_x = ed->sel_x;
+		if (out_start_y)
+			*out_start_y = ed->cy;
+		if (out_start_x)
+			*out_start_x = ed->cx;
+		if (out_end_y)
+			*out_end_y = ed->sel_y;
+		if (out_end_x)
+			*out_end_x = ed->sel_x;
 		return 1;
 	}
 	else {
-		*out_start_y = ed->sel_y;
-		*out_start_x = ed->sel_x;
-		*out_end_y = ed->cy;
-		*out_end_x = ed->cx;
+		if (out_start_y)
+			*out_start_y = ed->sel_y;
+		if (out_start_x)
+			*out_start_x = ed->sel_x;
+		if (out_end_y)
+			*out_end_y = ed->cy;
+		if (out_end_x)
+			*out_end_x = ed->cx;
 		return 1;
 	}
 }

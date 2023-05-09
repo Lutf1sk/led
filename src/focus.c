@@ -52,22 +52,22 @@ b8 input_term_key(lt_led_t* ed, u32 key) {
 	case 'X'|LT_TERM_MOD_CTRL: {
 		if (!lt_led_selection_present(ed))
 			return 0;
-		clipboard_clear();
+		clipboard_clear(0);
 		lstr_t sel = lt_led_get_selection_str(ed);
-		lt_strstream_write(&clipboard, sel.str, sel.len);
+		lt_strstream_write(&clipboards[0], sel.str, sel.len);
 		lt_led_erase_selection(ed);
 	}	return 1;
 
 	case 'C'|LT_TERM_MOD_CTRL: {
 		if (!lt_led_selection_present(ed))
 			return 0;
-		clipboard_clear();
+		clipboard_clear(0);
 		lstr_t sel = lt_led_get_selection_str(ed);
-		lt_strstream_write(&clipboard, sel.str, sel.len);
+		lt_strstream_write(&clipboards[0], sel.str, sel.len);
 	}	return 1;
 
 	case 'V'|LT_TERM_MOD_CTRL:
-		lt_led_input_str(ed, clipboard.str);
+		lt_led_input_str(ed, clipboards[0].str);
 		return 1;
 
 	case 'D'|LT_TERM_MOD_CTRL:
@@ -123,20 +123,20 @@ b8 texted_input_term_key(lt_texted_t* ed, u32 key) {
 	case 'X'|LT_TERM_MOD_CTRL:
 		if (!lt_texted_selection_present(ed))
 			return 0;
-		clipboard_clear();
-		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
+		clipboard_clear(0);
+		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		lt_texted_erase_selection(ed);
 		return 1;
 
 	case 'C'|LT_TERM_MOD_CTRL:
 		if (!lt_texted_selection_present(ed))
 			return 0;
-		clipboard_clear();
-		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
+		clipboard_clear(0);
+		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		return 1;
 
 	case 'V'|LT_TERM_MOD_CTRL:
-		lt_texted_input_str(ed, clipboard.str);
+		lt_texted_input_str(ed, clipboards[0].str);
 		return 1;
 
 	case 'D'|LT_TERM_MOD_CTRL:

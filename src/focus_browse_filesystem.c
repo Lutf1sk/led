@@ -5,6 +5,9 @@
 
 #include <lt/term.h>
 #include <lt/texted.h>
+#include <lt/mem.h>
+#include <lt/darr.h>
+#include <lt/str.h>
 
 #include "focus.h"
 #include "clr.h"
@@ -26,6 +29,12 @@ void browse_filesystem(void) {
 	lt_led_clear(line_input);
 }
 
+typedef
+struct file {
+	lstr_t name;
+	b8 highlight;
+} file_t;
+
 void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	(void)args;
 
@@ -44,7 +53,6 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 
 	char* inp_name = "";
 
-	usz found_count = 0;
 	DIR* dir = opendir(dir_path);
 	if (!dir) {
 		usz slash = 0;
@@ -60,30 +68,47 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 		inp_name = &dir_path[slash];
 	}
 
+	lt_darr(file_t) files = lt_darr_create(file_t, 256, lt_libc_heap);
+
 	if (dir) {
 		usz inp_name_len = strlen(inp_name);
 
 		struct dirent* entry = NULL;
-		while ((entry = readdir(dir)) && found_count < MAX_ENTRY_COUNT) {
+		while ((entry = readdir(dir)) && lt_darr_count(files) < MAX_ENTRY_COUNT) {
 			if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
 				continue;
 			if (strncmp(entry->d_name, inp_name, inp_name_len) != 0)
 				continue;
 
-			rec_goto(2, start_height + ++found_count);
-			if (entry->d_type == DT_DIR || entry->d_type == DT_LNK)
-				rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			else
-				rec_clearline(clr_strs[CLR_LIST_ENTRY]);
-			rec_str(entry->d_name);
+			b8 highlight = entry->d_type == DT_DIR || entry->d_type == DT_LNK;
+			lstr_t name = lt_strdup(lt_libc_heap, lt_lstr_from_cstr(entry->d_name));
+			lt_darr_push(files, (file_t){ name, highlight });
 		}
 	}
 
+	usz visible_index = 0;
+	usz visible_count = MAX_ENTRY_COUNT;
+
+	for (usz i = 0; i < visible_count; ++i) {
+		usz index = visible_index + i;
+
+		rec_goto(2, start_height + i + 1);
+		if (files[index].highlight)
+			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
+		else
+			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+		rec_lstr(files[index].name.str, files[index].name.len);
+
+		lt_mfree(lt_libc_heap, files[index].name.str);
+	}
+
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
-	for (usz i = found_count; i < MAX_ENTRY_COUNT; ++i) {
+	for (usz i = visible_count; i < MAX_ENTRY_COUNT; ++i) {
 		rec_goto(0, start_height + i + 1);
 		rec_clearline("");
 	}
+
+	lt_darr_destroy(files);
 
 	rec_crestore();
 }

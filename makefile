@@ -20,6 +20,7 @@ OBJS = \
 	src/focus_goto.o \
 	src/focus_exit.o \
 	src/focus_find_local.o \
+	src/focus_command.o \
 	src/focus.o \
 	src/err.o \
 	src/draw.o

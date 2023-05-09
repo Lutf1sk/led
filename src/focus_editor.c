@@ -54,34 +54,30 @@ void input_editor(global_t* ed_globals, u32 c) {
 		browse_files();
 		break;
 
-	case 'F' | LT_TERM_MOD_CTRL: modified = 0;
+	case 'F' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
 		find_local(ed->cy, ed->cx);
 		break;
 
-	case 'R' | LT_TERM_MOD_CTRL: modified = 0;
-		terminal();
-		break;
-
 	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
-		clipboard_clear();
+		clipboard_clear(0);
 		if (!ed_selection_available(ed))
 			break;
-		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
+		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		break;
 
 	case 'X' | LT_TERM_MOD_CTRL: {
-		clipboard_clear();
+		clipboard_clear(0);
 		if (!ed_selection_available(ed))
 			break;
-		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
+		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		ed_delete_selection(ed);
 	}	break;
 
 	case 'V' | LT_TERM_MOD_CTRL: {
 		ed_delete_selection_if_available(ed);
 
-		for (usz i = 0; i < clipboard.str.len; ++i) {
-			char c = clipboard.str.str[i];
+		for (usz i = 0; i < clipboards[0].str.len; ++i) {
+			char c = clipboards[0].str.str[i];
 
 			if (c == '\n') {
 				doc_split_line(&ed->doc, ed->cy, ed->cx);
@@ -96,7 +92,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed_expand_selection(ed);
 	}	break;
 
-	case 'S' | LT_TERM_MOD_CTRL: modified = 0;
+	case 'S' | LT_TERM_MOD_CTRL: modified = 0; sync_selection = 0;
 		if (!doc_save(&ed->doc))
 			notify_error("Failed to save document\n");
 		break;
@@ -112,8 +108,12 @@ void input_editor(global_t* ed_globals, u32 c) {
 		goto_line();
 		break;
 
-	case 'P' | LT_TERM_MOD_ALT: modified = 0;
+	case 'p' | LT_TERM_MOD_ALT: case 'P' | LT_TERM_MOD_ALT: modified = 0;
 		ed_paren_match(ed);
+		break;
+
+	case 'R' | LT_TERM_MOD_CTRL: sync_selection = 0;
+		command();
 		break;
 
 	// ----- MOUSE

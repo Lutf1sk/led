@@ -89,4 +89,11 @@ void terminal(void);
 void draw_terminal(global_t* ed_global, void* args);
 void input_terminal(global_t* ed_global, u32 c);
 
+// Command
+
+void command(void);
+
+void draw_command(global_t* ed_global, void* args);
+void input_command(global_t* ed_global, u32 c);
+
 #endif
