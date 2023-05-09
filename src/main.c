@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
 // 	u32 c = 0;
 // 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
 // 		lt_strstream_clear(&stream);
-// 		LT_ASSERT(lt_texted_write_contents(&texted, &stream, (lt_io_callback_t)lt_strstream_write) >= 0);
+// 		LT_ASSERT(lt_texted_write_contents(&texted, (lt_io_callback_t)lt_strstream_write, &stream) >= 0);
 
 // 		lt_printf("\x1b[2J");
 // 		lt_printf("\x1b[%ud;%udH", 0, 0);
@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
 // 		lt_printf("%S", LSTR(it, end - it));
 
 // 		lt_strstream_clear(&stream);
-// 		LT_ASSERT(lt_texted_write_selection(&texted, &stream, (lt_io_callback_t)lt_strstream_write) >= 0);
+// 		LT_ASSERT(lt_texted_write_selection(&texted, (lt_io_callback_t)lt_strstream_write, &stream) >= 0);
 
 // 		lt_printf("\nSELECTION: '%S'\n\x1b[u", stream.str);
 
@@ -288,10 +288,11 @@ int main(int argc, char** argv) {
 
 	lstr_t conf_file;
 	if (lt_file_read_entire(cpath, &conf_file, alloc))
-		ferr("Failed to read config file\n");
+		lt_ferrf("failed to read config file\n");
 	lt_conf_t config;
-	if (lt_conf_parse(&config, conf_file))
-		ferr("Failed to parse config file\n");
+	lt_conf_err_info_t conf_err;
+	if (lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc))
+		lt_ferrf("failed to parse config file: %S\n", conf_err.err_str);
 
 	ed_globals.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
 	ed_globals.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);
@@ -302,7 +303,7 @@ int main(int argc, char** argv) {
 
 	clr_load(&config);
 
-	lt_conf_free(&config);
+	lt_conf_free(&config, alloc);
 
 	write_buf = lt_malloc(alloc, LT_MB(4));
 	ed_globals.hl_arena = arena;

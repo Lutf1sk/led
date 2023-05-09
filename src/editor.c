@@ -133,7 +133,7 @@ void ed_delete_selection_if_available(editor_t* ed) {
 		ed_delete_selection(ed);
 }
 
-void ed_write_selection_str(editor_t* ed, void* usr, lt_io_callback_t callb) {
+void ed_write_selection_str(editor_t* ed, lt_io_callback_t callb, void* usr) {
 	isz start_y, start_x, end_y, end_x;
 	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
 

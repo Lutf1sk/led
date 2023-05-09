@@ -66,14 +66,14 @@ void input_editor(global_t* ed_globals, u32 c) {
 		clipboard_clear();
 		if (!ed_selection_available(ed))
 			break;
-		ed_write_selection_str(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
+		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
 		break;
 
 	case 'X' | LT_TERM_MOD_CTRL: {
 		clipboard_clear();
 		if (!ed_selection_available(ed))
 			break;
-		ed_write_selection_str(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
+		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
 		ed_delete_selection(ed);
 	}	break;
 

@@ -124,7 +124,7 @@ b8 texted_input_term_key(lt_texted_t* ed, u32 key) {
 		if (!lt_texted_selection_present(ed))
 			return 0;
 		clipboard_clear();
-		lt_texted_write_selection(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
+		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
 		lt_texted_erase_selection(ed);
 		return 1;
 
@@ -132,7 +132,7 @@ b8 texted_input_term_key(lt_texted_t* ed, u32 key) {
 		if (!lt_texted_selection_present(ed))
 			return 0;
 		clipboard_clear();
-		lt_texted_write_selection(ed, &clipboard, (lt_io_callback_t)lt_strstream_write);
+		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboard);
 		return 1;
 
 	case 'V'|LT_TERM_MOD_CTRL:

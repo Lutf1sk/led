@@ -67,7 +67,7 @@ void ed_delete_selection(editor_t* ed);
 void ed_delete_selection_if_available(editor_t* ed);
 
 usz ed_selection_len(editor_t* ed);
-void ed_write_selection_str(editor_t* ed, void* usr, lt_io_callback_t callb);
+void ed_write_selection_str(editor_t* ed, lt_io_callback_t callb, void* usr);
 
 b8 ed_get_selection(editor_t* ed, isz* out_start_y, isz* out_start_x, isz* out_end_y, isz* out_end_x);
 void ed_sync_selection(editor_t* ed);
