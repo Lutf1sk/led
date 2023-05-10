@@ -11,6 +11,7 @@ OBJS = \
 	src/hl_onyx.o \
 	src/hl_js.o \
 	src/editor.o \
+	src/command.o \
 	src/file_browser.o \
 	src/focus_terminal.o \
 	src/focus_editor.o \
@@ -22,6 +23,7 @@ OBJS = \
 	src/focus_find_local.o \
 	src/focus_command.o \
 	src/focus.o \
+	src/keybinds.o \
 	src/err.o \
 	src/draw.o
 

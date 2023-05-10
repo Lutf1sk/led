@@ -11,6 +11,25 @@
 
 #include <string.h>
 
+b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos) {
+	for (usz i = ed->cy, j = ed->cx; i < ed->doc.line_count; ++i) {
+		lstr_t* line = &ed->doc.lines[i];
+
+		// Search every possible offset in the line
+		for (; j + str.len <= line->len; ++j) {
+			if (memcmp(&line->str[j], str.str, str.len) == 0) {
+				pos->y = i;
+				pos->x = j;
+				return 1;
+			}
+		}
+
+		j = 0;
+	}
+
+	return 0;
+}
+
 void ed_insert_string(editor_t* ed, lstr_t str) {
 	for (usz i = 0; i < str.len; ++i) {
 		char c = str.str[i];

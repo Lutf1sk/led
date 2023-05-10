@@ -12,6 +12,8 @@
 #include "algo.h"
 #include "highlight.h"
 #include "clipboard.h"
+#include "command.h"
+#include "keybinds.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -57,30 +59,6 @@ void input_editor(global_t* ed_globals, u32 c) {
 	case 'F' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
 		find_local(ed->cy, ed->cx);
 		break;
-
-	case 'C' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0;
-		clipboard_clear(0);
-		if (!ed_selection_available(ed))
-			break;
-		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
-		break;
-
-	case 'X' | LT_TERM_MOD_CTRL: {
-		clipboard_clear(0);
-		if (!ed_selection_available(ed))
-			break;
-		ed_write_selection_str(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
-		ed_delete_selection(ed);
-	}	break;
-
-	case 'V' | LT_TERM_MOD_CTRL: {
-		ed_delete_selection_if_available(ed);
-		ed_insert_string(ed, clipboards[0].str);
-	}	break;
-
-	case 'D' | LT_TERM_MOD_CTRL: sync_selection = 0; modified = 0; {
-		ed_expand_selection(ed);
-	}	break;
 
 	case 'S' | LT_TERM_MOD_CTRL: modified = 0; sync_selection = 0;
 		if (!doc_save(&ed->doc))
@@ -345,18 +323,6 @@ void input_editor(global_t* ed_globals, u32 c) {
 		}
 		break;
 
-	// ----- HOME/END
-
-	case LT_TERM_KEY_HOME | LT_TERM_MOD_SHIFT | LT_TERM_MOD_CTRL: sync_selection = 0;
-	case LT_TERM_KEY_HOME: modified = 0;
-		ed->cx = ed_find_indent_pfx(ed);
-		break;
-
-	case LT_TERM_KEY_END | LT_TERM_MOD_SHIFT | LT_TERM_MOD_CTRL: sync_selection = 0;
-	case LT_TERM_KEY_END: modified = 0;
-		ed->cx = ed->doc.lines[ed->cy].len;
-		break;
-
 	// ----- TAB
 
 	case LT_TERM_KEY_TAB | LT_TERM_MOD_SHIFT: sync_selection = 0;
@@ -428,6 +394,13 @@ void input_editor(global_t* ed_globals, u32 c) {
 	}	break;
 
 	default: {
+		lstr_t cmd = lookup_keybind(c);
+		if (cmd.len) {
+			execute_string(ed, cmd);
+			sync_selection = 0;
+			break;
+		}
+
  		if (lt_is_unicode_control_char(c) || (c & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK))) {
  			modified = 0;
  			sync_selection = 0;
@@ -440,16 +413,6 @@ void input_editor(global_t* ed_globals, u32 c) {
 		usz utf8_len = lt_utf8_encode(utf8_buf, c);
 		doc_insert_str(&ed->doc, ed->cy, ed->cx, LSTR(utf8_buf, utf8_len));
 		ed->cx += utf8_len;
-
-		if (!ed_globals->predict_brackets)
-			break;
-
-		if (c == '(')
-			doc_insert_char(&ed->doc, ed->cy, ed->cx, ')');
-		else if (c == '{')
-			doc_insert_char(&ed->doc, ed->cy, ed->cx, '}');
-		else if (c == '[')
-			doc_insert_char(&ed->doc, ed->cy, ed->cx, ']');
 	}	break;
 	}
 

@@ -25,7 +25,6 @@ struct global {
 	isz width, height;
 	isz hstart, vstart;
 
-	u8 predict_brackets;
 	u8 relative_linenums;
 
 	lt_arena_t* hl_arena;
@@ -52,6 +51,7 @@ struct editor {
 	doc_t doc;
 } editor_t;
 
+b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos);
 void ed_insert_string(editor_t* ed, lstr_t str);
 void ed_move_to_selection_start(editor_t* ed);
 void ed_move_to_selection_end(editor_t* ed);

@@ -18,6 +18,7 @@
 #include "file_browser.h"
 #include "focus.h"
 #include "clipboard.h"
+#include "keybinds.h"
 
 #include "draw.h"
 
@@ -196,68 +197,6 @@ void on_exit(void*, void*);
 #include <lt/strstream.h>
 
 int main(int argc, char** argv) {
-// 	lstr_t str = CLSTR("åäö子");
-// 	lt_printf("'%S' : %uz,%uz\n", str, str.len, lt_utf8_glyph_count(str));
-// 	lt_printf("\x1b[%uz;%uzH", 1, 1);
-// 	return 0;
-
-// 	LT_ASSERT(!lt_term_init(LT_TERM_ALTBUF | LT_TERM_UTF8));
-
-// 	lt_strstream_t stream;
-// 	LT_ASSERT(!lt_strstream_create(&stream, lt_libc_heap));
-
-// 	lt_texted_t texted;
-// 	LT_ASSERT(!lt_texted_create(&texted, lt_libc_heap));
-
-// 	u32 c = 0;
-// 	while (c != ('D' | LT_TERM_MOD_CTRL)) {
-// 		lt_strstream_clear(&stream);
-// 		LT_ASSERT(lt_texted_write_contents(&texted, (lt_io_callback_t)lt_strstream_write, &stream) >= 0);
-
-// 		lt_printf("\x1b[2J");
-// 		lt_printf("\x1b[%ud;%udH", 0, 0);
-
-// 		usz sx1, sy1, sx2, sy2;
-// 		lt_texted_get_selection(&texted, &sx1, &sy1, &sx2, &sy2);
-
-// 		usz cx = texted.lines[texted.cursor_pos].cursor_pos;
-
-// 		char* start = stream.str.str, *it = start, *end = start + stream.str.len;
-// 		for (usz y = 0; y < sy1;)
-// 			if (*it++ == '\n')
-// 				++y;
-// 		it += sx1;
-// 		lt_printf("%S", LSTR(start, it - start));
-
-// 		if (sx1 == cx && sy1 == texted.cursor_pos)
-// 			lt_printf("\x1b[s");
-
-// 		start = it;
-// 		for (usz y = sy1; y < sy2;)
-// 			if (*it++ == '\n')
-// 				++y;
-// 		if (sy1 == sy2)
-// 			it -= sx1;
-// 		it += sx2;
-// 		lt_printf("\x1b[41m%S\x1b[0m", LSTR(start, it - start));
-
-// 		if (sx2 == cx && sy2 == texted.cursor_pos)
-// 			lt_printf("\x1b[s");
-
-// 		lt_printf("%S", LSTR(it, end - it));
-
-// 		lt_strstream_clear(&stream);
-// 		LT_ASSERT(lt_texted_write_selection(&texted, (lt_io_callback_t)lt_strstream_write, &stream) >= 0);
-
-// 		lt_printf("\nSELECTION: '%S'\n\x1b[u", stream.str);
-
-// 		c = lt_term_getkey();
-// 		texted_input_term_key(&texted, c);
-// 		//lt_printf("Key 0x%hd, Mod 0x%hd\n", c & LT_TERM_KEY_MASK, c & LT_TERM_MOD_MASK);
-// 	}
-// 	lt_term_restore();
-// 	return 0;
-
 	lstr_t cpath = NLSTR();
 
 	lt_arg_iterator_t arg_it = lt_arg_iterator_create(argc, argv);
@@ -298,10 +237,46 @@ int main(int argc, char** argv) {
 	ed_globals.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);
 	ed_globals.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
 	ed_globals.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
-	ed_globals.predict_brackets = lt_conf_find_bool_default(&config, CLSTR("editor.predict_brackets"), 0);
 	ed_globals.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
 
 	clr_load(&config);
+
+	keybind_init();
+
+	lt_conf_t* kbs = lt_conf_find_array(&config, CLSTR("keybinds"), &kbs);
+	if (kbs) {
+		for (usz i = 0; i < kbs->child_count; ++i) {
+			lt_conf_t* kb = &kbs->children[i];
+			if (kb->stype != LT_CONF_OBJECT)
+				continue;
+
+			lstr_t keystr = NLSTR();
+			if (!lt_conf_find_str(kb, CLSTR("key"), &keystr)) {
+				lt_werrf("keybind object missing 'key'\n");
+				continue;
+			}
+
+			u32 key = keystr_to_key(keystr);
+
+			lstr_t modstr = NLSTR();
+			if (lt_conf_find_str(kb, CLSTR("mod"), &modstr))
+				key |= modstr_to_key(modstr);
+
+			lt_conf_t* mods = NULL;
+			if (lt_conf_find_array(kb, CLSTR("mod"), &mods)) {
+				for (usz i = 0; i < mods->child_count; ++i) {
+					lt_conf_t* mod = &mods->children[i];
+					if (mod->stype != LT_CONF_STRING)
+						continue;
+					key |= modstr_to_key(mod->str_val);
+				}
+			}
+
+			lstr_t cmd = NLSTR();
+			if (lt_conf_find_str(kb, CLSTR("command"), &cmd))
+				reg_keybind_command(key, cmd);
+		}
+	}
 
 	lt_conf_free(&config, alloc);
 
