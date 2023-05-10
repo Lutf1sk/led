@@ -7,6 +7,7 @@
 #include <lt/mem.h>
 #include <lt/term.h>
 #include <lt/arg.h>
+#include <lt/math.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +104,7 @@ void draw_editor(editor_t* ed) {
 		linenum %= 10000;
 		if (i == ed->cy - line_top)
 			linenum = (line_top + i + 1) % 10000;
-		sprintf(line_num_buf, "%4zi ", linenum);
+		sprintf(line_num_buf, "%4zi ", lt_abs_isz(linenum));
 
 		u8 sel = (i >= sel_start_y) && (i <= sel_end_y);
 		rec_str(clr_strs[sel ? CLR_LINENUM_SEL : CLR_LINENUM]);
