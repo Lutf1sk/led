@@ -1,6 +1,7 @@
 #include <lt/str.h>
 #include <lt/ctype.h>
 #include <lt/math.h>
+#include <lt/mem.h>
 
 #include "algo.h"
 #include "clipboard.h"
@@ -21,6 +22,54 @@ struct pos {
 
 static void skip_single_command(ctx_t* cx);
 static void execute_single_command(ctx_t* cx);
+
+static
+u8 hex_char(char c) {
+	if (c >= 'A' && c <= 'Z')
+		return (c - 'A' + 10);
+	if (c >= 'a' && c <= 'z')
+		return (c - 'a' + 10);
+	if (c >= '0' && c <= '9')
+		return (c - '0');
+
+	return 0; // TODO: Error checking
+}
+
+static
+lstr_t unescape_string(lstr_t esc) {
+	char* start = lt_malloc(lt_libc_heap, esc.len), *oit = start;
+
+	char* iit = esc.str, *end = iit + esc.len;
+	while (iit < end) {
+		char c = *iit++;
+
+		if (c != '\\' || iit >= end) {
+			*oit++ = c;
+			continue;
+		}
+
+		switch (*iit++) {
+		case 'n': *oit++ = '\n'; break;
+		case 'r': *oit++ = '\r'; break;
+		case 't': *oit++ = '\t'; break;
+		case 'v': *oit++ = '\v'; break;
+		case 'b': *oit++ = '\b'; break;
+		case '\\': *oit++ = '\\'; break;
+		case '`': *oit++ = '`'; break;
+		case 'x': {
+			if (end - iit < 2) {
+				*oit++ = '\\';
+				*oit++ = 'x';
+				break;
+			}
+			u8 b = hex_char(*iit++) << 4;
+			*oit++ = b | hex_char(*iit++);
+		}	break;
+		}
+	}
+
+	return LSTR(start, oit - start);
+}
 
 static
 usz parse_uint(ctx_t* cx) {
@@ -50,8 +99,9 @@ lstr_t parse_string(ctx_t* cx) {
 		return NLSTR();
 
 	char* start = cx->it;
-	while (cx->it < cx->end && *cx->it != '`')
-		++cx->it;
+	char last = 0;
+	while (cx->it < cx->end && !(*cx->it == '`' && last != '\\'))
+		last = *cx->it++;
 	lstr_t block = LSTR(start, cx->it - start);
 	if (cx->it < cx->end && *cx->it == '`')
 		++cx->it;
@@ -175,10 +225,12 @@ void execute_single_command(ctx_t* cx) {
 			execute_string(cx->ed, block);
 	}	break;
 
-	case 'i':
-		ed_insert_string(cx->ed, parse_string(cx));
+	case 'i': {
+		lstr_t str = unescape_string(parse_string(cx));
+		ed_insert_string(cx->ed, str);
+		lt_mfree(lt_libc_heap, str.str);
 		ed_sync_selection(cx->ed);
-		break;
+	}	break;
 
 	case 'f': {
 		doc_pos_t pos;
