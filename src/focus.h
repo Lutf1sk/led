@@ -75,13 +75,6 @@ void notify_exit(void);
 void draw_exit(global_t* ed_global, void* args);
 void input_exit(global_t* ed_global, u32 c);
 
-// Goto
-
-void goto_line(void);
-
-void draw_goto(global_t* ed_global, void* args);
-void input_goto(global_t* ed_global, u32 c);
-
 // Terminal
 
 void terminal(void);

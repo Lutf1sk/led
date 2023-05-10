@@ -18,7 +18,6 @@ OBJS = \
 	src/focus_error.o \
 	src/focus_browse_files.o \
 	src/focus_browse_filesystem.o \
-	src/focus_goto.o \
 	src/focus_exit.o \
 	src/focus_find_local.o \
 	src/focus_command.o \

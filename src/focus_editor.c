@@ -72,15 +72,11 @@ void input_editor(global_t* ed_globals, u32 c) {
 		ed_delete_selection_prefix(ed, CLSTR("// // "));
 		break;
 
-	case '\\' | LT_TERM_MOD_CTRL: modified = 0;
-		goto_line();
-		break;
-
 	case 'p' | LT_TERM_MOD_ALT: case 'P' | LT_TERM_MOD_ALT: modified = 0;
 		ed_paren_match(ed);
 		break;
 
-	case 'R' | LT_TERM_MOD_CTRL: sync_selection = 0;
+	case '\\' | LT_TERM_MOD_CTRL: sync_selection = 0;
 		command();
 		break;
 
