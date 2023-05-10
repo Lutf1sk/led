@@ -51,6 +51,7 @@ struct editor {
 	doc_t doc;
 } editor_t;
 
+void ed_adjust_screen_pos(editor_t* ed);
 b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos);
 void ed_insert_string(editor_t* ed, lstr_t str);
 void ed_move_to_selection_start(editor_t* ed);

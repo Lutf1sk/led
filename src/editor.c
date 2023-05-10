@@ -11,6 +11,22 @@
 
 #include <string.h>
 
+void ed_adjust_screen_pos(editor_t* ed) {
+	// Move screen if cursor is above the upper boundary
+	isz vbound_top = ed->line_top + ed->global->scroll_offs;
+	if (ed->cy < vbound_top) {
+		ed->line_top -= vbound_top - ed->cy;
+		ed->line_top = max(ed->line_top, 0);
+	}
+
+	// Move screen if cursor is below the lower boundary
+	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs - 1;
+	if (ed->cy > vbound_bottom) {
+		ed->line_top += ed->cy - vbound_bottom;
+		ed->line_top = min(ed->line_top, max(0, ed->doc.line_count - ed->global->height));
+	}
+}
+
 b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos) {
 	for (usz i = ed->cy, j = ed->cx + 1; i < ed->doc.line_count; ++i) {
 		lstr_t* line = &ed->doc.lines[i];

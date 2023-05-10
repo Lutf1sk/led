@@ -419,19 +419,7 @@ void input_editor(global_t* ed_globals, u32 c) {
 	if (sync_selection)
 		ed_sync_selection(ed);
 
-	// Move screen if cursor is above the upper boundary
-	isz vbound_top = ed->line_top + ed->global->scroll_offs;
-	if (ed->cy < vbound_top) {
-		ed->line_top -= vbound_top - ed->cy;
-		ed->line_top = max(ed->line_top, 0);
-	}
-
-	// Move screen if cursor is below the lower boundary
-	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs - 1;
-	if (ed->cy > vbound_bottom) {
-		ed->line_top += ed->cy - vbound_bottom;
-		ed->line_top = min(ed->line_top, max(0, ed->doc.line_count - ed->global->height));
-	}
+	ed_adjust_screen_pos(ed);
 
 	if (modified)
 		ed_regenerate_hl(ed);

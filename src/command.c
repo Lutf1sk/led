@@ -44,6 +44,20 @@ lstr_t parse_block(ctx_t* cx) {
 }
 
 static
+lstr_t parse_string(ctx_t* cx) {
+	if (cx->it >= cx->end)
+		return NLSTR();
+
+	char* start = cx->it;
+	while (cx->it < cx->end && *cx->it != '`')
+		++cx->it;
+	lstr_t block = LSTR(start, cx->it - start);
+	if (cx->it < cx->end && *cx->it == '`')
+		++cx->it;
+	return block;
+}
+
+static
 pos_t parse_pos(ctx_t* cx) {
 	pos_t pos;
 	pos.line = cx->ed->cy;
@@ -96,6 +110,8 @@ pos_t parse_pos(ctx_t* cx) {
 
 	case 'i': pos.col = ed_find_indent(cx->ed); break;
 	case 'c': pos.col = parse_uint(cx); break;
+	case ' ': break;
+	case '`': --cx->it; break;
 	}
 
 	return pos;
@@ -109,8 +125,10 @@ void skip_single_command(ctx_t* cx) {
 	case 'p': parse_uint(cx); break;
 	case 'd': break;
 	case 'l': parse_uint(cx); parse_block(cx); break;
-	case 'i': parse_block(cx); break;
-	case 'f': parse_block(cx); break;
+	case 'i': parse_string(cx); break;
+	case 'f': parse_string(cx); break;
+	case ' ': break;
+	case '`': --cx->it; break;
 	}
 }
 
@@ -157,19 +175,22 @@ void execute_single_command(ctx_t* cx) {
 	}	break;
 
 	case 'i':
-		ed_insert_string(cx->ed, parse_block(cx));
+		ed_insert_string(cx->ed, parse_string(cx));
 		ed_sync_selection(cx->ed);
 		break;
 
 	case 'f': {
 		doc_pos_t pos;
-		if (!ed_find_next_occurence(cx->ed, parse_block(cx), &pos))
+		if (!ed_find_next_occurence(cx->ed, parse_string(cx), &pos))
 			break;
 
 		cx->ed->cy = pos.y;
 		cx->ed->cx = pos.x;
 		ed_sync_selection(cx->ed);
 	}	break;
+
+	case ' ': break;
+	case '`': --cx->it; break;
 	}
 }
 
@@ -181,4 +202,5 @@ void execute_string(editor_t* ed, lstr_t cmd) {
 
 	while (cx.it < cx.end)
 		execute_single_command(&cx);
+	ed_adjust_screen_pos(ed);
 }
