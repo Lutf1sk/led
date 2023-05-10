@@ -12,7 +12,7 @@
 #include <string.h>
 
 b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos) {
-	for (usz i = ed->cy, j = ed->cx; i < ed->doc.line_count; ++i) {
+	for (usz i = ed->cy, j = ed->cx + 1; i < ed->doc.line_count; ++i) {
 		lstr_t* line = &ed->doc.lines[i];
 
 		// Search every possible offset in the line
