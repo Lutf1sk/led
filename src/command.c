@@ -1,5 +1,6 @@
 #include <lt/str.h>
 #include <lt/ctype.h>
+#include <lt/math.h>
 
 #include "algo.h"
 #include "clipboard.h"
@@ -104,7 +105,7 @@ pos_t parse_pos(ctx_t* cx) {
 		switch (*cx->it++) {
 		case 's': pos.col = 0; break;
 		case 'e': pos.col = cx->ed->doc.lines[pos.line].len; break;
-		default: pos.line = parse_uint(cx); break;
+		default: --cx->it; pos.line = lt_max_isz(parse_uint(cx) - 1, 0); break;
 		}
 		break;
 
