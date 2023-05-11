@@ -76,7 +76,10 @@ usz parse_uint(ctx_t* cx) {
 	char* start = cx->it;
 	while (cx->it < cx->end && lt_is_digit(*cx->it))
 		++cx->it;
-	return lt_lstr_uint(LSTR(start, cx->it - start));
+	u64 val;
+	if (lt_lstr_uint(LSTR(start, cx->it - start), &val) != LT_SUCCESS)
+		return 0;
+	return val;
 }
 
 static
