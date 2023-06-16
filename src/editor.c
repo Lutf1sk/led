@@ -408,7 +408,7 @@ usz ed_find_word_bwd(editor_t* ed) {
 			--cx;
 		while (cx && lt_is_numeric_body(str[cx - 1])) {
 			--cx;
-			while ((str[cx - 1] & 0xC0) == 0x80)
+			while (cx && (str[cx - 1] & 0xC0) == 0x80)
 				--cx;
 		}
 	}

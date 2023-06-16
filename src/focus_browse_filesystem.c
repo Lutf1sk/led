@@ -8,6 +8,7 @@
 #include <lt/mem.h>
 #include <lt/darr.h>
 #include <lt/str.h>
+#include <lt/math.h>
 
 #include "focus.h"
 #include "clr.h"
@@ -87,19 +88,18 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 	}
 
 	usz visible_index = 0;
-	usz visible_count = MAX_ENTRY_COUNT;
+	usz visible_count = lt_min_usz(MAX_ENTRY_COUNT, lt_darr_count(files));
 
 	for (usz i = 0; i < visible_count; ++i) {
 		usz index = visible_index + i;
 
 		rec_goto(2, start_height + i + 1);
+
 		if (files[index].highlight)
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 		else
 			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
 		rec_lstr(files[index].name.str, files[index].name.len);
-
-		lt_mfree(lt_libc_heap, files[index].name.str);
 	}
 
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
@@ -108,6 +108,8 @@ void draw_browse_filesystem(global_t* ed_globals, void* args) {
 		rec_clearline("");
 	}
 
+	for (usz i = 0; i < lt_darr_count(files); ++i)
+		lt_mfree(lt_libc_heap, files[i].name.str);
 	lt_darr_destroy(files);
 
 	rec_crestore();
@@ -118,8 +120,13 @@ void input_browse_filesystem(global_t* ed_global, u32 c) {
 
 	switch (c) {
 	case '\n': {
-		editor_t* new_ed = fb_open(ed_global, lt_led_get_str(line_input));
-		edit_file(ed_global, new_ed ? new_ed : ed);
+		lstr_t name = lt_led_get_str(line_input);
+		if (name.len) {
+			editor_t* new_ed = fb_open(ed_global, name);
+			edit_file(ed_global, new_ed ? new_ed : ed);
+		}
+		else
+			edit_file(ed_global, ed);
 	}	break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:

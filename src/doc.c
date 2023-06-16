@@ -172,7 +172,16 @@ void doc_load(doc_t* doc) {
 	lstr_t file;
 	char* data = NULL;
 	usz size = 0;
-	if (!lt_file_read_entire(doc->path, &file, lt_libc_heap)) {
+	if (lt_file_read_entire(doc->path, &file, lt_libc_heap) != LT_SUCCESS) {
+		doc->new = 1;
+		doc->line_count = 1;
+		doc->lines = malloc(sizeof(lstr_t));
+		if (!doc->lines)
+			ferrf("Failed to allocate memory: %s\n", os_err_str());
+		doc->lines[0] = NLSTR();
+		return;
+	}
+	else {
 		char cstr_path[LT_PATH_MAX];
 		LT_ASSERT(doc->path.len + 1 < LT_PATH_MAX);
 		memcpy(cstr_path, doc->path.str, doc->path.len);
@@ -183,8 +192,6 @@ void doc_load(doc_t* doc) {
 		data = file.str;
 		size = file.len;
 	}
-	else
-		doc->new = 1;
 
 	// Find line ending type
 	usz first_line_len = lt_lstr_split(LSTR(data, size), '\n');
