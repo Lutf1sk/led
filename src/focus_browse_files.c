@@ -90,12 +90,12 @@ void input_browse_files(global_t* ed_global, u32 c) {
 		edit_file(ed_global, selected ? selected : ed);
 		break;
 
-	case LT_TERM_KEY_UP:
+	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
 		if (selected_index)
 			--selected_index;
 		break;
 
-	case LT_TERM_KEY_DOWN:
+	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
 		if (selected_index + 1 < max_index)
 			++selected_index;
 		break;

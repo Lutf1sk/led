@@ -131,6 +131,7 @@ pos_t parse_pos(ctx_t* cx) {
 		switch (*cx->it++) {
 		case 'f': pos.col = ed_find_word_fwd(cx->ed); break;
 		case 'b': pos.col = ed_find_word_bwd(cx->ed); break;
+		default: --cx->it; break;
 		}
 
 	case 't':
@@ -149,6 +150,7 @@ pos_t parse_pos(ctx_t* cx) {
 		switch (*cx->it++) {
 		case 's': ed_get_selection(cx->ed, &pos.line, &pos.col, NULL, NULL); break;
 		case 'e': ed_get_selection(cx->ed, NULL, NULL, &pos.line, &pos.col); break;
+		default: --cx->it; break;
 		}
 		break;
 
@@ -165,10 +167,34 @@ pos_t parse_pos(ctx_t* cx) {
 	case 'i': pos.col = ed_find_indent(cx->ed); break;
 	case 'c': pos.col = parse_uint(cx); break;
 	case ' ': break;
-	case '`': --cx->it; break;
+	default: --cx->it; break;
 	}
 
 	return pos;
+}
+
+static
+b8 parse_condition(ctx_t* cx) {
+	if (cx->it >= cx->end)
+		return 0;
+
+	switch (*cx->it++) {
+	case 's':
+		if (cx->it >= cx->end || *cx->it != 'p')
+			break;
+		++cx->it;
+		return ed_selection_available(cx->ed);
+
+	case 'c':
+		usz clipboard = parse_uint(cx);
+		if (clipboard >= CLIPBOARD_COUNT || cx->it >= cx->end || *cx->it != 'p')
+			return 0;
+		++cx->it;
+		return clipboards[clipboard].str.len > 0;
+
+	default: --cx->it; break;
+	}
+	return 0;
 }
 
 static
@@ -179,7 +205,13 @@ void skip_single_command(ctx_t* cx) {
 	case 'p': parse_uint(cx); break;
 	case 'd': break;
 	case 'l': parse_uint(cx); parse_block(cx); break;
-	case 'i': parse_string(cx); break;
+	case 'w': parse_string(cx); break;
+	case 'i':
+		parse_condition(cx); parse_block(cx);
+		if (cx->it >= cx->end || *cx->it != 'e')
+			break;
+		++cx->it; parse_block(cx);
+		break;
 	case 'f': parse_string(cx); break;
 	case ' ': break;
 	case '`': --cx->it; break;
@@ -228,11 +260,24 @@ void execute_single_command(ctx_t* cx) {
 			execute_string(cx->ed, block);
 	}	break;
 
-	case 'i': {
+	case 'w': {
 		lstr_t str = unescape_string(parse_string(cx));
 		ed_insert_string(cx->ed, str);
 		lt_mfree(lt_libc_heap, str.str);
 		ed_sync_selection(cx->ed);
+	}	break;
+
+	case 'i': {
+		u8 cond = parse_condition(cx);
+		lstr_t true = parse_block(cx);
+		if (cond)
+			execute_string(cx->ed, true);
+		if (cx->it >= cx->end || *cx->it != 'e')
+			break;
+		++cx->it;
+		lstr_t false = parse_block(cx);
+		if (!cond)
+			execute_string(cx->ed, false);
 	}	break;
 
 	case 'f': {
@@ -246,7 +291,6 @@ void execute_single_command(ctx_t* cx) {
 	}	break;
 
 	case ' ': break;
-	case '`': --cx->it; break;
 	}
 }
 

@@ -121,14 +121,14 @@ void input_find_local(global_t* ed_global, u32 c) {
 		ed_sync_selection(ed);
 		return;
 
-	case LT_TERM_KEY_UP:
+	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
 		if (selected_index > 0)
 			--selected_index;
 		else if (selected_index == 0)
 			selected_index = max(result_count - 1, 0);
 		break;
 
-	case LT_TERM_KEY_DOWN:
+	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
 		if (selected_index != -1 && ++selected_index >= result_count)
 			selected_index = 0;
 		break;

@@ -198,6 +198,8 @@ void on_exit(void*, void*);
 #include <lt/strstream.h>
 
 int main(int argc, char** argv) {
+// 	LT_DEBUG_INIT();
+
 	lstr_t cpath = NLSTR();
 
 	lt_arg_iterator_t arg_it = lt_arg_iterator_create(argc, argv);
