@@ -7,6 +7,7 @@ OBJS = \
 	src/doc.o \
 	src/hl.o \
 	src/hl_c.o \
+	src/hl_rust.o \
 	src/hl_cs.o \
 	src/hl_onyx.o \
 	src/hl_js.o \
