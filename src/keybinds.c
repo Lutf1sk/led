@@ -42,7 +42,7 @@ u32 keystr_to_key(lstr_t key) {
 	}
 
 	if (key.len == 1)
-		return lt_to_upper(key.str[0]);
+		return key.str[0];
 
 	if (lt_lstr_eq(key, CLSTR("backspace"))) return LT_TERM_KEY_BSPACE;
 	if (lt_lstr_eq(key, CLSTR("escape"))) return LT_TERM_KEY_ESC;
@@ -87,6 +87,11 @@ u32 keystr_to_key(lstr_t key) {
 }
 
 void reg_keybind_command(u32 key, lstr_t cmd) {
+	u32 mod = key & LT_TERM_MOD_MASK;
+	u32 k = key & LT_TERM_KEY_MASK;
+	if (!(key & LT_TERM_KEY_SPECIAL_BIT) && mod == LT_TERM_MOD_CTRL && k < 0x80)
+		key = lt_to_upper(k) | mod;
+
 	keybind_t kb;
 	kb.key = key;
 	kb.command = cmd;
