@@ -133,6 +133,7 @@ pos_t parse_pos(ctx_t* cx) {
 		case 'b': pos.col = ed_find_word_bwd(cx->ed); break;
 		default: --cx->it; break;
 		}
+		break;
 
 	case 't':
 		pos.line = 0;
