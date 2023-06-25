@@ -4,6 +4,7 @@
 #include <lt/str.h>
 #include <lt/mem.h>
 #include <lt/ctype.h>
+#include <lt/darr.h>
 
 static
 highl_t** hl_generate_git_commit(doc_t* doc, lt_alloc_t* alloc) {
@@ -52,28 +53,60 @@ highl_t** hl_generate_git_commit(doc_t* doc, lt_alloc_t* alloc) {
 	return lines;
 }
 
-struct {
+typedef
+struct modeext {
 	lstr_t extension;
 	hl_mode_t mode;
-} modes[] = {
-	{ CLSTR(".c"),		HL_C },
-	{ CLSTR(".cpp"),	HL_C },
-	{ CLSTR(".h"),		HL_C },
-	{ CLSTR(".hpp"),	HL_C },
-	{ CLSTR(".cs"),		HL_CS },
-	{ CLSTR(".razor"),	HL_CS },
-	{ CLSTR(".cshtml"),	HL_CS },
-	{ CLSTR(".nyx"),	HL_ONYX },
-	{ CLSTR(".rs"),		HL_RUST },
-	{ CLSTR(".js"),		HL_JS },
-	{ CLSTR("COMMIT_EDITMSG"), HL_GIT_COMMIT },
+} modeext_t;
+
+static lt_darr(modeext_t) extension_modes = NULL;
+
+struct {
+	lstr_t str;
+	hl_mode_t mode;
+} mode_strs[] = {
+	{ CLSTR("c"),			HL_C },
+	{ CLSTR("c#"),			HL_CS },
+	{ CLSTR("onyx"),		HL_ONYX },
+	{ CLSTR("rust"),		HL_RUST },
+	{ CLSTR("javascript"),	HL_JS },
+	{ CLSTR("git_commit"),	HL_GIT_COMMIT },
 };
 
-hl_mode_t hl_find_mode(lstr_t path) {
-	for (usz i = 0; i < sizeof(modes) / sizeof(*modes); ++i)
-		if (lt_lstr_endswith(path, modes[i].extension))
-			return modes[i].mode;
+hl_mode_t hl_find_mode_by_name(lstr_t name) {
+	for (usz i = 0; i < sizeof(mode_strs) / sizeof(*mode_strs); ++i) {
+		if (lt_lstr_eq(name, mode_strs[i].str)) {
+			return mode_strs[i].mode;
+		}
+	}
 	return HL_UNKNOWN;
+}
+
+hl_mode_t hl_find_mode_by_extension(lstr_t path) {
+	if (!extension_modes)
+		return HL_UNKNOWN;
+
+	for (usz i = 0; i < lt_darr_count(extension_modes); ++i) {
+		if (lt_lstr_endswith(path, extension_modes[i].extension)) {
+			return extension_modes[i].mode;
+		}
+	}
+	return HL_UNKNOWN;
+}
+
+void hl_register_extension(lstr_t extension, lstr_t mode_str) {
+	hl_mode_t mode = hl_find_mode_by_name(mode_str);
+	if (mode == HL_UNKNOWN) {
+		lt_werrf("unknown highlighting mode '%S'\n", mode_str);
+		return;
+	}
+
+	if (!extension_modes) {
+		extension_modes = lt_darr_create(modeext_t, 128, lt_libc_heap);
+		LT_ASSERT(extension_modes);
+	}
+
+	lt_darr_push(extension_modes, (modeext_t){ lt_strdup(lt_libc_heap, extension), mode });
 }
 
 highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {

@@ -49,7 +49,10 @@ enum hl_mode {
 	HL_UNKNOWN,
 } hl_mode_t;
 
-hl_mode_t hl_find_mode(lstr_t path);
+hl_mode_t hl_find_mode_by_name(lstr_t name);
+hl_mode_t hl_find_mode_by_extension(lstr_t path);
+void hl_register_extension(lstr_t extension, lstr_t mode_str);
+
 highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc);
 
 highl_t** hl_generate_c(doc_t* doc, lt_alloc_t* alloc);

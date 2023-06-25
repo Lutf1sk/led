@@ -202,6 +202,8 @@ int main(int argc, char** argv) {
 
 	lstr_t cpath = NLSTR();
 
+	lt_darr(lstr_t) open_paths = lt_darr_create(lstr_t, 128, lt_libc_heap);
+
 	lt_arg_iterator_t arg_it = lt_arg_iterator_create(argc, argv);
 	while (lt_arg_next(&arg_it)) {
 		if (lt_arg_flag(&arg_it, 'h', CLSTR("help"))) {
@@ -217,7 +219,7 @@ int main(int argc, char** argv) {
 		if (lt_arg_lstr(&arg_it, 'c', CLSTR("config"), &cpath))
 			continue;
 
-		fb_open(&ed_globals, LSTR(*arg_it.it, arg_it.arg_len));
+		lt_darr_push(open_paths, LSTR(*arg_it.it, arg_it.arg_len));
 	}
 
 	if (!cpath.str)
@@ -281,7 +283,34 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	lt_conf_t* hls = lt_conf_find_array(&config, CLSTR("highlight"), &hls);
+	if (hls) {
+		for (usz i = 0; i < hls->child_count; ++i) {
+			lt_conf_t* hl = &hls->children[i];
+			if (hl->stype != LT_CONF_OBJECT)
+				continue;
+
+			lstr_t ext = NLSTR();
+			if (!lt_conf_find_str(hl, CLSTR("extension"), &ext)) {
+				lt_werrf("highlight object missing 'extension'\n");
+				continue;
+			}
+
+			lstr_t modestr = NLSTR();
+			if (!lt_conf_find_str(hl, CLSTR("mode"), &modestr)) {
+				lt_werrf("highlight object missing 'extension'\n");
+				continue;
+			}
+
+			hl_register_extension(ext, modestr);
+		}
+	}
+
 	lt_conf_free(&config, alloc);
+
+	for (usz i = 0; i < lt_darr_count(open_paths); ++i) {
+		fb_open(&ed_globals, open_paths[i]);
+	}
 
 	write_buf = lt_malloc(alloc, LT_MB(4));
 	ed_globals.hl_arena = arena;
