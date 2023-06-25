@@ -27,7 +27,7 @@ These keybinds are built into the editor and cannot be changed, others can be fo
 | CTRL+F    | Local find string     |
 | CTRL+/    | Comment selection     |
 | ALT+P     | Move to other bracket |
-| TAB       | Intent selection      |
+| TAB       | Indent selection      |
 | Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
 | Page Down | Move down one page    |
