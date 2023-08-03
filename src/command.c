@@ -113,9 +113,11 @@ lstr_t parse_string(ctx_t* cx) {
 
 static
 pos_t parse_pos(ctx_t* cx) {
+	lt_texted_t* txed = &cx->ed->doc->ed;
+
 	pos_t pos;
-	pos.line = cx->ed->cy;
-	pos.col = cx->ed->cx;
+	pos.line = txed->cursor_y;
+	pos.col = txed->cursor_x;
 
 	if (cx->it >= cx->end)
 		return pos;
@@ -129,8 +131,8 @@ pos_t parse_pos(ctx_t* cx) {
 		if (cx->it >= cx->end)
 			break;
 		switch (*cx->it++) {
-		case 'f': pos.col = ed_find_word_fwd(cx->ed); break;
-		case 'b': pos.col = ed_find_word_bwd(cx->ed); break;
+		case 'f': pos.col = lt_texted_find_word_fwd(txed); break;
+		case 'b': pos.col = lt_texted_find_word_bwd(txed); break;
 		default: --cx->it; break;
 		}
 		break;
@@ -141,16 +143,16 @@ pos_t parse_pos(ctx_t* cx) {
 		break;
 
 	case 'e':
-		pos.line = cx->ed->doc.line_count - 1;
-		pos.col = cx->ed->doc.lines[pos.line].len;
+		pos.line = lt_texted_line_count(txed) - 1;
+		pos.col = lt_texted_line_len(txed, pos.line);
 		break;
 
 	case 's':
 		if (cx->it >= cx->end)
 			break;
 		switch (*cx->it++) {
-		case 's': ed_get_selection(cx->ed, &pos.line, &pos.col, NULL, NULL); break;
-		case 'e': ed_get_selection(cx->ed, NULL, NULL, &pos.line, &pos.col); break;
+		case 's': lt_texted_get_selection(txed, &pos.line, &pos.col, NULL, NULL); break;
+		case 'e': lt_texted_get_selection(txed, NULL, NULL, &pos.line, &pos.col); break;
 		default: --cx->it; break;
 		}
 		break;
@@ -160,12 +162,12 @@ pos_t parse_pos(ctx_t* cx) {
 			break;
 		switch (*cx->it++) {
 		case 's': pos.col = 0; break;
-		case 'e': pos.col = cx->ed->doc.lines[pos.line].len; break;
+		case 'e': pos.col = lt_texted_line_len(txed, pos.line); break;
 		default: --cx->it; pos.line = lt_max_isz(parse_uint(cx) - 1, 0); break;
 		}
 		break;
 
-	case 'i': pos.col = ed_find_indent(cx->ed); break;
+	case 'i': pos.col = lt_texted_count_line_leading_indent(txed, pos.line); break;
 	case 'c': pos.col = parse_uint(cx); break;
 	case ' ': break;
 	default: --cx->it; break;
@@ -176,6 +178,8 @@ pos_t parse_pos(ctx_t* cx) {
 
 static
 b8 parse_condition(ctx_t* cx) {
+	lt_texted_t* txed = &cx->ed->doc->ed;
+
 	if (cx->it >= cx->end)
 		return 0;
 
@@ -184,7 +188,7 @@ b8 parse_condition(ctx_t* cx) {
 		if (cx->it >= cx->end || *cx->it != 'p')
 			break;
 		++cx->it;
-		return ed_selection_available(cx->ed);
+		return lt_texted_selection_present(txed);
 
 	case 'c':
 		usz clipboard = parse_uint(cx);
@@ -213,7 +217,14 @@ void skip_single_command(ctx_t* cx) {
 			break;
 		++cx->it; parse_block(cx);
 		break;
-	case 'f': parse_string(cx); break;
+	case 'f':
+		if (cx->it >= cx->end)
+			break;
+		switch (*cx->it++) {
+		case 'f': parse_string(cx); break;
+		case 'b': parse_string(cx); break;
+		}
+		break;
 	case ' ': break;
 	case '`': --cx->it; break;
 	}
@@ -221,16 +232,15 @@ void skip_single_command(ctx_t* cx) {
 
 static
 void execute_single_command(ctx_t* cx) {
+	lt_texted_t* txed = &cx->ed->doc->ed;
+
 	b8 sync_selection = 0;
 
 	switch (*cx->it++) {
 	case 'j': sync_selection = 1;
 	case 's': {
 		pos_t pos = parse_pos(cx);
-		cx->ed->cy = clamp(pos.line, 0, cx->ed->doc.line_count - 1);
-		cx->ed->cx = clamp(pos.col, 0, cx->ed->doc.lines[cx->ed->cy].len);
-		if (sync_selection)
-			ed_sync_selection(cx->ed);
+		lt_texted_gotoxy(txed, pos.col, pos.line, sync_selection);
 	}	break;
 
 	case 'c': {
@@ -238,20 +248,18 @@ void execute_single_command(ctx_t* cx) {
 		if (clipboard >= CLIPBOARD_COUNT)
 			break;
 		clipboard_clear(clipboard);
-		ed_write_selection_str(cx->ed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
+		lt_texted_write_selection(txed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
 	}	break;
 
 	case 'p': {
 		usz clipboard = parse_uint(cx);
 		if (clipboard >= CLIPBOARD_COUNT)
 			break;
-		ed_insert_string(cx->ed, clipboards[clipboard].str);
-		ed_sync_selection(cx->ed);
+		lt_texted_input_str(txed, clipboards[clipboard].str);
 	}	break;
 
 	case 'd':
-		ed_delete_selection_if_available(cx->ed);
-		ed_sync_selection(cx->ed);
+		delete_selection_if_present(cx->ed);
 		break;
 
 	case 'l': {
@@ -263,9 +271,8 @@ void execute_single_command(ctx_t* cx) {
 
 	case 'w': {
 		lstr_t str = unescape_string(parse_string(cx));
-		ed_insert_string(cx->ed, str);
+		lt_texted_input_str(txed, str);
 		lt_mfree(lt_libc_heap, str.str);
-		ed_sync_selection(cx->ed);
 	}	break;
 
 	case 'i': {
@@ -282,13 +289,37 @@ void execute_single_command(ctx_t* cx) {
 	}	break;
 
 	case 'f': {
-		doc_pos_t pos;
-		if (!ed_find_next_occurence(cx->ed, parse_string(cx), &pos))
+		if (cx->it >= cx->end)
 			break;
 
-		cx->ed->cy = pos.y;
-		cx->ed->cx = pos.x;
-		ed_sync_selection(cx->ed);
+		usz x, y;
+		lstr_t find = NLSTR();
+		switch (*cx->it++) {
+		case 'f':
+			find = unescape_string(parse_string(cx));
+			if (!lt_texted_find_next_occurence(txed, find, &x, &y))
+				break;
+			goto found;
+
+		case 'b':
+			find = unescape_string(parse_string(cx));
+			if (!lt_texted_find_last_occurence(txed, find, &x, &y))
+				break;
+
+		found:
+			lt_texted_gotoxy(txed, x, y, 1);
+			if (cx->it >= cx->end || *cx->it != 'r')
+				break;
+
+			++cx->it;
+			lstr_t replace = unescape_string(parse_string(cx));
+			lt_texted_erase_range(txed, x, y, x + find.len, y);
+			lt_texted_input_str(txed, replace);
+			lt_mfree(lt_libc_heap, replace.str);
+		}
+
+		if (find.str)
+			lt_mfree(lt_libc_heap, find.str);
 	}	break;
 
 	case ' ': break;
@@ -303,5 +334,5 @@ void execute_string(editor_t* ed, lstr_t cmd) {
 
 	while (cx.it < cx.end)
 		execute_single_command(&cx);
-	ed_adjust_screen_pos(ed);
+	adjust_vbounds(ed);
 }

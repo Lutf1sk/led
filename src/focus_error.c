@@ -16,14 +16,13 @@ void notify_error(char* str) {
 	focus.draw_args = str;
 }
 
-void draw_notify_error(global_t* ed_global, void* args) {
+void draw_notify_error(editor_t* ed, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_NOTIFY_ERROR]);
 	rec_str(args);
 }
 
-void input_notify_error(global_t* ed_global, u32 c) {
-	(void)ed_global;
-	edit_file(ed_global, ed_global->ed);
+void input_notify_error(editor_t* ed, u32 c) {
+	edit_file(ed, ed->doc);
 }
 

@@ -4,6 +4,7 @@
 #include <lt/utf8.h>
 #include <lt/ctype.h>
 #include <lt/mem.h>
+#include <lt/math.h>
 
 #include "editor.h"
 #include "algo.h"
@@ -11,593 +12,141 @@
 
 #include <string.h>
 
-void ed_adjust_screen_pos(editor_t* ed) {
-	// Move screen if cursor is above the upper boundary
-	isz vbound_top = ed->line_top + ed->global->scroll_offs;
-	if (ed->cy < vbound_top) {
-		ed->line_top -= vbound_top - ed->cy;
-		ed->line_top = max(ed->line_top, 0);
-	}
+usz screen_x_to_cursor_x(editor_t* ed, lstr_t str, isz x) {
+	isz screen_x = 0;
 
-	// Move screen if cursor is below the lower boundary
-	isz vbound_bottom = (ed->line_top + ed->global->height) - ed->global->scroll_offs - 1;
-	if (ed->cy > vbound_bottom) {
-		ed->line_top += ed->cy - vbound_bottom;
-		ed->line_top = min(ed->line_top, max(0, ed->doc.line_count - ed->global->height));
-	}
-}
-
-b8 ed_find_next_occurence(editor_t* ed, lstr_t str, doc_pos_t* pos) {
-	for (usz i = ed->cy, j = ed->cx + 1; i < ed->doc.line_count; ++i) {
-		lstr_t* line = &ed->doc.lines[i];
-
-		// Search every possible offset in the line
-		for (; j + str.len <= line->len; ++j) {
-			if (memcmp(&line->str[j], str.str, str.len) == 0) {
-				pos->y = i;
-				pos->x = j;
-				return 1;
-			}
-		}
-
-		j = 0;
-	}
-
-	return 0;
-}
-
-void ed_insert_string(editor_t* ed, lstr_t str) {
-	for (usz i = 0; i < str.len; ++i) {
-		char c = str.str[i];
-
-		if (c == '\n') {
-			doc_split_line(&ed->doc, ed->cy, ed->cx);
-			ed_cur_down(ed, 0);
-		}
-		else
-			doc_insert_char(&ed->doc, ed->cy, ed->cx++, c);
-	}
-}
-
-void ed_move_to_selection_start(editor_t* ed) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-	ed->cx = start_x;
-	ed->cy = start_y;
-}
-
-void ed_move_to_selection_end(editor_t* ed) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-	ed->cx = end_x;
-	ed->cy = end_y;
-}
-
-void ed_center_line(editor_t* ed, usz line) {
-	line = clamp(line, 0, ed->doc.line_count - 1);
-
-	usz line_top = max(line - ed->global->height / 2, 0);
-	if (line_top + ed->global->height >= ed->doc.line_count)
-		line_top = max(ed->doc.line_count - ed->global->height, 0);
-
-	ed->line_top = line_top;
-}
-
-void ed_goto_line(editor_t* ed, usz line) {
-	line = clamp(line, 0, ed->doc.line_count - 1);
-
-	ed->cy = line;
-	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
-}
-
-void ed_delete_selection_prefix(editor_t* ed, lstr_t pfx) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	for (isz i = start_y; i <= end_y; ++i) {
-		lstr_t* line = &ed->doc.lines[i];
-		if (line->len < pfx.len || memcmp(pfx.str, line->str, pfx.len) != 0)
-			continue;
-
-		if (i == ed->cy)
-			ed->cx = max(ed->cx - pfx.len, 0);
-		if (i == ed->sel_y)
-			ed->sel_x = max(ed->sel_x - pfx.len, 0);
-
-		doc_erase_str(&ed->doc, i, 0, pfx.len);
-	}
-}
-
-void ed_prefix_selection(editor_t* ed, lstr_t pfx) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	for (isz i = start_y; i <= end_y; ++i)
-		doc_insert_str(&ed->doc, i, 0, pfx);
-	ed->cx += pfx.len;
-	ed->sel_x += pfx.len;
-}
-
-void ed_prefix_nonempty_selection(editor_t* ed, lstr_t pfx) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	for (isz i = start_y; i <= end_y; ++i) {
-		if (ed->doc.lines[i].len) {
-			if (i == ed->cy) {
-				ed->cx += pfx.len;
-				ed->sel_x += pfx.len;
-			}
-			doc_insert_str(&ed->doc, i, 0, pfx);
-		}
-	}
-}
-
-b8 ed_selection_available(editor_t* ed) {
-	return ed->cx != ed->sel_x || ed->cy != ed->sel_y;
-}
-
-usz ed_selection_len(editor_t* ed) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	usz len = 0;
-
-	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
-		lstr_t* line = &ed->doc.lines[i];
-
-		if (i == end_y)
-			len += end_x - j;
-		else
-			len += line->len - j + 1;
-
-		j = 0;
-	}
-
-	return len;
-}
-
-void ed_delete_selection(editor_t* ed) {
-	usz sel_len = ed_selection_len(ed);
-
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-	ed->cy = end_y;
-	ed->cx = end_x;
-
-	// TODO: This is an extremely slow and naive hack and needs to be replaced
-	for (usz i = 0; i < sel_len; ++i) {
-		if (ed->cx)
-			doc_erase_char(&ed->doc, ed->cy, --ed->cx);
-		else if (ed->cy) {
-			ed_cur_up(ed, ISIZE_MAX);
-			doc_merge_line(&ed->doc, ed->cy + 1);
-		}
-	}
-}
-
-void ed_delete_selection_if_available(editor_t* ed) {
-	if (ed_selection_available(ed))
-		ed_delete_selection(ed);
-}
-
-void ed_write_selection_str(editor_t* ed, lt_io_callback_t callb, void* usr) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	for (isz i = start_y, j = start_x; i <= end_y; ++i) {
-		lstr_t* line = &ed->doc.lines[i];
-
-		if (i == end_y) {
-			callb(usr, &line->str[j], end_x - j);
+	for (char* it = str.str, *end = it + str.len; it < end;) {
+		usz len;
+		if (*it == '\t') {
+			screen_x += ed->tab_size - screen_x % ed->tab_size;
+			len = 1;
 		}
 		else {
-			callb(usr, &line->str[j], line->len - j);
-			callb(usr, "\n", 1);
+			u32 c;
+			len = lt_utf8_decode(&c, it);
+			screen_x += lt_glyph_width(c);
 		}
 
-		j = 0;
-	}
-}
-
-b8 ed_get_selection(editor_t* ed, isz* out_start_y, isz* out_start_x, isz* out_end_y, isz* out_end_x) {
-	//if (ed->cy == ed->sel_y && ed->cx == ed->sel_x)
-	//	return 0;
-
-	if (ed->cy < ed->sel_y || (ed->cy == ed->sel_y && ed->cx < ed->sel_x)) {
-		if (out_start_y)
-			*out_start_y = ed->cy;
-		if (out_start_x)
-			*out_start_x = ed->cx;
-		if (out_end_y)
-			*out_end_y = ed->sel_y;
-		if (out_end_x)
-			*out_end_x = ed->sel_x;
-		return 1;
-	}
-	else {
-		if (out_start_y)
-			*out_start_y = ed->sel_y;
-		if (out_start_x)
-			*out_start_x = ed->sel_x;
-		if (out_end_y)
-			*out_end_y = ed->cy;
-		if (out_end_x)
-			*out_end_x = ed->cx;
-		return 1;
-	}
-}
-
-void ed_sync_selection(editor_t* ed) {
-	ed->sel_y = ed->cy;
-	ed->sel_x = ed->cx;
-}
-
-void ed_sync_target_cx(editor_t* ed) {
-	ed->target_cx = ed_cx_to_screen_x(ed, ed->cx, ed->cy);
-}
-
-void ed_sync_target_cy(editor_t* ed) {
-	ed->target_cy_offs = ed->cy - ed->line_top;
-}
-
-usz ed_screen_x_to_cx(editor_t* ed, isz x, isz cy) {
-	if (cy >= ed->doc.line_count || cy < 0)
-		return 0;
-
-	lstr_t* line = &ed->doc.lines[cy];
-	isz screen_x = 0, tab_size = ed->global->tab_size;
-
-	for (isz i = 0, last = 0; i < line->len;) {
-		char c = line->str[i];
-		if (c == '\t') {
-			screen_x += tab_size - screen_x % tab_size;
-			++i;
-		}
-		else {
-			i += lt_utf8_decode_len(c);
-			++screen_x;
-		}
 		if (screen_x > x)
-			return last;
-		last = i;
+			return it - str.str;
+		it += len;
 	}
-	return line->len;
+	return str.len;
 }
 
-usz ed_cx_to_screen_x(editor_t* ed, isz x, isz cy) {
-	if (cy >= ed->doc.line_count || cy < 0)
-		return 0;
+usz cursor_x_to_screen_x(editor_t* ed, lstr_t str, isz x) {
+	isz screen_x = 0;
 
-	lstr_t* line = &ed->doc.lines[cy];
-	isz screen_x = 0, tab_size = ed->global->tab_size;
-
-	isz end = min(x, line->len);
-
-	for (isz i = 0; i < end;) {
-		char c = line->str[i];
-		if (c == '\t') {
-			screen_x += tab_size - screen_x % tab_size;
-			++i;
+	for (char* it = str.str, *end = it + lt_min_isz(str.len, x); it < end;) {
+		if (*it == '\t') {
+			screen_x += ed->tab_size - screen_x % ed->tab_size;
+			++it;
 		}
 		else {
-			i += lt_utf8_decode_len(c);
-			++screen_x;
+			u32 c;
+			it += lt_utf8_decode(&c, it);
+			screen_x += lt_glyph_width(c);
 		}
 	}
 	return screen_x;
 }
 
-void ed_cur_up(editor_t* ed, usz cx) {
-	if (ed->cy) {
-		--ed->cy;
-		ed->cx = min(cx, ed->doc.lines[ed->cy].len);
+void adjust_vbounds(editor_t* ed) {
+	doc_t* doc = ed->doc;
+	usz line = doc->ed.cursor_y;
+	usz line_count = lt_texted_line_count(&doc->ed);
+
+	// Move screen if cursor is above the upper boundary
+	isz vbound_top = doc->line_top + ed->scroll_offs;
+	if (line < vbound_top) {
+		doc->line_top -= vbound_top - line;
+		doc->line_top = lt_max_isz(doc->line_top, 0);
+	}
+
+	// Move screen if cursor is below the lower boundary
+	isz vbound_bottom = (doc->line_top + ed->height) - ed->scroll_offs - 1;
+	if (line > vbound_bottom) {
+		doc->line_top += line - vbound_bottom;
+		doc->line_top = lt_min_isz(doc->line_top, lt_max_isz(0, line_count - ed->height));
 	}
 }
 
-void ed_cur_down(editor_t* ed, usz cx) {
-	if (ed->cy + 1 < ed->doc.line_count) {
-		++ed->cy;
-		ed->cx = min(cx, ed->doc.lines[ed->cy].len);
-	}
+void move_to_selection_start(lt_texted_t* ed) {
+	isz start_y, start_x;
+	lt_texted_get_selection(ed, &start_x, &start_y, NULL, NULL);
+	lt_texted_gotoxy(ed, start_x, start_y, 1);
 }
 
-void ed_cur_right(editor_t* ed) {
-	lstr_t line = ed->doc.lines[ed->cy];
-
-	if (ed->cx == line.len) {
-		ed_cur_down(ed, 0);
-		return;
-	}
-
-	usz utf8_len = lt_utf8_decode_len(line.str[ed->cx]);
-
-	if (ed->cx + utf8_len <= line.len)
-		ed->cx += utf8_len;
+void move_to_selection_end(lt_texted_t* ed) {
+	isz end_y, end_x;
+	lt_texted_get_selection(ed, NULL, NULL, &end_x, &end_y);
+	lt_texted_gotoxy(ed, end_x, end_y, 1);
 }
 
-void ed_cur_left(editor_t* ed) {
-	lstr_t line = ed->doc.lines[ed->cy];
+void center_line(editor_t* ed, usz line) {
+	doc_t* doc = ed->doc;
+	lt_texted_t* txed = &doc->ed;
+	usz line_count = lt_texted_line_count(txed);
 
-	if (!ed->cx) {
-		ed_cur_up(ed, ISIZE_MAX);
-		return;
-	}
+	line = clamp(line, 0, line_count - 1);
 
-	--ed->cx;
-	while ((line.str[ed->cx] & 0xC0) == 0x80)
-		--ed->cx;
+	usz line_top = lt_max_isz(line - ed->height / 2, 0);
+	if (line_top + ed->height >= line_count)
+		line_top = lt_max_isz(line_count - ed->height, 0);
+
+	doc->line_top = line_top;
 }
 
-void ed_page_up(editor_t* ed) {
-	if (ed->line_top + ed->global->height >= ed->doc.line_count && ed->cy + 1 == ed->doc.line_count) {
-		if (ed->cy == ed->line_top + ed->target_cy_offs)
-			ed->target_cy_offs = ed->global->height / 2;
-		ed->cy = clamp(ed->line_top + ed->target_cy_offs, 0, ed->doc.line_count - 1);
-	}
-	else if (!ed->line_top)
-		ed->cy = 0;
-	else {
-		usz offs = min(ed->line_top, ed->global->height);
-		ed->cy -= offs;
-		ed->line_top -= offs;
-	}
-	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
+void delete_selection_if_present(editor_t* ed) {
+	lt_texted_t* txed = &ed->doc->ed;
+	if (lt_texted_selection_present(txed))
+		lt_texted_erase_selection(txed);
 }
 
-void ed_page_down(editor_t* ed) {
-	if (!ed->line_top && !ed->cy) {
-		if (ed->cy == ed->line_top + ed->target_cy_offs)
-			ed->target_cy_offs = ed->global->height / 2;
-		ed->cy = clamp(ed->line_top + ed->target_cy_offs, 0, ed->doc.line_count - 1);
-	}
-	else if (ed->line_top + ed->global->height >= ed->doc.line_count)
-		ed->cy = ed->doc.line_count - 1;
-	else {
-		usz offs = clamp(ed->doc.line_count - (ed->line_top + ed->global->height), 0, ed->global->height);
-		ed->cy += offs;
-		ed->line_top += offs;
-	}
-	ed->cx = min(ed_screen_x_to_cx(ed, ed->target_cx, ed->cy), ed->doc.lines[ed->cy].len);
+void page_up(editor_t* ed) {
+	doc_t* doc = ed->doc;
+	lt_texted_t* txed = &doc->ed;
+	usz line_max = lt_texted_line_count(txed) - 1;
+	usz move_by = ed->height - 1;
+
+	doc->line_top = clamp(doc->line_top - move_by, 0, line_max);
+	lt_texted_gotoy(txed, max(txed->cursor_y - move_by, 0), 1);
 }
 
-usz ed_find_word_fwd(editor_t* ed) {
-	usz cx = ed->cx;
-	lstr_t* line = &ed->doc.lines[ed->cy];
-	char* str = line->str;
+void page_down(editor_t* ed) {
+	doc_t* doc = ed->doc;
+	lt_texted_t* txed = &doc->ed;
+	usz line_max = lt_texted_line_count(txed) - 1;
+	usz move_by = ed->height - 1;
 
-	// Skip whitespace
-	while (cx < line->len && lt_is_space(str[cx]))
-		++cx;
-
-	if (cx == line->len)
-		return cx;
-	char c = str[cx];
-
-	if (lt_is_ident_head(c) || lt_is_numeric_head(c)) {
-		// Skip underscores
-		while (cx < line->len && str[cx] == '_')
-			++cx;
-		while (cx < line->len && lt_is_numeric_body(str[cx]))
-			cx += lt_utf8_decode_len(str[cx]);
-	}
-	else {
-		while (cx < line->len && !lt_is_ident_body(str[cx]) && !lt_is_space(str[cx]))
-			++cx;
-	}
-
-	return cx;
-}
-
-usz ed_find_word_bwd(editor_t* ed) {
-	usz cx = ed->cx;
-	lstr_t* line = &ed->doc.lines[ed->cy];
-	char* str = line->str;
-
-	// Skip whitespace
-	while (cx && lt_is_space(str[cx - 1]))
-		--cx;
-
-	if (!cx)
-		return 0;
-	char c = str[cx - 1];
-
-	if (lt_is_ident_head(c) || lt_is_numeric_head(c)) {
-		// Skip underscores
-		while (cx && str[cx - 1] == '_')
-			--cx;
-		while (cx && lt_is_numeric_body(str[cx - 1])) {
-			--cx;
-			while (cx && (str[cx - 1] & 0xC0) == 0x80)
-				--cx;
-		}
-	}
-	else {
-		while (cx && !lt_is_ident_body(str[cx - 1]) && !lt_is_space(str[cx - 1]))
-			--cx;
-	}
-
-	return cx;
-}
-
-void ed_delete_word_fwd(editor_t* ed) {
-	if (ed->cx == ed->doc.lines[ed->cy].len) {
-		if (ed->cy + 1 < ed->doc.line_count)
-			doc_merge_line(&ed->doc, ed->cy + 1);
-		return;
-	}
-
-	usz del_chars = ed_find_word_fwd(ed) - ed->cx;
-	doc_erase_str(&ed->doc, ed->cy, ed->cx, del_chars);
-}
-
-void ed_delete_word_bwd(editor_t* ed) {
-	if (!ed->cx) {
-		if (ed->cy) {
-			ed_cur_up(ed, ISIZE_MAX);
-			doc_merge_line(&ed->doc, ed->cy + 1);
-		}
-		return;
-	}
-
-	usz word = ed_find_word_bwd(ed);
-	usz del_chars = ed->cx - word;
-	doc_erase_str(&ed->doc, ed->cy, word, del_chars);
-	ed->cx -= del_chars;
-}
-
-void ed_paren_fwd(editor_t* ed) {
-	for (isz l = ed->cy, r = ed->cx + 1; l < ed->doc.line_count; ++l) {
-		lstr_t line = ed->doc.lines[l];
-
-		for (; r < line.len; ++r) {
-			if (line.str[r] == ')' || line.str[r] == ']' || line.str[r] == '}') {
-				ed->cy = l;
-				ed->cx = r;
-				return;
-			}
-		}
-		r = 0;
-	}
-}
-
-void ed_paren_bwd(editor_t* ed) {
-	for (isz l = ed->cy, r = ed->cx - 1; l >= 0; --l) {
-		lstr_t line = ed->doc.lines[l];
-
-		for (; r >= 0; --r) {
-			if (line.str[r] == '(' || line.str[r] == '[' || line.str[r] == '{') {
-				ed->cy = l;
-				ed->cx = r;
-				return;
-			}
-		}
-
-		if (l > 0)
-			r = ed->doc.lines[l - 1].len - 1;
-	}
-}
-
-// TODO: This will not match properly if it has to iterate over a string/char
-// containing unmatched parenthesis
-static
-void ed_paren_match_ch(editor_t* ed, int paren) {
-	isz r = ed->cx, l = ed->cy, sc = 1;
-
-	switch (paren) {
-	case '[': case '{': case '(':
-		goto fwd;
-
-	default:
-		break;
-	}
-
-	for (--r; l >= 0; --l) {
-		lstr_t line = ed->doc.lines[l];
-
-		for (; r >= 0; --r) {
-			int c = line.str[r];
-			switch (c) {
-			case '[': case '{': case '(':
-				--sc;
-				break;
-			case ']': case '}': case ')':
-				++sc;
-				break;
-
-			default:
-				continue;
-			}
-
-			if (sc <= 0) {
-				ed->cy = l;
-				ed->cx = r;
-				return;
-			}
-		}
-
-		if (l > 0)
-			r = ed->doc.lines[l - 1].len - 1;
-	}
-	return;
-
-fwd:
-	for (++r; l < ed->doc.line_count; ++l) {
-		lstr_t line = ed->doc.lines[l];
-
-		for (; r < line.len; ++r) {
-			int c = line.str[r];
-			switch (c) {
-			case '[': case '{': case '(':
-				++sc;
-				break;
-			case ']': case '}': case ')':
-				--sc;
-				break;
-
-			default:
-				continue;
-			}
-
-			if (sc <= 0) {
-				ed->cy = l;
-				ed->cx = r;
-				return;
-			}
-		}
-		r = 0;
-	}
-}
-
-void ed_paren_match(editor_t* ed) {
-	int c = 0;
-	if (ed->cx < ed->doc.lines[ed->cy].len)
-		c = ed->doc.lines[ed->cy].str[ed->cx];
-	ed_paren_match_ch(ed, c);
-}
-
-isz ed_find_indent_pfx(editor_t* ed) {
-	lstr_t line = ed->doc.lines[ed->cy];
-	isz cx = 0;
-
-	for (usz i = 0; i < line.len && i < ed->cx; ++i) {
-		if (!lt_is_space(line.str[i]))
-			break;
-		++cx;
-	}
-	return cx;
-}
-
-
-isz ed_find_indent(editor_t* ed) {
-	lstr_t line = ed->doc.lines[ed->cy];
-	isz cx = 0;
-
-	for (usz i = 0; i < line.len; ++i) {
-		if (!lt_is_space(line.str[i]))
-			break;
-		++cx;
-	}
-
-	return cx;
-}
-
-void ed_expand_selection(editor_t* ed) {
-	isz start_y, start_x, end_y, end_x;
-	ed_get_selection(ed, &start_y, &start_x, &end_y, &end_x);
-
-	ed->sel_x = start_x;
-	ed->sel_y = start_y;
-
-	ed->cy = start_y;
-	ed->sel_x = ed_find_indent_pfx(ed);
-
-	ed->cy = end_y;
-	ed->cx = ed->doc.lines[ed->cy].len;
+	doc->line_top = min(doc->line_top + move_by, max(0, line_max - ed->height));
+	lt_texted_gotoy(txed, min(txed->cursor_y + move_by, line_max), 1);
 }
 
 void ed_regenerate_hl(editor_t* ed) {
-	lt_amrestore(ed->global->hl_arena, ed->global->hl_restore);
-	ed->hl_lines = hl_generate(&ed->doc, ed->hl_mode, (lt_alloc_t*)ed->global->hl_arena);
+	lt_amrestore(ed->hl_arena, ed->hl_restore);
+	ed->hl_lines = hl_generate(ed->doc, ed->doc->hl_mode, (lt_alloc_t*)ed->hl_arena);
+}
+
+void halfstep_left(editor_t* ed, b8 sync_selection) {
+	lt_texted_t* txed = &ed->doc->ed;
+	usz len = lt_texted_line_len(txed, txed->cursor_y);
+	usz indent = lt_texted_count_line_leading_indent(txed, txed->cursor_y);
+	usz move_cols = (len - indent) / 2;
+	usz move_to = txed->cursor_x - move_cols;
+	if (indent == len)
+		move_to = 0;
+	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
+}
+
+void halfstep_right(editor_t* ed, b8 sync_selection) {
+	lt_texted_t* txed = &ed->doc->ed;
+	usz len = lt_texted_line_len(txed, txed->cursor_y);
+	usz indent = lt_texted_count_line_leading_indent(txed, txed->cursor_y);
+	usz move_cols = (len - indent) / 2;
+	usz move_to = txed->cursor_x + move_cols;
+	if (txed->cursor_x < indent)
+		move_to = indent + move_cols;
+	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
 }
 

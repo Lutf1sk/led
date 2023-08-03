@@ -7,9 +7,11 @@ OBJS = \
 	src/doc.o \
 	src/hl.o \
 	src/hl_c.o \
+	src/hl_cpp.o \
 	src/hl_rust.o \
 	src/hl_cs.o \
 	src/hl_onyx.o \
+	src/hl_lpc.o \
 	src/hl_js.o \
 	src/editor.o \
 	src/command.o \
@@ -32,11 +34,18 @@ LT_LIB = $(LT_PATH)/bin/lt.a
 
 DEPS = $(patsubst %.o,%.deps,$(OBJS))
 
+ifdef DEBUG
+	CC_FLAGS += -fno-omit-frame-pointer -O0 -g
+	LNK_FLAGS += -g -rdynamic
+else
+	CC_FLAGS += -O2
+endif
+
 CC = cc
-CC_FLAGS += -g -O2 -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
+CC_FLAGS += -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
 
 LNK = cc
-LNK_FLAGS += -o $(OUT) -g -rdynamic
+LNK_FLAGS += -o $(OUT) 
 LNK_LIBS += -lpthread -ldl -lm
 
 all: $(OUT)

@@ -17,23 +17,23 @@ static lstr_t unsaved_path = NLSTR();
 
 void notify_exit(void) {
 	focus = focus_exit;
-	editor_t* unsaved = fb_find_unsaved();
+	doc_t* unsaved = fb_find_unsaved();
 	if (unsaved)
-		unsaved_path = unsaved->doc.path;
+		unsaved_path = unsaved->path;
 	else
 		exit(0);
 }
 
-void draw_exit(global_t* ed_global, void* args) {
+void draw_exit(editor_t* ed, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_NOTIFY_ERROR]);
 	rec_str("files have unsaved changed, are you sure? (Y/n)");
 }
 
-void input_exit(global_t* ed_global, u32 c) {
+void input_exit(editor_t* ed, u32 c) {
 	switch (c) {
 	case 'N': case 'n':
-		edit_file(ed_global, ed_global->ed);
+		edit_file(ed, ed->doc);
 		break;
 
 	case 'y': case 'Y':

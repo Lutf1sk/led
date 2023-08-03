@@ -17,33 +17,33 @@
 
 focus_t focus_find_local = { draw_find_local, NULL, input_find_local };
 
-static lt_led_t repl_input;
-static lt_led_t* curr_input;
+static lt_texted_t repl_input;
+static lt_texted_t* curr_input;
 
 static usz start_y, start_x;
-
-static isz selected_index = -1;
-static usz result_count = 0;
-static doc_pos_t* results = NULL;
-
-static u8 replace = 0;
+static lt_texted_iterator_t iterator;
+static b8 found = 0;
 
 void find_local_init(void) {
-	LT_ASSERT(!lt_led_create(&repl_input, lt_libc_heap));
+	LT_ASSERT(!lt_texted_create(&repl_input, lt_libc_heap));
 }
 
 void find_local(isz start_y_, isz start_x_) {
-	replace = 0;
 	focus = focus_find_local;
 	start_y = start_y_;
 	start_x = start_x_;
 
-	lt_led_clear(line_input);
-	lt_led_clear(&repl_input);
+	iterator = lt_texted_iterator_create();
+	iterator.col = start_x - 1;
+	iterator.line = start_y;
+	found = 0;
+
+	lt_texted_clear(line_input);
+	lt_texted_clear(&repl_input);
 	curr_input = line_input;
 }
 
-void draw_find_local(global_t* ed_global, void* args) {
+void draw_find_local(editor_t* ed, void* args) {
 	rec_goto(2, lt_term_height - 1);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_led(curr_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
@@ -51,117 +51,79 @@ void draw_find_local(global_t* ed_global, void* args) {
 
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-	char buf[128 + 512]; // !!
-	if (!replace)
-		lt_sprintf(buf, "Result %uz/%uz (CTRL+R to replace)", selected_index + 1, result_count);
+	if (curr_input == line_input)
+		rec_str("CTRL+R replace");
 	else
-		lt_sprintf(buf, "Replace %uz occurences of '%S'", result_count, lt_led_get_str(line_input));
-	rec_str(buf);
+		rec_str("CTRL+R find");
 	rec_crestore();
 }
 
-static
-isz find_index(void) {
-	for (usz i = 0; i < result_count; ++i) {
-		doc_pos_t result = results[i];
-		if (result.y > start_y || (result.y == start_y && result.x >= start_x))
-			return i;
-	}
-
-	for (usz i = 0; i < result_count; ++i) {
-		doc_pos_t result = results[i];
-		if (result.y <= start_y || (result.y == start_y && result.x < start_x))
-			return i;
-	}
-	return -1;
-}
-
-static
-void update_results(editor_t* ed) {
-	lstr_t find_str = lt_led_get_str(line_input);
-	usz new_count = doc_find_str(&ed->doc, find_str, NULL);
-	if (new_count) {
-		if (new_count > result_count) {
-			results = realloc(results, new_count * sizeof(doc_pos_t));
-			if (!results)
-				ferrf("Memory allocation failed: %s\n", os_err_str());
-		}
-		doc_find_str(&ed->doc, find_str, results);
-	}
-	result_count = new_count;
-
-	selected_index = find_index();
-}
-
-void switch_repl(void) {
-	if (!replace) {
-		replace = 1;
-		curr_input = &repl_input;
-	}
-	else {
-		replace = 0;
-		curr_input = line_input;
+void find_next_result(lt_texted_t* ed) {
+	found = lt_texted_iterate_occurences(ed, lt_texted_line_str(line_input, 0), &iterator);
+	if (!found) {
+		iterator.col = 0;
+		iterator.line = 0;
+		found = lt_texted_iterate_occurences(ed, lt_texted_line_str(line_input, 0), &iterator);
 	}
 }
 
-void input_find_local(global_t* ed_global, u32 c) {
-	editor_t* ed = ed_global->ed;
+void input_find_local(editor_t* ed, u32 c) {
+	doc_t* doc = ed->doc;
+	lt_texted_t* txed = &doc->ed;
 
 	b8 changed = 0;
 
 	switch (c) {
 	case '\n':
-		edit_file(ed_global, ed);
-
-		if (replace) {
-			doc_replace_str(&ed->doc, lt_led_get_str(line_input), lt_led_get_str(&repl_input));
+		if (curr_input == &repl_input && found) {
+			lt_texted_input_str(txed, lt_texted_line_str(&repl_input, 0));
 			ed_regenerate_hl(ed);
-			ed->cx = min(ed->doc.lines[ed->cy].len, ed->cx);
+			find_next_result(txed);
 		}
-		ed_sync_selection(ed);
-		return;
+
+		if (curr_input == line_input || !found) {
+			edit_file(ed, doc);
+			return;
+		}
+		break;
 
 	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
-		if (selected_index > 0)
-			--selected_index;
-		else if (selected_index == 0)
-			selected_index = max(result_count - 1, 0);
 		break;
 
 	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
-		if (selected_index != -1 && ++selected_index >= result_count)
-			selected_index = 0;
+		find_next_result(txed);
 		break;
 
 	case 'R' | LT_TERM_MOD_CTRL:
-		switch_repl();
+		if (curr_input == line_input)
+			curr_input = &repl_input;
+		else
+			curr_input = line_input;
 		break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_darr_count(curr_input->str))
+		if (!lt_texted_line_len(curr_input, 0))
 	case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
+			edit_file(ed, doc);
 	default:
 		changed = input_term_key(curr_input, c);
 		break;
 	}
 
-	if (!replace && changed)
-		update_results(ed);
+	if (curr_input == line_input && changed) {
+		iterator.col = start_x - 1;
+		iterator.line = start_y;
+		find_next_result(txed);
+	}
 
-	if (selected_index >= 0) {
-		doc_pos_t result = results[selected_index];
-		ed_goto_line(ed, result.y);
-		ed_center_line(ed, result.y);
-		ed->cx = result.x;
-		ed->sel_y = result.y;
-		ed->sel_x = result.x + lt_darr_count(line_input->str);
+	if (found) {
+		lt_texted_gotoxy(txed, iterator.col + lt_texted_line_len(line_input, 0), iterator.line, 1);
+		lt_texted_gotox(txed, iterator.col, 0);
+		center_line(ed, iterator.line);
 	}
 	else {
-		ed_goto_line(ed, start_y);
-		ed_center_line(ed, start_y);
-		ed->cx = start_x;
-		ed_sync_selection(ed);
+		lt_texted_gotoxy(txed, start_x, start_y, 1);
+		center_line(ed, start_y);
 	}
 }
 

@@ -16,117 +16,63 @@ b8 is_keyword(lstr_t str) {
 	if (!str.len)
 		return 0;
 
-#define KW(x) if (lt_lstr_eq(str, CLSTR(x))) return 1
 	switch (str.str[0]) {
-	case 'a':
-		KW("abstract");
-		KW("arguments");
-		break;
-
 	case 'b':
-		KW("break");
+		if (lt_lstr_eq(str, CLSTR("begin"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("break"))) return 1;
 		break;
 
 	case 'c':
-		KW("case");
-		KW("catch");
-		KW("const");
-		KW("continue");
-		KW("class");
+		if (lt_lstr_eq(str, CLSTR("continue"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("case"))) return 1;
 		break;
 
 	case 'd':
-		KW("debugger");
-		KW("default");
-		KW("delete");
-		KW("do");
+		if (lt_lstr_eq(str, CLSTR("do"))) return 1;
 		break;
 
 	case 'e':
-		KW("else");
-		KW("eval");
-		KW("enum");
-		KW("export");
-		KW("extends");
+		if (lt_lstr_eq(str, CLSTR("else"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("elif"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("end"))) return 1;
 		break;
 
 	case 'f':
-		KW("false");
-		KW("final");
-		KW("finally");
-		KW("for");
-		KW("function");
+		if (lt_lstr_eq(str, CLSTR("for"))) return 1;
 		break;
 
 	case 'g':
-		KW("goto");
+		if (lt_lstr_eq(str, CLSTR("goto"))) return 1;
 		break;
 
 	case 'i':
-		KW("if");
-		KW("implements");
-		KW("in");
-		KW("instanceof");
-		KW("interface");
-		KW("import");
-		break;
-
-	case 'l':
-		KW("let");
-		break;
-
-	case 'n':
-		KW("native");
-		KW("new");
-		KW("null");
+		if (lt_lstr_eq(str, CLSTR("if"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("import"))) return 1;
 		break;
 
 	case 'p':
-		KW("package");
-		KW("private");
-		KW("protected");
-		KW("public");
+		if (lt_lstr_eq(str, CLSTR("proc"))) return 1;
 		break;
 
 	case 'r':
-		KW("return");
+		if (lt_lstr_eq(str, CLSTR("return"))) return 1;
 		break;
 
 	case 's':
-		KW("static");
-		KW("switch");
-		KW("synchronized");
-		KW("super");
+		if (lt_lstr_eq(str, CLSTR("switch"))) return 1;
 		break;
 
 	case 't':
-		KW("this");
-		KW("throw");
-		KW("throws");
-		KW("transient");
-		KW("true");
-		KW("try");
-		KW("typeof");
-		break;
-
-	case 'v':
-		KW("var");
-		KW("volatile");
+		if (lt_lstr_eq(str, CLSTR("typedef"))) return 1;
 		break;
 
 	case 'w':
-		KW("while");
-		KW("with");
-		break;
-
-	case 'y':
-		KW("yield");
+		if (lt_lstr_eq(str, CLSTR("while"))) return 1;
 		break;
 
 	default:
 		break;
 	}
-#undef KW
 	return 0;
 }
 
@@ -135,45 +81,67 @@ b8 is_datatype(lstr_t str) {
 	if (!str.len)
 		return 0;
 
-#define DT(x) if (lt_lstr_eq(str, CLSTR(x))) return 1
 	switch (str.str[0]) {
 	case 'b':
-		DT("boolean");
-		DT("byte");
+		if (lt_lstr_eq(str, CLSTR("b8"))) return 1;
 		break;
 
 	case 'c':
-		DT("char");
+		if (lt_lstr_eq(str, CLSTR("const"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("char"))) return 1;
 		break;
 
 	case 'd':
-		DT("double");
+		if (lt_lstr_eq(str, CLSTR("double"))) return 1;
+		break;
+
+	case 'e':
+		if (lt_lstr_eq(str, CLSTR("enum"))) return 1;
 		break;
 
 	case 'f':
-		DT("float");
+		if (lt_lstr_eq(str, CLSTR("float"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("f32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("f64"))) return 1;
 		break;
 
 	case 'i':
-		DT("int");
+		if (lt_lstr_eq(str, CLSTR("int"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("isz"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i8"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i16"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("i64"))) return 1;
 		break;
 
 	case 'l':
-		DT("long");
+		if (lt_lstr_eq(str, CLSTR("long"))) return 1;
 		break;
 
 	case 's':
-		DT("short");
+		if (lt_lstr_eq(str, CLSTR("signed"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("short"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("struct"))) return 1;
+		break;
+
+	case 'u':
+		if (lt_lstr_eq(str, CLSTR("union"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("unsigned"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("usz"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u8"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u16"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u32"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("u64"))) return 1;
 		break;
 
 	case 'v':
-		DT("void");
+		if (lt_lstr_eq(str, CLSTR("volatile"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("void"))) return 1;
 		break;
 
 	default:
 		break;
 	}
-#undef DT
 	return 0;
 }
 
@@ -312,7 +280,7 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 	return head;
 }
 
-highl_t** hl_generate_js(doc_t* doc, lt_alloc_t* alloc) {
+highl_t** hl_generate_lpc(doc_t* doc, lt_alloc_t* alloc) {
 	usz line_count = lt_texted_line_count(&doc->ed);
 
 	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));

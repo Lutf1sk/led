@@ -19,4 +19,8 @@ char* os_err_str(void);
 
 #define ISIZE_MAX (SIZE_MAX >> 1)
 
+typedef struct editor editor_t;
+typedef struct doc doc_t;
+typedef struct highl highl_t;
+
 #endif

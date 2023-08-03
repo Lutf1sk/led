@@ -8,16 +8,13 @@
 
 #define PATH_MAX_LEN (512)
 
-typedef struct editor editor_t;
-typedef struct global global_t;
+doc_t* fb_find_unsaved(void);
+doc_t* fb_first_file(void);
 
-editor_t* fb_find_unsaved(void);
-editor_t* fb_first_file(void);
+usz fb_find_files(doc_t** out, usz out_count, lstr_t str);
+doc_t* fb_find_file(lstr_t str);
 
-usz fb_find_files(editor_t** out, usz out_count, lstr_t str);
-editor_t* fb_find_file(lstr_t str);
-
-editor_t* fb_open(global_t* ed_global, lstr_t path);
-void fb_close(editor_t* ed);
+doc_t* fb_open(editor_t* editor, lstr_t path);
+void fb_close(doc_t* doc);
 
 #endif

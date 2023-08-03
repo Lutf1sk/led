@@ -5,13 +5,16 @@
 #include <lt/mem.h>
 #include <lt/ctype.h>
 #include <lt/darr.h>
+#include <lt/conf.h>
 
 static
 highl_t** hl_generate_git_commit(doc_t* doc, lt_alloc_t* alloc) {
-	highl_t** lines = lt_malloc(alloc, doc->line_count * sizeof(highl_t*));
-	for (usz i = 0; i < doc->line_count; ++i) {
+	usz line_count = lt_texted_line_count(&doc->ed);
+	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));
+
+	for (usz i = 0; i < line_count; ++i) {
 		highl_t** node = &lines[i];
-		lstr_t line = doc->lines[i];
+		lstr_t line = lt_texted_line_str(&doc->ed, i);
 
 		char* it = line.str, *end = line.str + line.len;
 		char* wrap_point = it + 72;
@@ -66,8 +69,10 @@ struct {
 	hl_mode_t mode;
 } mode_strs[] = {
 	{ CLSTR("c"),			HL_C },
+	{ CLSTR("c++"),			HL_CPP },
 	{ CLSTR("c#"),			HL_CS },
 	{ CLSTR("onyx"),		HL_ONYX },
+	{ CLSTR("lpc"),			HL_LPC },
 	{ CLSTR("rust"),		HL_RUST },
 	{ CLSTR("javascript"),	HL_JS },
 	{ CLSTR("git_commit"),	HL_GIT_COMMIT },
@@ -112,13 +117,40 @@ void hl_register_extension(lstr_t extension, lstr_t mode_str) {
 highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {
 	switch (mode) {
 	case HL_C: return hl_generate_c(doc, alloc);
+	case HL_CPP: return hl_generate_cpp(doc, alloc);
 	case HL_CS: return hl_generate_cs(doc, alloc);
 	case HL_ONYX: return hl_generate_onyx(doc, alloc);
+	case HL_LPC: return hl_generate_lpc(doc, alloc);
 	case HL_RUST: return hl_generate_rust(doc, alloc);
 	case HL_JS: return hl_generate_js(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
 	case HL_UNKNOWN: return NULL;
 	default: LT_ASSERT_NOT_REACHED(); return NULL;
+	}
+}
+
+void hl_load(lt_conf_t* hls) {
+	if (!hls)
+		return;
+
+	for (usz i = 0; i < hls->child_count; ++i) {
+		lt_conf_t* hl = &hls->children[i];
+		if (hl->stype != LT_CONF_OBJECT)
+			continue;
+
+		lstr_t ext = NLSTR();
+		if (!lt_conf_find_str(hl, CLSTR("extension"), &ext)) {
+			lt_werrf("highlight object missing 'extension'\n");
+			continue;
+		}
+
+		lstr_t modestr = NLSTR();
+		if (!lt_conf_find_str(hl, CLSTR("mode"), &modestr)) {
+			lt_werrf("highlight object missing 'extension'\n");
+			continue;
+		}
+
+		hl_register_extension(ext, modestr);
 	}
 }
 

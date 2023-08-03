@@ -346,13 +346,13 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 }
 
 highl_t** hl_generate_cs(doc_t* doc, lt_alloc_t* alloc) {
-	highl_t** lines = lt_malloc(alloc, doc->line_count * sizeof(highl_t*));
+	usz line_count = lt_texted_line_count(&doc->ed);
+
+	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));
 
 	multiline_mode_t mode = MLMODE_NONE;
-	usz line_count = doc->line_count;
-
 	for (usz i = 0; i < line_count; ++i)
-		lines[i] = gen_line(doc->lines[i], &mode, alloc);
+		lines[i] = gen_line(lt_texted_line_str(&doc->ed, i), &mode, alloc);
 
 	return lines;
 }

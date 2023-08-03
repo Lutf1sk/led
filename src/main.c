@@ -23,8 +23,6 @@
 
 #include "draw.h"
 
-global_t ed_globals;
-
 char* get_highl(highl_t* node) {
 	if (!node)
 		return clr_strs[CLR_EDITOR];
@@ -63,12 +61,12 @@ void draw_header(editor_t* ed) {
 	rec_str(clr_strs[CLR_HEADER_TAB]);
 	rec_c(' ');
 	if (ed) {
-		rec_lstr(ed->doc.path.str, ed->doc.path.len);
-	 	if (ed->doc.unsaved)
+		rec_lstr(ed->doc->path.str, ed->doc->path.len);
+	 	if (ed->doc->unsaved)
 			rec_c('*');
-		if (ed->doc.new)
+		if (ed->doc->new)
 			rec_str("[NEW]");
-		if (ed->doc.read_only)
+		if (ed->doc->read_only)
 			rec_str("[RO]");
 	}
 	else
@@ -77,32 +75,38 @@ void draw_header(editor_t* ed) {
 }
 
 void draw_editor(editor_t* ed) {
+	doc_t* doc = ed->doc;
+	lt_texted_t* txed = &doc->ed;
+
 	// Get selection coordinates and make y relative to line_top
 	isz sel_start_y, sel_start_x, sel_end_y, sel_end_x;
-	ed_get_selection(ed, &sel_start_y, &sel_start_x, &sel_end_y, &sel_end_x);
-	sel_start_y -= ed->line_top;
-	sel_end_y -= ed->line_top;
+	lt_texted_get_selection(txed, &sel_start_x, &sel_start_y, &sel_end_x, &sel_end_y);
+	sel_start_y -= doc->line_top;
+	sel_end_y -= doc->line_top;
 
-	isz line_top = ed->line_top;
-	isz line_count = clamp(ed->doc.line_count - ed->line_top, 0, EDITOR_HEIGHT);
+	isz line_top = doc->line_top;
+	isz line_count = clamp(lt_texted_line_count(txed) - doc->line_top, 0, EDITOR_HEIGHT);
 
-	usz tab_size = ed->global->tab_size;
+	usz tab_size = ed->tab_size;
 
 	char line_num_buf[32];
+
+	usz cy = txed->cursor_y;
+	usz cx = txed->cursor_x;
 
 	for (isz i = 0; i < line_count; ++i) {
 		rec_goto(0, EDITOR_VSTART + i + 1);
 
-		lstr_t line = ed->doc.lines[line_top + i];
+		lstr_t line = lt_texted_line_str(txed, line_top + i);
 		highl_t* hl = NULL;
 		if (ed->hl_lines)
 			hl = ed->hl_lines[line_top + i];
 
 		isz linenum = i + line_top + 1;
-		if (ed->global->relative_linenums)
-			linenum -= ed->cy + 1;
+		if (ed->relative_linenums)
+			linenum -= cy + 1;
 		linenum %= 10000;
-		if (i == ed->cy - line_top)
+		if (i == cy - line_top)
 			linenum = (line_top + i + 1) % 10000;
 		sprintf(line_num_buf, "%4zi ", lt_abs_isz(linenum));
 
@@ -162,32 +166,25 @@ void draw_editor(editor_t* ed) {
 		rec_str(clr_strs[CLR_EDITOR]);
 	}
 
-	rec_goto(ed_cx_to_screen_x(ed, ed->cx, ed->cy) + EDITOR_HSTART + 1, ed->cy - line_top + EDITOR_VSTART + 1);
+	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(txed, cy), cx);
+	rec_goto(sx + EDITOR_HSTART + 1, cy - line_top + EDITOR_VSTART + 1);
 }
-
-static
-const lstr_t conf_subpath = CLSTR("/.config/led/led.conf");
 
 lstr_t get_config_path(void) {
 	const char* home_dir;
 	if (!(home_dir = getenv("HOME")))
 		return NLSTR();
 
-	usz home_len = strlen(home_dir);
-	if (home_len + conf_subpath.len + 1 >= PATH_MAX_LEN)
-		ferr("Wtf, why is your home path that long?\n");
-
-	static char path_buf[PATH_MAX_LEN] = "";
-	memcpy(path_buf, home_dir, home_len);
-	memcpy(path_buf + home_len, conf_subpath.str, conf_subpath.len);
-
-	return LSTR(path_buf, home_len + conf_subpath.len);
+	lstr_t path;
+	if (lt_aprintf(&path, lt_libc_heap, "%s/.config/led/led.conf", home_dir) < 0)
+		return NLSTR();
+	return path;
 }
 
 void cleanup(int code, void* args) {
-	editor_t* ed_it;
-	while ((ed_it = fb_first_file()))
-		fb_close(ed_it);
+	doc_t* doc;
+	while ((doc = fb_first_file()))
+		fb_close(doc);
 
 	lt_term_restore();
 }
@@ -198,7 +195,7 @@ void on_exit(void*, void*);
 #include <lt/strstream.h>
 
 int main(int argc, char** argv) {
-// 	LT_DEBUG_INIT();
+	LT_DEBUG_INIT();
 
 	lstr_t cpath = NLSTR();
 
@@ -225,96 +222,40 @@ int main(int argc, char** argv) {
 	if (!cpath.str)
 		cpath = get_config_path();
 
+	editor_t editor;
+	memset(&editor, 0, sizeof(editor_t));
+
 	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
-
-	memset(&ed_globals, 0, sizeof(ed_globals));
 
 	lstr_t conf_file;
 	if (lt_file_read_entire(cpath, &conf_file, alloc))
 		lt_ferrf("failed to read config file\n");
-	lt_conf_t config;
+	lt_conf_t config, *found;
 	lt_conf_err_info_t conf_err;
 	if (lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc))
 		lt_ferrf("failed to parse config file: %S\n", conf_err.err_str);
 
-	ed_globals.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
-	ed_globals.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);
-	ed_globals.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
-	ed_globals.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
-	ed_globals.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
+	editor.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
+	editor.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);
+	editor.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
+	editor.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
+	editor.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
 
 	clr_load(&config);
-
 	keybind_init();
-
-	lt_conf_t* kbs = lt_conf_find_array(&config, CLSTR("keybinds"), &kbs);
-	if (kbs) {
-		for (usz i = 0; i < kbs->child_count; ++i) {
-			lt_conf_t* kb = &kbs->children[i];
-			if (kb->stype != LT_CONF_OBJECT)
-				continue;
-
-			lstr_t keystr = NLSTR();
-			if (!lt_conf_find_str(kb, CLSTR("key"), &keystr)) {
-				lt_werrf("keybind object missing 'key'\n");
-				continue;
-			}
-
-			u32 key = keystr_to_key(keystr);
-
-			lstr_t modstr = NLSTR();
-			if (lt_conf_find_str(kb, CLSTR("mod"), &modstr))
-				key |= modstr_to_key(modstr);
-
-			lt_conf_t* mods = NULL;
-			if (lt_conf_find_array(kb, CLSTR("mod"), &mods)) {
-				for (usz i = 0; i < mods->child_count; ++i) {
-					lt_conf_t* mod = &mods->children[i];
-					if (mod->stype != LT_CONF_STRING)
-						continue;
-					key |= modstr_to_key(mod->str_val);
-				}
-			}
-
-			lstr_t cmd = NLSTR();
-			if (lt_conf_find_str(kb, CLSTR("command"), &cmd))
-				reg_keybind_command(key, cmd);
-		}
-	}
-
-	lt_conf_t* hls = lt_conf_find_array(&config, CLSTR("highlight"), &hls);
-	if (hls) {
-		for (usz i = 0; i < hls->child_count; ++i) {
-			lt_conf_t* hl = &hls->children[i];
-			if (hl->stype != LT_CONF_OBJECT)
-				continue;
-
-			lstr_t ext = NLSTR();
-			if (!lt_conf_find_str(hl, CLSTR("extension"), &ext)) {
-				lt_werrf("highlight object missing 'extension'\n");
-				continue;
-			}
-
-			lstr_t modestr = NLSTR();
-			if (!lt_conf_find_str(hl, CLSTR("mode"), &modestr)) {
-				lt_werrf("highlight object missing 'extension'\n");
-				continue;
-			}
-
-			hl_register_extension(ext, modestr);
-		}
-	}
+	keybinds_load(lt_conf_find_array(&config, CLSTR("keybinds"), &found));
+	hl_load(lt_conf_find_array(&config, CLSTR("highlight"), &found));
 
 	lt_conf_free(&config, alloc);
 
 	for (usz i = 0; i < lt_darr_count(open_paths); ++i) {
-		fb_open(&ed_globals, open_paths[i]);
+		fb_open(&editor, open_paths[i]);
 	}
 
 	write_buf = lt_malloc(alloc, LT_MB(4));
-	ed_globals.hl_arena = arena;
-	ed_globals.hl_restore = lt_amsave(arena);
+	editor.hl_arena = arena;
+	editor.hl_restore = lt_amsave(arena);
 
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
 	on_exit(cleanup, NULL);
@@ -323,25 +264,25 @@ int main(int argc, char** argv) {
 	focus_init();
 	find_local_init();
 
-	edit_file(&ed_globals, fb_first_file());
+	edit_file(&editor, fb_first_file());
 
 	for (;;) {
-		ed_globals.width = EDITOR_WIDTH;
-		ed_globals.height = EDITOR_HEIGHT;
-		ed_globals.hstart = EDITOR_HSTART;
-		ed_globals.vstart = EDITOR_VSTART;
+		editor.width = EDITOR_WIDTH;
+		editor.height = EDITOR_HEIGHT;
+		editor.hstart = EDITOR_HSTART;
+		editor.vstart = EDITOR_VSTART;
 
 		// Update highlighting and redraw all windows.
-		if (!ed_globals.await_utf8) {
+		if (!editor.await_utf8) {
 			write_it = write_buf;
 
 			rec_clear(clr_strs[CLR_EDITOR]);
-			draw_header(ed_globals.ed);
+			draw_header(&editor);
 
-			if (ed_globals.ed)
-				draw_editor(ed_globals.ed);
+			if (editor.doc)
+				draw_editor(&editor);
 			if (focus.draw)
-				focus.draw(&ed_globals, focus.draw_args);
+				focus.draw(&editor, focus.draw_args);
 			lt_term_write_direct(write_buf, write_it - write_buf);
 		}
 
@@ -359,7 +300,7 @@ int main(int argc, char** argv) {
 
 		default:
 			if (focus.input)
-				focus.input(&ed_globals, c);
+				focus.input(&editor, c);
 			break;
 		}
 	}

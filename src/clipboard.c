@@ -14,4 +14,3 @@ void clipboard_clear(usz clipboard) {
 		return;
 	lt_strstream_clear(&clipboards[clipboard]);
 }
-

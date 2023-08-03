@@ -3,6 +3,7 @@
 #include <lt/str.h>
 #include <lt/term.h>
 #include <lt/ctype.h>
+#include <lt/conf.h>
 
 #include "keybinds.h"
 
@@ -105,5 +106,42 @@ lstr_t lookup_keybind(u32 key) {
 			return keybinds[i].command;
 	}
 	return NLSTR();
+}
+
+void keybinds_load(lt_conf_t* kbs) {
+	if (!kbs)
+		return;
+
+	for (usz i = 0; i < kbs->child_count; ++i) {
+		lt_conf_t* kb = &kbs->children[i];
+		if (kb->stype != LT_CONF_OBJECT)
+			continue;
+
+		lstr_t keystr = NLSTR();
+		if (!lt_conf_find_str(kb, CLSTR("key"), &keystr)) {
+			lt_werrf("keybind object missing 'key'\n");
+			continue;
+		}
+
+		u32 key = keystr_to_key(keystr);
+
+		lstr_t modstr = NLSTR();
+		if (lt_conf_find_str(kb, CLSTR("mod"), &modstr))
+			key |= modstr_to_key(modstr);
+
+		lt_conf_t* mods = NULL;
+		if (lt_conf_find_array(kb, CLSTR("mod"), &mods)) {
+			for (usz i = 0; i < mods->child_count; ++i) {
+				lt_conf_t* mod = &mods->children[i];
+				if (mod->stype != LT_CONF_STRING)
+					continue;
+				key |= modstr_to_key(mod->str_val);
+			}
+		}
+
+		lstr_t cmd = NLSTR();
+		if (lt_conf_find_str(kb, CLSTR("command"), &cmd))
+			reg_keybind_command(key, cmd);
+	}
 }
 

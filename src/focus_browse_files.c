@@ -20,7 +20,7 @@ focus_t focus_browse_files = { draw_browse_files, NULL, input_browse_files };
 
 #define MAX_VISIBLE_ENTRIES 15
 
-static editor_t* selected = NULL;
+static doc_t* selected = NULL;
 static usz selected_index = 0;
 static usz visible_index = 0;
 static usz max_index = 0;
@@ -29,10 +29,10 @@ void browse_files(void) {
 	focus = focus_browse_files;
 	selected_index = 0;
 	visible_index = 0;
-	lt_led_clear(line_input);
+	lt_texted_clear(line_input);
 }
 
-void draw_browse_files(global_t* ed_globals, void* args) {
+void draw_browse_files(editor_t* ed, void* args) {
 	(void)args;
 
 	usz start_height = lt_term_height - MAX_VISIBLE_ENTRIES;
@@ -42,8 +42,8 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
 	rec_str(" ");
 
-	editor_t* found[MAX_ENTRY_COUNT];
-	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_led_get_str(line_input));
+	doc_t* found[MAX_ENTRY_COUNT];
+	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_texted_line_str(line_input, 0));
 	usz visible_count = lt_min_usz(found_count, MAX_VISIBLE_ENTRIES);
 
 	selected = NULL;
@@ -60,7 +60,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		if (index == selected_index) {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			rec_lstr(found[index]->doc.path.str, found[index]->doc.path.len);
+			rec_lstr(found[index]->path.str, found[index]->path.len);
 			rec_str(clr_strs[CLR_LIST_ENTRY]);
 
 			selected = found[selected_index];
@@ -68,7 +68,7 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 		else {
 			rec_goto(2, start_height + i + 1);
 			rec_clearline("");
-			rec_lstr(found[index]->doc.path.str, found[index]->doc.path.len);
+			rec_lstr(found[index]->path.str, found[index]->path.len);
 		}
 	}
 
@@ -82,12 +82,12 @@ void draw_browse_files(global_t* ed_globals, void* args) {
 	max_index = found_count;
 }
 
-void input_browse_files(global_t* ed_global, u32 c) {
-	editor_t* ed = ed_global->ed;
+void input_browse_files(editor_t* ed, u32 c) {
+	doc_t* doc = ed->doc;
 
 	switch (c) {
 	case '\n':
-		edit_file(ed_global, selected ? selected : ed);
+		edit_file(ed, selected ? selected : doc);
 		break;
 
 	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
@@ -101,9 +101,9 @@ void input_browse_files(global_t* ed_global, u32 c) {
 		break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_darr_count(line_input->str))
+		if (!lt_texted_line_len(line_input, 0))
 	case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
+			edit_file(ed, doc);
 	default:
 		input_term_key(line_input, c);
 		break;

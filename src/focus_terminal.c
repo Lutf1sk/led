@@ -10,14 +10,12 @@ void terminal(void) {
 	focus = focus_terminal;
 }
 
-void draw_terminal(global_t* ed_global, void* args) {
+void draw_terminal(editor_t* ed_global, void* args) {
 	// !!
 }
 
-void input_terminal(global_t* ed_global, u32 c) {
-	editor_t* ed = ed_global->ed;
-
+void input_terminal(editor_t* ed, u32 c) {
 	if (c == LT_TERM_KEY_ESC)
-		edit_file(ed_global, ed);
+		edit_file(ed, ed->doc);
 }
 

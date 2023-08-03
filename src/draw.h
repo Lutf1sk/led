@@ -29,7 +29,7 @@ void rec_goto(u32 x, u32 y);
 void rec_clear(char* clr);
 void rec_clearline(char* clr);
 
-void rec_led(lt_led_t* ed, char* sel_clr, char* normal_clr);
+void rec_led(lt_texted_t* ed, char* sel_clr, char* normal_clr);
 
 void rec_csave(void);
 void rec_crestore(void);

@@ -13,10 +13,10 @@ focus_t focus_command = { draw_command, NULL, input_command };
 
 void command(void) {
 	focus = focus_command;
-	lt_led_clear(line_input);
+	lt_texted_clear(line_input);
 }
 
-void draw_command(global_t* ed_global, void* args) {
+void draw_command(editor_t* ed, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
@@ -24,20 +24,19 @@ void draw_command(global_t* ed_global, void* args) {
 	rec_crestore();
 }
 
-void input_command(global_t* ed_global, u32 c) {
-	editor_t* ed = ed_global->ed;
+void input_command(editor_t* ed, u32 c) {
+	doc_t* doc = ed->doc;
 
 	switch (c) {
 	case '\n':
-		execute_string(ed, lt_led_get_str(line_input));
-		lt_led_clear(line_input);
-		edit_file(ed_global, ed);
+		execute_string(ed, lt_texted_line_str(line_input, 0));
+		edit_file(ed, doc);
 		break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_darr_count(line_input->str))
+		if (!lt_texted_line_len(line_input, 0))
 	case LT_TERM_KEY_ESC:
-			edit_file(ed_global, ed);
+			edit_file(ed, doc);
 	default:
 		input_term_key(line_input, c);
 		break;
