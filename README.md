@@ -27,7 +27,7 @@ These keybinds are built into the editor and cannot be changed, others can be fo
 | CTRL+F    | Local find string     |
 | CTRL+/    | Comment selection     |
 | ALT+P     | Move to other bracket |
-| TAB       | Intent selection      |
+| TAB       | Indent selection      |
 | Shift+TAB | Unindent selection    |
 | Page Up   | Move up one page      |
 | Page Down | Move down one page    |
@@ -52,14 +52,14 @@ Selecting text with a mouse works just like any other gui application (given tha
 Pressing CTRL+\ brings up a command input, this is a series of single character commands that each perform one action.
 Spaces or any other symbol that is not a valid command are ignored.
 
-In the following descriptions, a ```<string>``` is any number of characters, terminated either by the end of the command, or a ```\```` character.
-Strings can contain ```\``` characters, escape sequences, and can be followed by ```n```, ```r```, ```t```, ```v```, ```b```, ```\```, ```\```` or ```xHH``` (where HH is a hexadecimal byte).
+In the following descriptions, a ```<string>``` is any number of characters, terminated either by the end of the command, or a `` ` `` character.
+Strings can contain `` \ `` characters, these work as escape sequences and can be followed by ```n```, ```r```, ```t```, ```v```, ```b```, ```\```, `` ` `` or ```xHH``` (where HH is a hexadecimal byte).
 
-Similarly a ```<block>``` is any number of commands, terminated either by the end of the command or a ```\```` character.
+Similarly a ```<block>``` is any number of commands, terminated either by the end of the command or a `` ` `` character.
 
-```j<position>``` jumps to <position>.
+```j<position>``` jumps to ```<position>```.
 
-```s<position>``` selectes from cursor to <position>.
+```s<position>``` selectes from cursor to ```<position>```.
 
 ```c<clipboard>``` copies the current selection to clipboard ```<clipboard>```, where clipboard is a number between 0 and 15.
 
