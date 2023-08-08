@@ -63,7 +63,7 @@ b8 is_keyword(lstr_t str) {
 		break;
 
 	case 't':
-		if (lt_lstr_eq(str, CLSTR("typedef"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("then"))) return 1;
 		break;
 
 	case 'w':
