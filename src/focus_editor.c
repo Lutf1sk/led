@@ -25,7 +25,7 @@ focus_t focus_editor = { NULL, NULL, input_editor };
 void edit_file(editor_t* ed, doc_t* doc) {
 	focus = focus_editor;
 	ed->doc = doc;
-	if (ed)
+	if (doc)
 		ed_regenerate_hl(ed);
 }
 
@@ -33,7 +33,7 @@ void input_editor(editor_t* ed, u32 c) {
 	doc_t* doc = ed->doc;
 	lt_texted_t* txed = &doc->ed;
 
-	if (!ed)
+	if (!doc)
 		return;
 
 	u8 modified = 1;
