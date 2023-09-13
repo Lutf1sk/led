@@ -29,6 +29,7 @@ b8 is_keyword(lstr_t str) {
 
 	case 'd':
 		if (lt_lstr_eq(str, CLSTR("do"))) return 1;
+		if (lt_lstr_eq(str, CLSTR("defer"))) return 1;
 		break;
 
 	case 'e':
