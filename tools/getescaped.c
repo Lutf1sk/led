@@ -21,7 +21,7 @@ int main() {
 		if (c == '\n')
 			return 0;
 		else if (c <= 31 || c >= 127)
-			printf("\\x%0.2x", c);
+			printf("\\x%0.2x", (int)(unsigned char)c);
 		else if (c == '\b')
 			printf("\\b");
 		else
