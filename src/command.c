@@ -255,11 +255,15 @@ void execute_single_command(ctx_t* cx) {
 		usz clipboard = parse_uint(cx);
 		if (clipboard >= CLIPBOARD_COUNT)
 			break;
-		lt_texted_input_str(txed, clipboards[clipboard].str);
+		if (lt_texted_input_str(txed, clipboards[clipboard].str))
+			cx->ed->doc->unsaved = 1;
 	}	break;
 
 	case 'd':
-		delete_selection_if_present(cx->ed);
+		if (lt_texted_selection_present(&cx->ed->doc->ed)) {
+			lt_texted_erase_selection(&cx->ed->doc->ed);
+			cx->ed->doc->unsaved = 1;
+		}
 		break;
 
 	case 'l': {
@@ -271,7 +275,8 @@ void execute_single_command(ctx_t* cx) {
 
 	case 'w': {
 		lstr_t str = unescape_string(parse_string(cx));
-		lt_texted_input_str(txed, str);
+		if (lt_texted_input_str(txed, str))
+			cx->ed->doc->unsaved = 1;
 		lt_mfree(lt_libc_heap, str.str);
 	}	break;
 
@@ -315,6 +320,9 @@ void execute_single_command(ctx_t* cx) {
 			lstr_t replace = unescape_string(parse_string(cx));
 			lt_texted_erase_range(txed, x, y, x + find.len, y);
 			lt_texted_input_str(txed, replace);
+
+			if (find.len && !lt_lstr_eq(find, replace))
+				cx->ed->doc->unsaved = 1;
 			lt_mfree(lt_libc_heap, replace.str);
 		}
 
