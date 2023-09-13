@@ -29,7 +29,8 @@ void input_command(editor_t* ed, u32 c) {
 
 	switch (c) {
 	case '\n':
-		execute_string(ed, lt_texted_line_str(line_input, 0));
+		if (execute_string(ed, lt_texted_line_str(line_input, 0)))
+			ed_regenerate_hl(ed);
 		edit_file(ed, doc);
 		break;
 

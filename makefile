@@ -46,7 +46,7 @@ CC_FLAGS += -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-str
 
 LNK = cc
 LNK_FLAGS += -o $(OUT) 
-LNK_LIBS += -lpthread -ldl -lm
+LNK_LIBS += -lpthread -ldl -lm -lasound
 
 all: $(OUT)
 

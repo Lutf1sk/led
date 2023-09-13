@@ -12,6 +12,7 @@ struct ctx {
 	editor_t* ed;
 	char* it;
 	char* end;
+	b8 modified;
 } ctx_t;
 
 typedef
@@ -256,13 +257,13 @@ void execute_single_command(ctx_t* cx) {
 		if (clipboard >= CLIPBOARD_COUNT)
 			break;
 		if (lt_texted_input_str(txed, clipboards[clipboard].str))
-			cx->ed->doc->unsaved = 1;
+			cx->modified = 1;
 	}	break;
 
 	case 'd':
 		if (lt_texted_selection_present(&cx->ed->doc->ed)) {
 			lt_texted_erase_selection(&cx->ed->doc->ed);
-			cx->ed->doc->unsaved = 1;
+			cx->modified = 1;
 		}
 		break;
 
@@ -276,7 +277,7 @@ void execute_single_command(ctx_t* cx) {
 	case 'w': {
 		lstr_t str = unescape_string(parse_string(cx));
 		if (lt_texted_input_str(txed, str))
-			cx->ed->doc->unsaved = 1;
+			cx->modified = 1;
 		lt_mfree(lt_libc_heap, str.str);
 	}	break;
 
@@ -322,7 +323,7 @@ void execute_single_command(ctx_t* cx) {
 			lt_texted_input_str(txed, replace);
 
 			if (find.len && !lt_lstr_eq(find, replace))
-				cx->ed->doc->unsaved = 1;
+				cx->modified = 1;
 			lt_mfree(lt_libc_heap, replace.str);
 		}
 
@@ -334,13 +335,18 @@ void execute_single_command(ctx_t* cx) {
 	}
 }
 
-void execute_string(editor_t* ed, lstr_t cmd) {
+b8 execute_string(editor_t* ed, lstr_t cmd) {
 	ctx_t cx;
 	cx.ed = ed;
 	cx.it = cmd.str;
 	cx.end = cmd.str + cmd.len;
+	cx.modified = 0;
 
 	while (cx.it < cx.end)
 		execute_single_command(&cx);
 	adjust_vbounds(ed);
+
+	if (cx.modified)
+		ed->doc->unsaved = 1;
+	return cx.modified;
 }

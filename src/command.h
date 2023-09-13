@@ -8,6 +8,6 @@
 
 #include "editor.h"
 
-void execute_string(editor_t* ed, lstr_t cmd);
+b8 execute_string(editor_t* ed, lstr_t cmd);
 
 #endif

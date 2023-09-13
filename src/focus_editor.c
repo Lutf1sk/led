@@ -293,8 +293,7 @@ void input_editor(editor_t* ed, u32 c) {
 	default: {
 		lstr_t cmd = lookup_keybind(c);
 		if (cmd.len) {
-			modified = 0;
-			execute_string(ed, cmd);
+			modified = execute_string(ed, cmd);
 			break;
 		}
 
