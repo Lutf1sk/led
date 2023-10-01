@@ -13,6 +13,7 @@ OBJS = \
 	src/hl_onyx.o \
 	src/hl_lpc.o \
 	src/hl_js.o \
+	src/hl_makefile.o \
 	src/editor.o \
 	src/command.o \
 	src/file_browser.o \
@@ -45,8 +46,8 @@ CC = cc
 CC_FLAGS += -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
 
 LNK = cc
-LNK_FLAGS += -o $(OUT) 
-LNK_LIBS += -lpthread -ldl -lm -lasound
+LNK_FLAGS += -o $(OUT)
+LNK_LIBS += -lpthread -ldl -lm
 
 all: $(OUT)
 

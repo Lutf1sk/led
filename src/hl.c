@@ -76,11 +76,12 @@ struct {
 	{ CLSTR("rust"),		HL_RUST },
 	{ CLSTR("javascript"),	HL_JS },
 	{ CLSTR("git_commit"),	HL_GIT_COMMIT },
+	{ CLSTR("makefile"),	HL_MAKEFILE },
 };
 
 hl_mode_t hl_find_mode_by_name(lstr_t name) {
 	for (usz i = 0; i < sizeof(mode_strs) / sizeof(*mode_strs); ++i) {
-		if (lt_lstr_eq(name, mode_strs[i].str)) {
+		if (lt_lstr_case_eq(name, mode_strs[i].str)) {
 			return mode_strs[i].mode;
 		}
 	}
@@ -124,6 +125,7 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {
 	case HL_RUST: return hl_generate_rust(doc, alloc);
 	case HL_JS: return hl_generate_js(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
+	case HL_MAKEFILE: return hl_generate_makefile(doc, alloc);
 	case HL_UNKNOWN: return NULL;
 	default: LT_ASSERT_NOT_REACHED(); return NULL;
 	}
