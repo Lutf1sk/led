@@ -1,72 +1,95 @@
-OUT = led
+OUT := led
 
-OBJS = \
-	src/main.o \
-	src/clipboard.o \
-	src/clr.o \
-	src/doc.o \
-	src/hl.o \
-	src/hl_c.o \
-	src/hl_cpp.o \
-	src/hl_rust.o \
-	src/hl_cs.o \
-	src/hl_onyx.o \
-	src/hl_lpc.o \
-	src/hl_js.o \
-	src/hl_makefile.o \
-	src/editor.o \
-	src/command.o \
-	src/file_browser.o \
-	src/focus_terminal.o \
-	src/focus_editor.o \
-	src/focus_error.o \
-	src/focus_browse_files.o \
-	src/focus_browse_filesystem.o \
-	src/focus_exit.o \
-	src/focus_find_local.o \
-	src/focus_command.o \
-	src/focus.o \
-	src/keybinds.o \
-	src/err.o \
-	src/draw.o
+SRC := \
+	src/main.c \
+	src/clipboard.c \
+	src/clr.c \
+	src/doc.c \
+	src/hl.c \
+	src/hl_c.c \
+	src/hl_cpp.c \
+	src/hl_rust.c \
+	src/hl_cs.c \
+	src/hl_onyx.c \
+	src/hl_lpc.c \
+	src/hl_js.c \
+	src/hl_makefile.c \
+	src/editor.c \
+	src/command.c \
+	src/file_browser.c \
+	src/focus_terminal.c \
+	src/focus_editor.c \
+	src/focus_error.c \
+	src/focus_browse_files.c \
+	src/focus_browse_filesystem.c \
+	src/focus_exit.c \
+	src/focus_find_local.c \
+	src/focus_command.c \
+	src/focus.c \
+	src/keybinds.c \
+	src/err.c \
+	src/draw.c
 
-LT_PATH = lt/
-LT_LIB = $(LT_PATH)/bin/lt.a
+LT_PATH := lt
+LT_ENV :=
 
-DEPS = $(patsubst %.o,%.deps,$(OBJS))
+# -----== COMPILER
+CC := cc
+CC_WARN := -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
+CC_FLAGS := -I$(LT_PATH)/include/ -std=c11 -fmax-errors=3 $(CC_WARN) -mavx2 -masm=intel
 
 ifdef DEBUG
 	CC_FLAGS += -fno-omit-frame-pointer -O0 -g
-	LNK_FLAGS += -g -rdynamic
 else
 	CC_FLAGS += -O2
 endif
 
-CC = cc
-CC_FLAGS += -fmax-errors=3 -I$(LT_PATH)/include/ -std=c11 -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
+# -----== LINKER
+LNK := cc
+LNK_LIBS := -lpthread -ldl -lm
+LNK_FLAGS := $(LNK_LIBS)
 
-LNK = cc
-LNK_FLAGS += -o $(OUT)
-LNK_LIBS += -lpthread -ldl -lm
+ifdef DEBUG
+	LNK_FLAGS += -g -rdynamic
+endif
 
-all: $(OUT)
+# -----== TARGETS
+ifdef DEBUG
+	BIN_PATH := bin/debug
+	LT_ENV += DEBUG=1
+else
+	BIN_PATH := bin/release
+endif
+
+OUT_PATH := $(BIN_PATH)/$(OUT)
+
+LT_LIB := $(LT_PATH)/$(BIN_PATH)/lt.a
+
+OBJS := $(patsubst %.c,$(BIN_PATH)/%.o,$(SRC))
+DEPS := $(patsubst %.o,%.deps,$(OBJS))
+
+all: lt $(OUT_PATH)
 
 install: all
-	cp $(OUT) /usr/local/bin/
+	cp $(OUT_PATH) /usr/local/bin/
 
-$(LT_LIB):
-	make -C $(LT_PATH)
+run: all
+	$(OUT_PATH) $(args)
 
-$(OUT):	$(LT_LIB) $(OBJS)
-	$(LNK) $(LNK_FLAGS) $(OBJS) $(LT_LIB) $(LNK_LIBS)
+clean:
+	-rm -r $(BIN_PATH)
 
-%.o: %.c makefile
-	$(CC) $(CC_FLAGS) -MM -MT $@ -MF $(patsubst %.o,%.deps,$@) $<
+lt:
+	$(LT_ENV) make -C $(LT_PATH)
+
+$(OUT_PATH): $(OBJS) $(LT_LIB)
+	$(LNK) $(OBJS) $(LT_LIB) $(LNK_FLAGS) -o $(OUT_PATH)
+
+$(BIN_PATH)/%.o: %.c makefile
+	@-mkdir -p $(BIN_PATH)/$(dir $<)
+	@$(CC) $(CC_FLAGS) -MM -MT $@ -MF $(patsubst %.o,%.deps,$@) $<
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 -include $(DEPS)
 
-clean:
-	-rm $(OUT) $(OBJS) $(DEPS)
-
-.PHONY: all install clean
+.PHONY: all install run clean lt
