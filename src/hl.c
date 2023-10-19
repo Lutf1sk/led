@@ -8,9 +8,9 @@
 #include <lt/conf.h>
 
 static
-highl_t** hl_generate_git_commit(doc_t* doc, lt_alloc_t* alloc) {
+highl_t** hl_generate_git_commit(doc_t* doc, lt_arena_t* alloc) {
 	usz line_count = lt_texted_line_count(&doc->ed);
-	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));
+	highl_t** lines = lt_amalloc_lean(alloc, line_count * sizeof(highl_t*));
 
 	for (usz i = 0; i < line_count; ++i) {
 		highl_t** node = &lines[i];
@@ -44,7 +44,7 @@ highl_t** hl_generate_git_commit(doc_t* doc, lt_alloc_t* alloc) {
 					++it;
 			}
 
-			highl_t* new = lt_malloc(alloc, sizeof(highl_t));
+			highl_t* new = lt_amalloc_lean(alloc, sizeof(highl_t));
 			new->len = it - start;
 			new->mode = mode;
 
@@ -115,7 +115,7 @@ void hl_register_extension(lstr_t extension, lstr_t mode_str) {
 	lt_darr_push(extension_modes, (modeext_t){ lt_strdup(lt_libc_heap, extension), mode });
 }
 
-highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_alloc_t* alloc) {
+highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_arena_t* alloc) {
 	switch (mode) {
 	case HL_C: return hl_generate_c(doc, alloc);
 	case HL_CPP: return hl_generate_cpp(doc, alloc);

@@ -125,7 +125,7 @@ void page_down(editor_t* ed) {
 
 void ed_regenerate_hl(editor_t* ed) {
 	lt_amrestore(ed->hl_arena, ed->hl_restore);
-	ed->hl_lines = hl_generate(ed->doc, ed->doc->hl_mode, (lt_alloc_t*)ed->hl_arena);
+	ed->hl_lines = hl_generate(ed->doc, ed->doc->hl_mode, ed->hl_arena);
 }
 
 void halfstep_left(editor_t* ed, b8 sync_selection) {

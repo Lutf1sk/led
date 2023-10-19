@@ -25,7 +25,7 @@ hl_mode_t keyword(lstr_t str) {
 }
 
 static
-highl_t* gen_line(lstr_t line, lt_alloc_t* alloc) {
+highl_t* gen_line(lstr_t line, lt_arena_t* alloc) {
 	highl_t* head = NULL;
 	highl_t** node = &head;
 	char* it = line.str, *end = it + line.len;
@@ -147,10 +147,10 @@ highl_t* gen_line(lstr_t line, lt_alloc_t* alloc) {
 	return head;
 }
 
-highl_t** hl_generate_makefile(doc_t* doc, lt_alloc_t* alloc) {
+highl_t** hl_generate_makefile(doc_t* doc, lt_arena_t* alloc) {
 	usz line_count = lt_texted_line_count(&doc->ed);
 
-	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));
+	highl_t** lines = lt_amalloc_lean(alloc, line_count * sizeof(highl_t*));
 
 	for (usz i = 0; i < line_count; ++i)
 		lines[i] = gen_line(lt_texted_line_str(&doc->ed, i), alloc);

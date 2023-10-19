@@ -178,7 +178,7 @@ b8 is_datatype(lstr_t str) {
 }
 
 static
-highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
+highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_arena_t* alloc) {
 	highl_t* head = NULL;
 	highl_t** node = &head;
 	int c = 0;
@@ -300,7 +300,7 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 			break;
 		}
 
-		highl_t* new = lt_malloc(alloc, sizeof(highl_t));
+		highl_t* new = lt_amalloc_lean(alloc, sizeof(highl_t));
 		new->len = i - start;
 		new->mode = mode;
 
@@ -312,10 +312,10 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_alloc_t* alloc) {
 	return head;
 }
 
-highl_t** hl_generate_js(doc_t* doc, lt_alloc_t* alloc) {
+highl_t** hl_generate_js(doc_t* doc, lt_arena_t* alloc) {
 	usz line_count = lt_texted_line_count(&doc->ed);
 
-	highl_t** lines = lt_malloc(alloc, line_count * sizeof(highl_t*));
+	highl_t** lines = lt_amalloc_lean(alloc, line_count * sizeof(highl_t*));
 
 	multiline_mode_t mode = MLMODE_NONE;
 	for (usz i = 0; i < line_count; ++i)
