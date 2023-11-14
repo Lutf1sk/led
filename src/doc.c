@@ -23,7 +23,7 @@ void doc_load(doc_t* doc, editor_t* ed) {
 	doc->ed.find_cursor_x = (lt_texted_find_cursor_x_fn_t)screen_x_to_cursor_x;
 
 	lstr_t file;
-	if (lt_file_read_entire(doc->path, &file, lt_libc_heap) != LT_SUCCESS) {
+	if (lt_freadallp(doc->path, &file, lt_libc_heap) != LT_SUCCESS) {
 		doc->new = 1;
 		return;
 	}
@@ -38,42 +38,42 @@ void doc_load(doc_t* doc, editor_t* ed) {
 	}
 
 	// Find line ending type
-	usz first_line_len = lt_lstr_split(file, '\n');
+	usz first_line_len = lt_lssplit(file, '\n').len;
 	if (first_line_len >= 1 && file.str[first_line_len - 1] == '\r')
 		doc->crlf = 1;
 
 	// Skip byte order mark if present
 	char* text_start = file.str;
 	char* text_end = file.str + file.len;
-	if (lt_lstr_startswith(file, BYTE_ORDER_MARK)) {
+	if (lt_lsprefix(file, BYTE_ORDER_MARK)) {
 		doc->leading_bom = 1;
 		text_start += BYTE_ORDER_MARK.len;
 	}
 
-	lt_texted_input_str(&doc->ed, lt_lstr_from_range(text_start, text_end));
+	lt_texted_input_str(&doc->ed, lt_lsfrom_range(text_start, text_end));
 	lt_texted_gotoxy(&doc->ed, 0, 0, 1);
 
 	lt_mfree(lt_libc_heap, file.str);
 }
 
 b8 doc_save(doc_t* doc) {
-	lt_file_t* f = lt_file_open(doc->path, LT_FILE_W, 0, lt_libc_heap);
+	lt_file_t* f = lt_fopenp(doc->path, LT_FILE_W, 0, lt_libc_heap);
 	if (!f)
 		return 0;
 
-	if (doc->leading_bom && lt_file_write(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len)
+	if (doc->leading_bom && lt_fwrite(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len)
 		goto err0;
-	if (lt_texted_write_contents(&doc->ed, (lt_io_callback_t)lt_file_write, f) < 0)
+	if (lt_texted_write_contents(&doc->ed, (lt_io_callback_t)lt_fwrite, f) < 0)
 		goto err0;
 
-	lt_file_close(f, lt_libc_heap);
+	lt_fclose(f, lt_libc_heap);
 	doc->unsaved = 0;
 	doc->new = 0;
 	doc->read_only = 0;
 	return 1;
 
 err0:
-	lt_file_close(f, lt_libc_heap);
+	lt_fclose(f, lt_libc_heap);
 	return 0;
 }
 

@@ -81,7 +81,7 @@ struct {
 
 hl_mode_t hl_find_mode_by_name(lstr_t name) {
 	for (usz i = 0; i < sizeof(mode_strs) / sizeof(*mode_strs); ++i) {
-		if (lt_lstr_case_eq(name, mode_strs[i].str)) {
+		if (lt_lseq_nocase(name, mode_strs[i].str)) {
 			return mode_strs[i].mode;
 		}
 	}
@@ -93,7 +93,7 @@ hl_mode_t hl_find_mode_by_extension(lstr_t path) {
 		return HL_UNKNOWN;
 
 	for (usz i = 0; i < lt_darr_count(extension_modes); ++i) {
-		if (lt_lstr_endswith(path, extension_modes[i].extension)) {
+		if (lt_lssuffix(path, extension_modes[i].extension)) {
 			return extension_modes[i].mode;
 		}
 	}

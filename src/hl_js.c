@@ -16,7 +16,7 @@ b8 is_keyword(lstr_t str) {
 	if (!str.len)
 		return 0;
 
-#define KW(x) if (lt_lstr_eq(str, CLSTR(x))) return 1
+#define KW(x) if (lt_lseq(str, CLSTR(x))) return 1
 	switch (str.str[0]) {
 	case 'a':
 		KW("abstract");
@@ -135,7 +135,7 @@ b8 is_datatype(lstr_t str) {
 	if (!str.len)
 		return 0;
 
-#define DT(x) if (lt_lstr_eq(str, CLSTR(x))) return 1
+#define DT(x) if (lt_lseq(str, CLSTR(x))) return 1
 	switch (str.str[0]) {
 	case 'b':
 		DT("boolean");

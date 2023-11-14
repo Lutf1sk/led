@@ -58,7 +58,7 @@ doc_t* fb_find_file(lstr_t str) {
 	for (usz i = 0; i < file_count; ++i) {
 		lstr_t name = docs[i].name;
 
-		if (lt_lstr_eq(name, str))
+		if (lt_lseq(name, str))
 			return &docs[i];
 	}
 
@@ -81,7 +81,7 @@ doc_t* fb_open(editor_t* ed, lstr_t path) {
 	doc_t* new = &docs[file_count];
 	memset(new, 0, sizeof(doc_t));
 	new->path = new_path;
-	new->name = lt_lstr_split_bwd(new_path, '/');
+	new->name = lt_lssplit_bwd(new_path, '/');
 	new->hl_mode = hl_find_mode_by_extension(path);
 	doc_load(new, ed);
 

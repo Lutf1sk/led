@@ -84,7 +84,7 @@ void update_file_list(void) {
 				continue;
 
 			b8 is_dir = entry->d_type == DT_DIR || entry->d_type == DT_LNK;
-			lstr_t name = lt_strdup(lt_libc_heap, lt_lstr_from_cstr(entry->d_name));
+			lstr_t name = lt_strdup(lt_libc_heap, lt_lsfroms(entry->d_name));
 			lt_darr_push(files, (file_t){ name, is_dir });
 		}
 
@@ -160,7 +160,7 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 			return;
 
 		lstr_t name = files[selected_index].name;
-		usz name_offs = lt_lstr_split_bwd(lt_texted_line_str(line_input, 0), '/').len;
+		usz name_offs = lt_lssplit_bwd(lt_texted_line_str(line_input, 0), '/').len;
 		lt_texted_input_str(line_input, LSTR(name.str + name_offs, name.len - name_offs));
 		if (files[selected_index].is_dir)
 			input_term_key(line_input, '/');

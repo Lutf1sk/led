@@ -3,7 +3,7 @@
 
 #include <lt/io.h>
 #include <lt/conf.h>
-#include <lt/utf8.h>
+#include <lt/text.h>
 #include <lt/mem.h>
 #include <lt/term.h>
 #include <lt/arg.h>
@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
 	lstr_t conf_file;
-	if (lt_file_read_entire(cpath, &conf_file, alloc))
+	if (lt_freadallp(cpath, &conf_file, alloc))
 		lt_ferrf("failed to read config file\n");
 	lt_conf_t config, *found;
 	lt_conf_err_info_t conf_err;

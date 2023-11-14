@@ -78,7 +78,7 @@ usz parse_uint(ctx_t* cx) {
 	while (cx->it < cx->end && lt_is_digit(*cx->it))
 		++cx->it;
 	u64 val;
-	if (lt_lstr_uint(LSTR(start, cx->it - start), &val) != LT_SUCCESS)
+	if (lt_lstou(LSTR(start, cx->it - start), &val) != LT_SUCCESS)
 		return 0;
 	return val;
 }
@@ -322,7 +322,7 @@ void execute_single_command(ctx_t* cx) {
 			lt_texted_erase_range(txed, x, y, x + find.len, y);
 			lt_texted_input_str(txed, replace);
 
-			if (find.len && !lt_lstr_eq(find, replace))
+			if (find.len && !lt_lseq(find, replace))
 				cx->modified = 1;
 			lt_mfree(lt_libc_heap, replace.str);
 		}

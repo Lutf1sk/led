@@ -15,12 +15,12 @@
 
 static
 hl_mode_t keyword(lstr_t str) {
-	if (lt_lstr_eq(str, CLSTR("ifdef"))) return HLM_KEYWORD;
-	if (lt_lstr_eq(str, CLSTR("ifndef"))) return HLM_KEYWORD;
-	if (lt_lstr_eq(str, CLSTR("ifeq"))) return HLM_KEYWORD;
-	if (lt_lstr_eq(str, CLSTR("ifneq"))) return HLM_KEYWORD;
-	if (lt_lstr_eq(str, CLSTR("endif"))) return HLM_KEYWORD;
-	if (lt_lstr_eq(str, CLSTR("else"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("ifdef"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("ifndef"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("ifeq"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("ifneq"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("endif"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("else"))) return HLM_KEYWORD;
 	return HLM_IDENTIFIER;
 }
 
@@ -56,7 +56,7 @@ highl_t* gen_line(lstr_t line, lt_arena_t* alloc) {
 		while (it < end && lt_is_ident_body(*it))
 			++it;
 		if (it > start)
-			EMIT(keyword(lt_lstr_from_range(start, it)));
+			EMIT(keyword(lt_lsfrom_range(start, it)));
 	}
 
 	while (it < end) {

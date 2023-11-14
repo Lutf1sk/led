@@ -1,7 +1,7 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include <lt/utf8.h>
+#include <lt/text.h>
 #include <lt/ctype.h>
 #include <lt/mem.h>
 #include <lt/math.h>
@@ -23,7 +23,7 @@ usz screen_x_to_cursor_x(editor_t* ed, lstr_t str, isz x) {
 		}
 		else {
 			u32 c;
-			len = lt_utf8_decode(&c, it);
+			len = lt_utf8_decode(it, &c);
 			screen_x += lt_glyph_width(c);
 		}
 
@@ -44,7 +44,7 @@ usz cursor_x_to_screen_x(editor_t* ed, lstr_t str, isz x) {
 		}
 		else {
 			u32 c;
-			it += lt_utf8_decode(&c, it);
+			it += lt_utf8_decode(it, &c);
 			screen_x += lt_glyph_width(c);
 		}
 	}

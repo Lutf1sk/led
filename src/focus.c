@@ -7,7 +7,7 @@
 #include <lt/texted.h>
 #include <lt/mem.h>
 #include <lt/term.h>
-#include <lt/utf8.h>
+#include <lt/text.h>
 #include <lt/ctype.h>
 
 focus_t focus = { NULL, NULL, NULL };
@@ -90,7 +90,7 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 			return 0;
 
 		char utf8_buf[4];
-		lstr_t utf8_str = LSTR(utf8_buf, lt_utf8_encode(utf8_buf, key));
+		lstr_t utf8_str = LSTR(utf8_buf, lt_utf8_encode(key, utf8_buf));
 		return lt_texted_input_str(ed, utf8_str);
 	}
 	}

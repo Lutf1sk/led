@@ -1,7 +1,7 @@
 // Copyright (C) 2021, Alex Edin <lutfisk@lutfisk.net>
 // SPDX-License-Identifier: GPL-2.0+
 
-#include <lt/utf8.h>
+#include <lt/text.h>
 #include <lt/term.h>
 #include <lt/mem.h>
 #include <lt/ctype.h>
@@ -258,15 +258,15 @@ void input_editor(editor_t* ed, u32 c) {
 		break;
 
 	case LT_TERM_KEY_F4: modified = 0; {
-		lstr_t ext = lt_lstr_split_bwd(doc->name, '.');
+		lstr_t ext = lt_lssplit_bwd(doc->name, '.');
 		lstr_t name = doc->name;
 		name.len -= ext.len;
 
 		isz res = 0;
 		lstr_t new_name = NLSTR();
-		if (lt_lstr_eq(ext, CLSTR("c")))
+		if (lt_lseq(ext, CLSTR("c")))
 			res = lt_aprintf(&new_name, lt_libc_heap, "%Sh", name);
-		else if (lt_lstr_eq(ext, CLSTR("h")))
+		else if (lt_lseq(ext, CLSTR("h")))
 			res = lt_aprintf(&new_name, lt_libc_heap, "%Sc", name);
 		else
 			break;
@@ -285,7 +285,7 @@ void input_editor(editor_t* ed, u32 c) {
 		delete_selection_if_present(ed);
 		while ((c = lt_term_getkey()) != LT_TERM_KEY_NBPASTE) {
 			char utf8_buf[4];
-			usz utf8_len = lt_utf8_encode(utf8_buf, c);
+			usz utf8_len = lt_utf8_encode(c, utf8_buf);
 			lt_texted_input_str(txed, LSTR(utf8_buf, utf8_len));
 		}
 	}	break;
@@ -305,7 +305,7 @@ void input_editor(editor_t* ed, u32 c) {
 		delete_selection_if_present(ed);
 
 		char utf8_buf[4];
-		usz utf8_len = lt_utf8_encode(utf8_buf, c);
+		usz utf8_len = lt_utf8_encode(c, utf8_buf);
 		modified = lt_texted_input_str(txed, LSTR(utf8_buf, utf8_len));
 	}	break;
 	}

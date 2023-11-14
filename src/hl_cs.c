@@ -18,135 +18,135 @@ b8 is_keyword(lstr_t str) {
 
 	switch (str.str[0]) {
 	case 'a':
-		if (lt_lstr_eq(str, CLSTR("abstract"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("as"))) return 1;
+		if (lt_lseq(str, CLSTR("abstract"))) return 1;
+		if (lt_lseq(str, CLSTR("as"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("async"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("await"))) return 1;
+		if (lt_lseq(str, CLSTR("async"))) return 1;
+		if (lt_lseq(str, CLSTR("await"))) return 1;
 		break;
 
 	case 'b':
-		if (lt_lstr_eq(str, CLSTR("base"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("break"))) return 1;
+		if (lt_lseq(str, CLSTR("base"))) return 1;
+		if (lt_lseq(str, CLSTR("break"))) return 1;
 		break;
 
 	case 'c':
-		if (lt_lstr_eq(str, CLSTR("case"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("catch"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("checked"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("class"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("const"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("continue"))) return 1;
+		if (lt_lseq(str, CLSTR("case"))) return 1;
+		if (lt_lseq(str, CLSTR("catch"))) return 1;
+		if (lt_lseq(str, CLSTR("checked"))) return 1;
+		if (lt_lseq(str, CLSTR("class"))) return 1;
+		if (lt_lseq(str, CLSTR("const"))) return 1;
+		if (lt_lseq(str, CLSTR("continue"))) return 1;
 		break;
 
 	case 'd':
-		if (lt_lstr_eq(str, CLSTR("default"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("delegate"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("do"))) return 1;
+		if (lt_lseq(str, CLSTR("default"))) return 1;
+		if (lt_lseq(str, CLSTR("delegate"))) return 1;
+		if (lt_lseq(str, CLSTR("do"))) return 1;
 		break;
 
 	case 'e':
-		if (lt_lstr_eq(str, CLSTR("else"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("enum"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("event"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("explicit"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("extern"))) return 1;
+		if (lt_lseq(str, CLSTR("else"))) return 1;
+		if (lt_lseq(str, CLSTR("enum"))) return 1;
+		if (lt_lseq(str, CLSTR("event"))) return 1;
+		if (lt_lseq(str, CLSTR("explicit"))) return 1;
+		if (lt_lseq(str, CLSTR("extern"))) return 1;
 		break;
 
 	case 'f':
-		if (lt_lstr_eq(str, CLSTR("false"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("finally"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("fixed"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("for"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("foreach"))) return 1;
+		if (lt_lseq(str, CLSTR("false"))) return 1;
+		if (lt_lseq(str, CLSTR("finally"))) return 1;
+		if (lt_lseq(str, CLSTR("fixed"))) return 1;
+		if (lt_lseq(str, CLSTR("for"))) return 1;
+		if (lt_lseq(str, CLSTR("foreach"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("from"))) return 1;
+		if (lt_lseq(str, CLSTR("from"))) return 1;
 		break;
 
 	case 'g':
-		if (lt_lstr_eq(str, CLSTR("goto"))) return 1;
+		if (lt_lseq(str, CLSTR("goto"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("get"))) return 1;
+		if (lt_lseq(str, CLSTR("get"))) return 1;
 		break;
 
 	case 'i':
-		if (lt_lstr_eq(str, CLSTR("if"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("implicit"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("in"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("interface"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("internal"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("is"))) return 1;
+		if (lt_lseq(str, CLSTR("if"))) return 1;
+		if (lt_lseq(str, CLSTR("implicit"))) return 1;
+		if (lt_lseq(str, CLSTR("in"))) return 1;
+		if (lt_lseq(str, CLSTR("interface"))) return 1;
+		if (lt_lseq(str, CLSTR("internal"))) return 1;
+		if (lt_lseq(str, CLSTR("is"))) return 1;
 		break;
 
 	case 'l':
-		if (lt_lstr_eq(str, CLSTR("lock"))) return 1;
+		if (lt_lseq(str, CLSTR("lock"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("let"))) return 1;
+		if (lt_lseq(str, CLSTR("let"))) return 1;
 		break;
 
 	case 'n':
-		if (lt_lstr_eq(str, CLSTR("namespace"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("new"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("null"))) return 1;
+		if (lt_lseq(str, CLSTR("namespace"))) return 1;
+		if (lt_lseq(str, CLSTR("new"))) return 1;
+		if (lt_lseq(str, CLSTR("null"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("nameof"))) return 1;
+		if (lt_lseq(str, CLSTR("nameof"))) return 1;
 		break;
 
 	case 'o':
-		if (lt_lstr_eq(str, CLSTR("operator"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("out"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("override"))) return 1;
+		if (lt_lseq(str, CLSTR("operator"))) return 1;
+		if (lt_lseq(str, CLSTR("out"))) return 1;
+		if (lt_lseq(str, CLSTR("override"))) return 1;
 		break;
 
 	case 'p':
-		if (lt_lstr_eq(str, CLSTR("params"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("private"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("protected"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("public"))) return 1;
+		if (lt_lseq(str, CLSTR("params"))) return 1;
+		if (lt_lseq(str, CLSTR("private"))) return 1;
+		if (lt_lseq(str, CLSTR("protected"))) return 1;
+		if (lt_lseq(str, CLSTR("public"))) return 1;
 		break;
 
 	case 'r':
-		if (lt_lstr_eq(str, CLSTR("readonly"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("ref"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("return"))) return 1;
+		if (lt_lseq(str, CLSTR("readonly"))) return 1;
+		if (lt_lseq(str, CLSTR("ref"))) return 1;
+		if (lt_lseq(str, CLSTR("return"))) return 1;
 		break;
 
 	case 's':
-		if (lt_lstr_eq(str, CLSTR("sealed"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("sizeof"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("stackalloc"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("static"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("struct"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("switch"))) return 1;
+		if (lt_lseq(str, CLSTR("sealed"))) return 1;
+		if (lt_lseq(str, CLSTR("sizeof"))) return 1;
+		if (lt_lseq(str, CLSTR("stackalloc"))) return 1;
+		if (lt_lseq(str, CLSTR("static"))) return 1;
+		if (lt_lseq(str, CLSTR("struct"))) return 1;
+		if (lt_lseq(str, CLSTR("switch"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("set"))) return 1;
+		if (lt_lseq(str, CLSTR("set"))) return 1;
 		break;
 
 	case 't':
-		if (lt_lstr_eq(str, CLSTR("this"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("throw"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("true"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("try"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("typeof"))) return 1;
+		if (lt_lseq(str, CLSTR("this"))) return 1;
+		if (lt_lseq(str, CLSTR("throw"))) return 1;
+		if (lt_lseq(str, CLSTR("true"))) return 1;
+		if (lt_lseq(str, CLSTR("try"))) return 1;
+		if (lt_lseq(str, CLSTR("typeof"))) return 1;
 		break;
 
 	case 'u':
-		if (lt_lstr_eq(str, CLSTR("unchecked"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("unsafe"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("using"))) return 1;
+		if (lt_lseq(str, CLSTR("unchecked"))) return 1;
+		if (lt_lseq(str, CLSTR("unsafe"))) return 1;
+		if (lt_lseq(str, CLSTR("using"))) return 1;
 		break;
 
 	case 'v':
-		if (lt_lstr_eq(str, CLSTR("virtual"))) return 1;
-		if (lt_lstr_eq(str, CLSTR("volatile"))) return 1;
+		if (lt_lseq(str, CLSTR("virtual"))) return 1;
+		if (lt_lseq(str, CLSTR("volatile"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("var"))) return 1;
+		if (lt_lseq(str, CLSTR("var"))) return 1;
 		break;
 
 	case 'w':
-		if (lt_lstr_eq(str, CLSTR("while"))) return 1;
+		if (lt_lseq(str, CLSTR("while"))) return 1;
 
-		if (lt_lstr_eq(str, CLSTR("with"))) return 1;
+		if (lt_lseq(str, CLSTR("with"))) return 1;
 		break;
 
 	default:
@@ -162,49 +162,49 @@ b8 is_datatype(lstr_t str) {
 
 	switch (str.str[0]) {
 		case 'b':
-			if (lt_lstr_eq(str, CLSTR("bool"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("byte"))) return 1;
+			if (lt_lseq(str, CLSTR("bool"))) return 1;
+			if (lt_lseq(str, CLSTR("byte"))) return 1;
 			break;
 
 		case 'c':
-			if (lt_lstr_eq(str, CLSTR("char"))) return 1;
+			if (lt_lseq(str, CLSTR("char"))) return 1;
 			break;
 
 		case 'd':
-			if (lt_lstr_eq(str, CLSTR("decimal"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("double"))) return 1;
+			if (lt_lseq(str, CLSTR("decimal"))) return 1;
+			if (lt_lseq(str, CLSTR("double"))) return 1;
 			break;
 
 		case 'f':
-			if (lt_lstr_eq(str, CLSTR("float"))) return 1;
+			if (lt_lseq(str, CLSTR("float"))) return 1;
 			break;
 
 		case 'i':
-			if (lt_lstr_eq(str, CLSTR("int"))) return 1;
+			if (lt_lseq(str, CLSTR("int"))) return 1;
 			break;
 
 		case 'l':
-			if (lt_lstr_eq(str, CLSTR("long"))) return 1;
+			if (lt_lseq(str, CLSTR("long"))) return 1;
 			break;
 
 		case 'o':
-			if (lt_lstr_eq(str, CLSTR("object"))) return 1;
+			if (lt_lseq(str, CLSTR("object"))) return 1;
 			break;
 
 		case 's':
-			if (lt_lstr_eq(str, CLSTR("sbyte"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("short"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("string"))) return 1;
+			if (lt_lseq(str, CLSTR("sbyte"))) return 1;
+			if (lt_lseq(str, CLSTR("short"))) return 1;
+			if (lt_lseq(str, CLSTR("string"))) return 1;
 			break;
 
 		case 'u':
-			if (lt_lstr_eq(str, CLSTR("uint"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("ulong"))) return 1;
-			if (lt_lstr_eq(str, CLSTR("ushort"))) return 1;
+			if (lt_lseq(str, CLSTR("uint"))) return 1;
+			if (lt_lseq(str, CLSTR("ulong"))) return 1;
+			if (lt_lseq(str, CLSTR("ushort"))) return 1;
 			break;
 
 		case 'v':
-			if (lt_lstr_eq(str, CLSTR("void"))) return 1;
+			if (lt_lseq(str, CLSTR("void"))) return 1;
 			break;
 	}
 	return 0;
