@@ -4,6 +4,7 @@
 #include <lt/term.h>
 #include <lt/texted.h>
 #include <lt/math.h>
+#include <lt/str.h>
 
 #include "focus.h"
 #include "file_browser.h"
@@ -57,19 +58,28 @@ void draw_browse_files(editor_t* ed, void* args) {
 	for (usz i = 0; i < visible_count; ++i) {
 		usz index = visible_index + i;
 
-		if (index == selected_index) {
-			rec_goto(2, start_height + i + 1);
-			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			rec_lstr(found[index]->path.str, found[index]->path.len);
-			rec_str(clr_strs[CLR_LIST_ENTRY]);
+		rec_goto(2, start_height + i + 1);
 
+		if (index == selected_index) {
+			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 			selected = found[selected_index];
+			rec_str(clr_strs[CLR_LIST_HIGHL]);
 		}
 		else {
-			rec_goto(2, start_height + i + 1);
-			rec_clearline("");
-			rec_lstr(found[index]->path.str, found[index]->path.len);
+			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+			rec_str(clr_strs[CLR_LIST_ENTRY]);
 		}
+
+		lstr_t basename = lt_lsbasename(found[index]->path);
+		lstr_t dirname = lt_lsdirname(found[index]->path);
+
+		rec_str(clr_strs[CLR_LIST_DIR]);
+		rec_lstr(dirname.str, dirname.len);
+
+		rec_str("/ ");
+
+		rec_str(clr_strs[CLR_LIST_FILE]);
+		rec_lstr(basename.str, basename.len);
 	}
 
 	// Fill underflowed slots

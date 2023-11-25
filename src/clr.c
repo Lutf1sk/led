@@ -40,6 +40,7 @@ char clr_strs[CLR_COUNT][32] = {
 	[CLR_LIST_ENTRY] = "\x1B[22;37;40m",
 	[CLR_LIST_HIGHL] = "\x1B[22;37;100m",
 	[CLR_LIST_DIR] = "\x1B[22;93m",
+	[CLR_LIST_FILE] = "\x1B[22;97m",
 	[CLR_LIST_SYMLINK] = "\x1B[22;33m",
 
 	[CLR_SYNTAX_TRAIL_INDENT] = "\x1B[22;30;41m",
@@ -111,6 +112,7 @@ void clr_load(lt_conf_t* conf) {
 	load_clr(CLR_LIST_ENTRY, conf, CLSTR("colors.list_entry"));
 	load_clr(CLR_LIST_HIGHL, conf, CLSTR("colors.list_highlight"));
 	load_clr(CLR_LIST_DIR, conf, CLSTR("colors.list_directory"));
+	load_clr(CLR_LIST_FILE, conf, CLSTR("colors.list_file"));
 	load_clr(CLR_LIST_SYMLINK, conf, CLSTR("colors.list_symlink"));
 
 	load_clr(CLR_SYNTAX_TRAIL_INDENT, conf, CLSTR("colors.syntax_trail_indent"));

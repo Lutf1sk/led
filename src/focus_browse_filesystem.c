@@ -95,7 +95,6 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 		rec_goto(2, start_height + i + 1);
 
 		if (index == selected_index) {
-			lt_ierrf("%s\n", clr_strs[CLR_LIST_DIR] + 1);
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 			rec_str(clr_strs[CLR_LIST_HIGHL]);
 		}
@@ -106,6 +105,8 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 			rec_str(clr_strs[CLR_LIST_DIR]);
 		else if (files[index].type == LT_DIRENT_SYMLINK)
 			rec_str(clr_strs[CLR_LIST_SYMLINK]);
+		else if (files[index].type == LT_DIRENT_FILE)
+			rec_str(clr_strs[CLR_LIST_FILE]);
 
 		rec_lstr(files[index].name.str, files[index].name.len);
 		if (files[index].type == LT_DIRENT_DIR)
