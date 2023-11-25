@@ -116,6 +116,8 @@ void draw_editor(editor_t* ed) {
 
 		sel = (i > sel_start_y) && (i <= sel_end_y);
 
+
+		rec_str("\x1B[0m");
 		if (sel)
 			rec_str(clr_strs[CLR_EDITOR_SEL]);
 		else
@@ -131,6 +133,7 @@ void draw_editor(editor_t* ed) {
 				sel = 1;
 			}
 			if (sel && i == sel_end_y && j == sel_end_x) {
+				rec_str("\x1B[0m");
 				rec_str(get_highl(hl));
 				sel = 0;
 			}
