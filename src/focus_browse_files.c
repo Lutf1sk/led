@@ -110,6 +110,26 @@ void input_browse_files(editor_t* ed, u32 c) {
 			++selected_index;
 		break;
 
+	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL: {
+		usz vstep = ++ed->consec_cup * ed->vstep;
+		for (usz i = 0; i < vstep; ++i) {
+			if (selected_index) {
+				if (--selected_index < visible_index)
+					--visible_index;
+			}
+		}
+	}	break;
+
+	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL: {
+		usz vstep = ++ed->consec_cdn * ed->vstep;
+		for (usz i = 0; i < vstep; ++i) {
+			if (selected_index + 1 < max_index) {
+				if (++selected_index >= visible_index + MAX_ENTRY_COUNT)
+					++visible_index;
+			}
+		}
+	}	break;
+
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
 		if (!lt_texted_line_len(line_input, 0))
 	case LT_TERM_KEY_ESC:
