@@ -39,13 +39,17 @@ void rec_goto(u32 x, u32 y) {
 
 
 void rec_clear(char* clr) {
+	rec_str("\x1B[0m");
 	rec_str(clr);
 	rec_str("\x1B[2J");
+	rec_str("\x1B[0m");
 }
 
 void rec_clearline(char* clr) {
+	rec_str("\x1B[0m");
 	rec_str(clr);
 	rec_str("\x1B[2K");
+	rec_str("\x1B[0m");
 }
 
 void rec_led(lt_texted_t* ed, char* sel_clr, char* normal_clr) {
@@ -53,14 +57,17 @@ void rec_led(lt_texted_t* ed, char* sel_clr, char* normal_clr) {
 	lt_texted_get_selection(ed, &x1, NULL, &x2, NULL);
 	lstr_t str = lt_texted_line_str(ed, 0);
 
+	rec_str("\x1B[0m");
 	rec_str(normal_clr);
 	rec_lstr(str.str, x1);
 	if (x1 == ed->cursor_x)
 		rec_csave();
+	rec_str("\x1B[0m");
 	rec_str(sel_clr);
 	rec_lstr(str.str + x1, x2 - x1);
 	if (x2 == ed->cursor_x)
 		rec_csave();
+	rec_str("\x1B[0m");
 	rec_str(normal_clr);
 	rec_lstr(str.str + x2, str.len - x2);
 }

@@ -6,7 +6,7 @@
 #include <lt/conf.h>
 #include <lt/io.h>
 
-char clr_strs[CLR_COUNT][128] = {
+char clr_strs[CLR_COUNT][32] = {
 	[CLR_LINENUM] = "\x1B[22;37;100m",
 	[CLR_LINENUM_UFLOW] = "\x1B[22;37;100m",
 	[CLR_LINENUM_SEL] = "\x1B[22;30;47m",
@@ -39,6 +39,8 @@ char clr_strs[CLR_COUNT][128] = {
 	[CLR_LIST_HEAD] = "\x1B[22;30;47m",
 	[CLR_LIST_ENTRY] = "\x1B[22;37;40m",
 	[CLR_LIST_HIGHL] = "\x1B[22;37;100m",
+	[CLR_LIST_DIR] = "\x1B[22;93m",
+	[CLR_LIST_SYMLINK] = "\x1B[22;33m",
 
 	[CLR_SYNTAX_TRAIL_INDENT] = "\x1B[22;30;41m",
 };
@@ -49,10 +51,30 @@ void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
 	if (!conf)
 		return;
 
-	lt_sprintf(clr_strs[clr], "\x1B[%s;%iq;%iqm%c",
-			lt_conf_find_bool_default(conf, CLSTR("bold"), 0) ? "1" : "22",
-			lt_conf_find_int_default(conf, CLSTR("fg"), 39),
-			lt_conf_find_int_default(conf, CLSTR("bg"), 49), 0);
+	lt_conf_t* bold = lt_conf_find(conf, CLSTR("bold"));
+	lt_conf_t* fg = lt_conf_find(conf, CLSTR("fg"));
+	lt_conf_t* bg = lt_conf_find(conf, CLSTR("bg"));
+
+	char* it = clr_strs[clr];
+
+	it += lt_sprintf(it, "\x1B[");
+	b8 first = 1;
+	if (bold) {
+		it += lt_sprintf(it, "%s%s", first ? "" : ";", bold->bool_val ? "22" : "1");
+		first = 0;
+	}
+	if (fg) {
+		it += lt_sprintf(it, "%s%iq", first ? "" : ";", fg->int_val);
+		first = 0;
+	}
+	if (bg) {
+		it += lt_sprintf(it, "%s%iq", first ? "" : ";", bg->int_val);
+		first = 0;
+	}
+	*it++ = 'm';
+	*it++ = 0;
+	if (first)
+		clr_strs[clr][0] = 0;
 }
 
 void clr_load(lt_conf_t* conf) {
@@ -87,7 +109,9 @@ void clr_load(lt_conf_t* conf) {
 
 	load_clr(CLR_LIST_HEAD, conf, CLSTR("colors.list_head"));
 	load_clr(CLR_LIST_ENTRY, conf, CLSTR("colors.list_entry"));
-	load_clr(CLR_LIST_HIGHL, conf, CLSTR("colors.list_highlighted"));
+	load_clr(CLR_LIST_HIGHL, conf, CLSTR("colors.list_highlight"));
+	load_clr(CLR_LIST_DIR, conf, CLSTR("colors.list_directory"));
+	load_clr(CLR_LIST_SYMLINK, conf, CLSTR("colors.list_symlink"));
 
 	load_clr(CLR_SYNTAX_TRAIL_INDENT, conf, CLSTR("colors.syntax_trail_indent"));
 }

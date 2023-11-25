@@ -47,11 +47,13 @@ endif
 # -----== LINKER
 LNK := cc
 LNK_LIBS := -lpthread -ldl -lm
-LNK_FLAGS := $(LNK_LIBS)
+LNK_FLAGS :=
 
 ifdef DEBUG
-	LNK_FLAGS += -g -rdynamic
+	LNK_FLAGS += -lasan -lubsan -g -rdynamic
 endif
+
+LNK_FLAGS += $(LNK_LIBS)
 
 # -----== TARGETS
 ifdef DEBUG

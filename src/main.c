@@ -71,7 +71,7 @@ void draw_header(editor_t* ed) {
 	}
 	else
 		rec_str("No file selected");
-	rec_c(' ');
+	rec_str(" \x1B[0m");
 }
 
 void draw_editor(editor_t* ed) {
@@ -163,11 +163,11 @@ void draw_editor(editor_t* ed) {
 			rec_str(clr_strs[CLR_LINENUM_UFLOW]);
 			rec_str("     ");
 		}
-		rec_str(clr_strs[CLR_EDITOR]);
+// 		rec_str(clr_strs[CLR_EDITOR]);
 	}
-
 	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(txed, cy), cx);
 	rec_goto(sx + EDITOR_HSTART + 1, cy - line_top + EDITOR_VSTART + 1);
+	rec_str("\x1B[0m");
 }
 
 lstr_t get_config_path(void) {
@@ -276,6 +276,7 @@ int main(int argc, char** argv) {
 		if (!editor.await_utf8) {
 			write_it = write_buf;
 
+			rec_str("\x1B[0m");
 			rec_clear(clr_strs[CLR_EDITOR]);
 			draw_header(&editor);
 

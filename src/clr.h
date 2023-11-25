@@ -41,12 +41,14 @@ enum {
 	CLR_LIST_HEAD,
 	CLR_LIST_ENTRY,
 	CLR_LIST_HIGHL,
+	CLR_LIST_DIR,
+	CLR_LIST_SYMLINK,
 
 	CLR_SYNTAX_TRAIL_INDENT,
 
 	CLR_COUNT
 };
-extern char clr_strs[CLR_COUNT][128];
+extern char clr_strs[CLR_COUNT][32];
 
 void clr_load(lt_conf_t* clr_conf);
 

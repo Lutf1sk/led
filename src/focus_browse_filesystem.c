@@ -9,6 +9,7 @@
 #include <lt/darr.h>
 #include <lt/str.h>
 #include <lt/math.h>
+#include <lt/io.h>
 
 #include "focus.h"
 #include "clr.h"
@@ -16,10 +17,6 @@
 #include "file_browser.h"
 #include "common.h"
 #include "draw.h"
-
-#include <dirent.h>
-#include <libgen.h>
-#include <string.h>
 
 focus_t focus_browse_filesystem = { draw_browse_filesystem, NULL, input_browse_filesystem };
 
@@ -31,7 +28,7 @@ isz visible_index = 0;
 typedef
 struct file {
 	lstr_t name;
-	b8 is_dir;
+	lt_dirent_type_t type;
 } file_t;
 
 lt_darr(file_t) files = NULL;
@@ -44,51 +41,28 @@ void update_file_list(void) {
 
 	lstr_t input = lt_texted_line_str(line_input, 0);
 
-	char dir_path_buf[PATH_MAX_LEN + 1];
-	char* dir_path = dir_path_buf;
-	memcpy(dir_path, input.str, input.len);
-	dir_path[input.len] = 0;
-
-	DIR* dir = NULL;
-	char* inp_name = dir_path;
-
-	if (input.len) {
-		inp_name += input.len - 1;
-		for (;;) {
-			if (*inp_name == '/') {
-				if (inp_name != dir_path)
-					*inp_name = 0;
-				++inp_name;
-				dir = opendir(dir_path);
-				break;
-			}
-
-			if (inp_name == dir_path) {
-				dir = opendir(".");
-				break;
-			}
-			--inp_name;
-		}
+	lstr_t dirname = lt_lsdirname(input);
+	lstr_t basename = input.len ? lt_lsbasename(input) : CLSTR("");
+	if (lt_lssuffix(input, CLSTR("/"))) {
+		dirname = input;
+		basename = CLSTR("");
 	}
-	else
-		dir = opendir(".");
+
+	lt_dir_t* dir = lt_dopenp(dirname, lt_libc_heap);
 
 	if (dir) {
-		usz inp_name_len = strlen(inp_name);
-
-		struct dirent* entry = NULL;
-		while ((entry = readdir(dir))) {
-			if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+		lt_dirent_t* entry = NULL;
+		while ((entry = lt_dread(dir))) {
+			if (lt_lseq(entry->name, CLSTR(".")) || lt_lseq(entry->name, CLSTR("..")))
 				continue;
-			if (strncmp(entry->d_name, inp_name, inp_name_len) != 0)
+			if (!lt_lsprefix(entry->name, basename))
 				continue;
 
-			b8 is_dir = entry->d_type == DT_DIR || entry->d_type == DT_LNK;
-			lstr_t name = lt_strdup(lt_libc_heap, lt_lsfroms(entry->d_name));
-			lt_darr_push(files, (file_t){ name, is_dir });
+			lstr_t name = lt_strdup(lt_libc_heap, entry->name);
+			lt_darr_push(files, (file_t){ name, entry->type });
 		}
 
-		closedir(dir);
+		lt_dclose(dir, lt_libc_heap);
 	}
 
 	selected_index = lt_max_isz(lt_min_isz(selected_index, lt_darr_count(files) - 1), 0);
@@ -120,11 +94,22 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 
 		rec_goto(2, start_height + i + 1);
 
-		if (/*files[index].is_dir*/ index == selected_index)
+		if (index == selected_index) {
+			lt_ierrf("%s\n", clr_strs[CLR_LIST_DIR] + 1);
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
+			rec_str(clr_strs[CLR_LIST_HIGHL]);
+		}
 		else
 			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+
+		if (files[index].type == LT_DIRENT_DIR)
+			rec_str(clr_strs[CLR_LIST_DIR]);
+		else if (files[index].type == LT_DIRENT_SYMLINK)
+			rec_str(clr_strs[CLR_LIST_SYMLINK]);
+
 		rec_lstr(files[index].name.str, files[index].name.len);
+		if (files[index].type == LT_DIRENT_DIR)
+			rec_str("/");
 	}
 
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
@@ -162,7 +147,7 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 		lstr_t name = files[selected_index].name;
 		usz name_offs = lt_lssplit_bwd(lt_texted_line_str(line_input, 0), '/').len;
 		lt_texted_input_str(line_input, LSTR(name.str + name_offs, name.len - name_offs));
-		if (files[selected_index].is_dir)
+		if (files[selected_index].type != LT_DIRENT_FILE)
 			input_term_key(line_input, '/');
 		update_file_list();
 	}	break;
