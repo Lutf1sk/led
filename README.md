@@ -71,7 +71,7 @@ Similarly a ```<block>``` is any number of commands, terminated either by the en
 
 ```w<string>``` insert <string> at cursor position.
 
-```i<condition><true_block>[e<false_block>]``` execute ```<true_block>``` if ```<condition>``` is true, otherwise execute <false_block> if ```e``` is present.
+```i<condition><true_block>[e<false_block>]``` execute ```<true_block>``` if ```<condition>``` is true, otherwise execute ```<false_block>``` if ```e``` is present.
 
 ```ff<string>``` jump to next occurence of ```<string>```.
 
