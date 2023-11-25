@@ -59,23 +59,14 @@ void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
 	char* it = clr_strs[clr];
 
 	it += lt_sprintf(it, "\x1B[");
-	b8 first = 1;
-	if (bold) {
-		it += lt_sprintf(it, "%s%s", first ? "" : ";", bold->bool_val ? "22" : "1");
-		first = 0;
-	}
-	if (fg) {
-		it += lt_sprintf(it, "%s%iq", first ? "" : ";", fg->int_val);
-		first = 0;
-	}
-	if (bg) {
-		it += lt_sprintf(it, "%s%iq", first ? "" : ";", bg->int_val);
-		first = 0;
-	}
+	it += lt_sprintf(it, "%s", (bold ? bold->bool_val : 0) ? "1" : "22");
+
+	if (fg)
+		it += lt_sprintf(it, ";%iq", fg->int_val);
+	if (bg)
+		it += lt_sprintf(it, ";%iq", bg->int_val);
 	*it++ = 'm';
 	*it++ = 0;
-	if (first)
-		clr_strs[clr][0] = 0;
 }
 
 void clr_load(lt_conf_t* conf) {
