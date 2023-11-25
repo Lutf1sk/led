@@ -57,21 +57,24 @@ Strings can contain `` \ `` characters, these work as escape sequences and can b
 
 Similarly a ```<block>``` is any number of commands, terminated either by the end of the command or a `` ` `` character.
 
+### Commands
+
 ```j<position>``` jumps to ```<position>```.
 
 ```s<position>``` selectes from cursor to ```<position>```.
 
 ```c<clipboard>``` copies the current selection to clipboard ```<clipboard>```, where clipboard is a number between 0 and 15.
 
-```p<clipboard>``` pastes the contents of clipboard <clipboard> at the cursor position, where ```<clipboard>``` is a number between 0 and 15.
+```p<clipboard>``` pastes the contents of clipboard ```<clipboard>``` at the cursor position, where ```<clipboard>``` is a number between 0 and 15.
 
-```l<counter><block>``` repeat commands in <block>, <counter> times.
+```l<counter><block>``` repeat commands in ```<block>```, ```<counter>``` times.
 
 ```w<string>``` insert <string> at cursor position.
 
-```i<condition><true_block>[e<false_block>]``` execute <true_block> if <condition> is true, otherwise execute <false_block> if ```e``` is present.
+```i<condition><true_block>[e<false_block>]``` execute ```<true_block>``` if ```<condition>``` is true, otherwise execute <false_block> if ```e``` is present.
 
-```f<string>``` jump to next occurence of <string>.
+```ff<string>``` jump to next occurence of ```<string>```.
+```fb<string>``` jump to previous occurence of ```<string>```.
 
 ### Positions
 
