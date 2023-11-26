@@ -19,7 +19,6 @@ void notify_error(char* str) {
 void draw_notify_error(editor_t* ed, void* args) {
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_NOTIFY_ERROR]);
-	rec_str(clr_strs[CLR_NOTIFY_ERROR]);
 	rec_str(args);
 }
 

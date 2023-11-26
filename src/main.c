@@ -56,7 +56,7 @@ void draw_header(editor_t* ed) {
 	rec_str(clr_strs[CLR_HEADER_TAB]);
 	rec_c(' ');
 	if (ed->doc) {
-		rec_lstr(ed->doc->path.str, ed->doc->path.len);
+		rec_lstr(ed->doc->path);
 	 	if (ed->doc->unsaved) {
 			rec_c('*');
 		}

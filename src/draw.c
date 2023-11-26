@@ -12,26 +12,17 @@
 char* write_buf;
 char* write_it;
 
-void rec_str(char* str) {
-	usz len = strlen(str);
-	memcpy(write_it, str, len);
-	write_it += len;
-}
-
-void rec_lstr(char* str, usz len) {
-	memcpy(write_it, str, len);
-	write_it += len;
-}
-
-void rec_c(char c) {
-	*write_it++ = c;
+void recf(char* fmt, ...) {
+	va_list argl;
+	va_start(argl, fmt);
+	lt_io_vprintf((lt_io_callback_t)rec_write, NULL, fmt, argl);
+	va_end(argl);
 }
 
 void rec_nc(usz n, char c) {
 	memset(write_it, c, n);
 	write_it += n;
 }
-
 
 void rec_goto(u32 x, u32 y) {
 	write_it += lt_sprintf(write_it, "\x1B[%ud;%udH", y, x);
@@ -42,14 +33,12 @@ void rec_clear(char* clr) {
 	rec_str("\x1B[0m");
 	rec_str(clr);
 	rec_str("\x1B[2J");
-	rec_str("\x1B[0m");
 }
 
 void rec_clearline(char* clr) {
 	rec_str("\x1B[0m");
 	rec_str(clr);
 	rec_str("\x1B[2K");
-	rec_str("\x1B[0m");
 }
 
 void rec_led(lt_texted_t* ed, char* sel_clr, char* normal_clr) {
@@ -59,17 +48,17 @@ void rec_led(lt_texted_t* ed, char* sel_clr, char* normal_clr) {
 
 	rec_str("\x1B[0m");
 	rec_str(normal_clr);
-	rec_lstr(str.str, x1);
+	rec_lstr(LSTR(str.str, x1));
 	if (x1 == ed->cursor_x)
 		rec_csave();
 	rec_str("\x1B[0m");
 	rec_str(sel_clr);
-	rec_lstr(str.str + x1, x2 - x1);
+	rec_lstr(LSTR(str.str + x1, x2 - x1));
 	if (x2 == ed->cursor_x)
 		rec_csave();
 	rec_str("\x1B[0m");
 	rec_str(normal_clr);
-	rec_lstr(str.str + x2, str.len - x2);
+	rec_lstr(LSTR(str.str + x2, str.len - x2));
 }
 
 void rec_csave(void) {

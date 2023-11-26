@@ -60,25 +60,23 @@ void draw_browse_files(editor_t* ed, void* args) {
 		rec_goto(2, start_height + i + 1);
 
 		if (index == selected_index) {
-			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 			selected = found[selected_index];
-			rec_str(clr_strs[CLR_LIST_HIGHL]);
+			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 		}
 		else {
 			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
-			rec_str(clr_strs[CLR_LIST_ENTRY]);
 		}
 
 		lstr_t basename = lt_lsbasename(found[index]->path);
 		lstr_t dirname = lt_lsdirname(found[index]->path);
 
 		rec_str(clr_strs[CLR_LIST_DIR]);
-		rec_lstr(dirname.str, dirname.len);
+		rec_lstr(dirname);
 
 		rec_str("/ ");
 
 		rec_str(clr_strs[CLR_LIST_FILE]);
-		rec_lstr(basename.str, basename.len);
+		rec_lstr(basename);
 	}
 
 	// Fill underflowed slots

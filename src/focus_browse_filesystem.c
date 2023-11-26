@@ -98,13 +98,7 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 
 		rec_goto(2, start_height + i + 1);
 
-		if (index == selected_index) {
-			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-			rec_str(clr_strs[CLR_LIST_HIGHL]);
-		}
-		else {
-			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
-		}
+		rec_clearline(clr_strs[(index == selected_index ? CLR_LIST_HIGHL : CLR_LIST_ENTRY)]);
 
 		if (files[index].type == LT_DIRENT_DIR) {
 			rec_str(clr_strs[CLR_LIST_DIR]);
@@ -116,7 +110,7 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 			rec_str(clr_strs[CLR_LIST_FILE]);
 		}
 
-		rec_lstr(files[index].name.str, files[index].name.len);
+		rec_lstr(files[index].name);
 		if (files[index].type == LT_DIRENT_DIR) {
 			rec_str("/");
 		}
