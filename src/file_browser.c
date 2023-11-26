@@ -111,17 +111,22 @@ doc_t* fb_open(editor_t* ed, lstr_t path) {
 	if (path.len >= PATH_MAX_LEN)
 		lt_ferrf("path '%s' is too long\n", path);
 
+	lt_dir_t* dir = lt_dopenp(path, lt_libc_heap);
+	if (dir) {
+		lt_dclose(dir, lt_libc_heap);
+		return ed->doc;
+	}
+
 	docs = realloc(docs, sizeof(doc_t) * (file_count + 1));
 	LT_ASSERT(docs);
 
-	lstr_t new_path = LSTR(lt_malloc(lt_libc_heap, path.len), path.len);
+	lstr_t new_path = lt_strdup(lt_libc_heap, path);
 	LT_ASSERT(new_path.str);
-	memcpy(new_path.str, path.str, path.len);
 
 	doc_t* new = &docs[file_count];
 	memset(new, 0, sizeof(doc_t));
 	new->path = new_path;
-	new->name = lt_lssplit_bwd(new_path, '/');
+	new->name = lt_lsbasename(new_path);
 	new->hl_mode = hl_find_mode_by_extension(path);
 	doc_load(new, ed);
 
