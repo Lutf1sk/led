@@ -29,15 +29,17 @@ void input_command(editor_t* ed, u32 c) {
 
 	switch (c) {
 	case '\n':
-		if (execute_string(ed, lt_texted_line_str(line_input, 0)))
+		if (execute_string(ed, lt_texted_line_str(line_input, 0))) {
 			ed_regenerate_hl(ed);
+		}
 		edit_file(ed, doc);
 		break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_texted_line_len(line_input, 0))
-	case LT_TERM_KEY_ESC:
+		if (!lt_texted_line_len(line_input, 0)) {
+		case LT_TERM_KEY_ESC:
 			edit_file(ed, doc);
+		}
 	default:
 		input_term_key(line_input, c);
 		break;

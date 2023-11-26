@@ -15,7 +15,8 @@ void draw_terminal(editor_t* ed_global, void* args) {
 }
 
 void input_terminal(editor_t* ed, u32 c) {
-	if (c == LT_TERM_KEY_ESC)
+	if (c == LT_TERM_KEY_ESC) {
 		edit_file(ed, ed->doc);
+	}
 }
 

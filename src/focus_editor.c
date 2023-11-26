@@ -40,10 +40,12 @@ void input_editor(editor_t* ed, u32 c) {
 
 	static b8 m1_pressed = 0;
 
-	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT)) {
 		ed->consec_cdn = 0;
-	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+	}
+	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT)) {
 		ed->consec_cup = 0;
+	}
 
 	switch (c) {
 	case 'Q' | LT_TERM_MOD_CTRL: modified = 0;
@@ -60,8 +62,9 @@ void input_editor(editor_t* ed, u32 c) {
 		break;
 
 	case 'S' | LT_TERM_MOD_CTRL: modified = 0;
-		if (!doc_save(doc))
+		if (!doc_save(doc)) {
 			notify_error("Failed to save document");
+		}
 		break;
 
 	case '/' | LT_TERM_MOD_CTRL:
@@ -121,27 +124,31 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 
 		usz vstep = ++ed->consec_cup * ed->vstep;
-		for (usz i = 0; i < vstep; ++i)
+		for (usz i = 0; i < vstep; ++i) {
 			lt_texted_cursor_up(txed, 1);
+		}
 	}	break;
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: modified = 0; {
 		usz vstep = ++ed->consec_cup * ed->vstep;
-		for (usz i = 0; i < vstep; ++i)
+		for (usz i = 0; i < vstep; ++i) {
 			lt_texted_cursor_up(txed, 0);
+		}
 	}	break;
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
-		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0)
+		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
 			lt_texted_gotoy(txed, max(txed->cursor_y - move_h + ed->scroll_offs, 0), 0);
+		}
 		center_line(ed, txed->cursor_y);
 	}	break;
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
-		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0)
+		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
 			lt_texted_gotoy(txed, max(txed->cursor_y - move_h + ed->scroll_offs, 0), 1);
+		}
 		center_line(ed, txed->cursor_y);
 	}	break;
 
@@ -166,22 +173,25 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 
 		usz vstep = ++ed->consec_cdn * ed->vstep;
-		for (usz i = 0; i < vstep; ++i)
+		for (usz i = 0; i < vstep; ++i) {
 			lt_texted_cursor_down(txed, 1);
+		}
 	}	break;
 
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: modified = 0; {
 		usz vstep = ++ed->consec_cdn * ed->vstep;
-		for (usz i = 0; i < vstep; ++i)
+		for (usz i = 0; i < vstep; ++i) {
 			lt_texted_cursor_down(txed, 0);
+		}
 	}	break;
 
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
 
-		if (txed->cursor_y <= doc->line_top + move_h || doc->line_top + ed->height >= line_count)
+		if (txed->cursor_y <= doc->line_top + move_h || doc->line_top + ed->height >= line_count) {
 			lt_texted_gotoy(txed, txed->cursor_y + move_h - ed->scroll_offs, 0);
+		}
 		center_line(ed, txed->cursor_y);
 	}	break;
 
@@ -189,8 +199,9 @@ void input_editor(editor_t* ed, u32 c) {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
 
-		if (txed->cursor_y <= doc->line_top + move_h || doc->line_top + ed->height >= line_count)
+		if (txed->cursor_y <= doc->line_top + move_h || doc->line_top + ed->height >= line_count) {
 			lt_texted_gotoy(txed, txed->cursor_y + move_h - ed->scroll_offs, 1);
+		}
 		center_line(ed, txed->cursor_y);
 	}	break;
 
@@ -239,10 +250,12 @@ void input_editor(editor_t* ed, u32 c) {
 		break;
 
 	case LT_TERM_KEY_TAB:
-		if (lt_texted_selection_present(txed))
+		if (lt_texted_selection_present(txed)) {
 			lt_texted_prefix_nonempty_selection(txed, CLSTR("\t"));
-		else
+		}
+		else {
 			lt_texted_input_str(txed, CLSTR("\t"));
+		}
 		break;
 
 	// ----- MISC.
@@ -264,19 +277,24 @@ void input_editor(editor_t* ed, u32 c) {
 
 		isz res = 0;
 		lstr_t new_name = NLSTR();
-		if (lt_lseq(ext, CLSTR("c")))
+		if (lt_lseq(ext, CLSTR("c"))) {
 			res = lt_aprintf(&new_name, lt_libc_heap, "%Sh", name);
-		else if (lt_lseq(ext, CLSTR("h")))
+		}
+		else if (lt_lseq(ext, CLSTR("h"))) {
 			res = lt_aprintf(&new_name, lt_libc_heap, "%Sc", name);
-		else
+		}
+		else {
 			break;
+		}
 
-		if (res < 0)
+		if (res < 0) {
 			break;
+		}
 
 		doc_t* file = fb_find_file(new_name);
-		if (file)
+		if (file) {
 			edit_file(ed, file);
+		}
 
 		lt_mfree(lt_libc_heap, new_name.str);
 	}	break;

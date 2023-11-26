@@ -25,12 +25,15 @@ u32 modstr_to_key(lstr_t mod) {
 		return 0;
 	}
 
-	if (lt_lseq(mod, CLSTR("alt")))
+	if (lt_lseq(mod, CLSTR("alt"))) {
 		return LT_TERM_MOD_ALT;
-	if (lt_lseq(mod, CLSTR("ctrl")))
+	}
+	if (lt_lseq(mod, CLSTR("ctrl"))) {
 		return LT_TERM_MOD_CTRL;
-	if (lt_lseq(mod, CLSTR("shift")))
+	}
+	if (lt_lseq(mod, CLSTR("shift"))) {
 		return LT_TERM_MOD_SHIFT;
+	}
 
 	lt_werrf("unknown modifier string '%S'\n", mod);
 	return 0;
@@ -90,8 +93,9 @@ u32 keystr_to_key(lstr_t key) {
 void reg_keybind_command(u32 key, lstr_t cmd) {
 	u32 mod = key & LT_TERM_MOD_MASK;
 	u32 k = key & LT_TERM_KEY_MASK;
-	if (!(key & LT_TERM_KEY_SPECIAL_BIT) && mod == LT_TERM_MOD_CTRL && k < 0x80)
+	if (!(key & LT_TERM_KEY_SPECIAL_BIT) && mod == LT_TERM_MOD_CTRL && k < 0x80) {
 		key = lt_to_upper(k) | mod;
+	}
 
 	keybind_t kb;
 	kb.key = key;
@@ -102,20 +106,23 @@ void reg_keybind_command(u32 key, lstr_t cmd) {
 
 lstr_t lookup_keybind(u32 key) {
 	for (usz i = 0; i < lt_darr_count(keybinds); ++i) {
-		if (keybinds[i].key == key)
+		if (keybinds[i].key == key) {
 			return keybinds[i].command;
+		}
 	}
 	return NLSTR();
 }
 
 void keybinds_load(lt_conf_t* kbs) {
-	if (!kbs)
+	if (!kbs) {
 		return;
+	}
 
 	for (usz i = 0; i < kbs->child_count; ++i) {
 		lt_conf_t* kb = &kbs->children[i];
-		if (kb->stype != LT_CONF_OBJECT)
+		if (kb->stype != LT_CONF_OBJECT) {
 			continue;
+		}
 
 		lstr_t keystr = NLSTR();
 		if (!lt_conf_find_str(kb, CLSTR("key"), &keystr)) {
@@ -126,22 +133,25 @@ void keybinds_load(lt_conf_t* kbs) {
 		u32 key = keystr_to_key(keystr);
 
 		lstr_t modstr = NLSTR();
-		if (lt_conf_find_str(kb, CLSTR("mod"), &modstr))
+		if (lt_conf_find_str(kb, CLSTR("mod"), &modstr)) {
 			key |= modstr_to_key(modstr);
+		}
 
 		lt_conf_t* mods = NULL;
 		if (lt_conf_find_array(kb, CLSTR("mod"), &mods)) {
 			for (usz i = 0; i < mods->child_count; ++i) {
 				lt_conf_t* mod = &mods->children[i];
-				if (mod->stype != LT_CONF_STRING)
+				if (mod->stype != LT_CONF_STRING) {
 					continue;
+				}
 				key |= modstr_to_key(mod->str_val);
 			}
 		}
 
 		lstr_t cmd = NLSTR();
-		if (lt_conf_find_str(kb, CLSTR("command"), &cmd))
+		if (lt_conf_find_str(kb, CLSTR("command"), &cmd)) {
 			reg_keybind_command(key, cmd);
+		}
 	}
 }
 

@@ -35,8 +35,9 @@ lt_darr(file_t) files = NULL;
 
 static
 void update_file_list(void) {
-	for (usz i = 0; i < lt_darr_count(files); ++i)
+	for (usz i = 0; i < lt_darr_count(files); ++i) {
 		lt_mfree(lt_libc_heap, files[i].name.str);
+	}
 	lt_darr_clear(files);
 
 	lstr_t input = lt_texted_line_str(line_input, 0);
@@ -53,10 +54,12 @@ void update_file_list(void) {
 	if (dir) {
 		lt_dirent_t* entry = NULL;
 		while ((entry = lt_dread(dir))) {
-			if (lt_lseq(entry->name, CLSTR(".")) || lt_lseq(entry->name, CLSTR("..")))
+			if (lt_lseq(entry->name, CLSTR(".")) || lt_lseq(entry->name, CLSTR(".."))) {
 				continue;
-			if (!lt_lsprefix(entry->name, basename))
+			}
+			if (!lt_lsprefix(entry->name, basename)) {
 				continue;
+			}
 
 			lstr_t name = lt_strdup(lt_libc_heap, entry->name);
 			lt_darr_push(files, (file_t){ name, entry->type });
@@ -74,8 +77,9 @@ void browse_filesystem(void) {
 	lt_texted_clear(line_input);
 	selected_index = 0;
 
-	if (!files)
+	if (!files) {
 		files = lt_darr_create(file_t, 256, lt_libc_heap);
+	}
 	update_file_list();
 }
 
@@ -98,19 +102,24 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
 			rec_str(clr_strs[CLR_LIST_HIGHL]);
 		}
-		else
+		else {
 			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+		}
 
-		if (files[index].type == LT_DIRENT_DIR)
+		if (files[index].type == LT_DIRENT_DIR) {
 			rec_str(clr_strs[CLR_LIST_DIR]);
-		else if (files[index].type == LT_DIRENT_SYMLINK)
+		}
+		else if (files[index].type == LT_DIRENT_SYMLINK) {
 			rec_str(clr_strs[CLR_LIST_SYMLINK]);
-		else if (files[index].type == LT_DIRENT_FILE)
+		}
+		else if (files[index].type == LT_DIRENT_FILE) {
 			rec_str(clr_strs[CLR_LIST_FILE]);
+		}
 
 		rec_lstr(files[index].name.str, files[index].name.len);
-		if (files[index].type == LT_DIRENT_DIR)
+		if (files[index].type == LT_DIRENT_DIR) {
 			rec_str("/");
+		}
 	}
 
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
@@ -125,10 +134,12 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 void input_browse_filesystem(editor_t* ed, u32 c) {
 	doc_t* doc = ed->doc;
 
-	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+	if (c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT)) {
 		ed->consec_cdn = 0;
-	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT))
+	}
+	if (c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL) && c != (LT_TERM_KEY_UP | LT_TERM_MOD_CTRL| LT_TERM_MOD_SHIFT)) {
 		ed->consec_cup = 0;
+	}
 
 	switch (c) {
 	case '\n': {
@@ -137,41 +148,41 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 			doc_t* new_doc = fb_open(ed, name);
 			edit_file(ed, new_doc ? new_doc : doc);
 		}
-		else
+		else {
 			edit_file(ed, doc);
+		}
 	}	break;
 
 	case LT_TERM_KEY_TAB: {
-		if (!lt_darr_count(files))
+		if (!lt_darr_count(files)) {
 			return;
+		}
 
 		lstr_t name = files[selected_index].name;
 		usz name_offs = lt_lssplit_bwd(lt_texted_line_str(line_input, 0), '/').len;
 		lt_texted_input_str(line_input, LSTR(name.str + name_offs, name.len - name_offs));
-		if (files[selected_index].type != LT_DIRENT_FILE)
+		if (files[selected_index].type != LT_DIRENT_FILE) {
 			input_term_key(line_input, '/');
+		}
 		update_file_list();
 	}	break;
 
 	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
-		if (selected_index) {
-			if (--selected_index < visible_index)
-				--visible_index;
+		if (selected_index && --selected_index < visible_index) {
+			--visible_index;
 		}
 		break;
 	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
-		if (selected_index < lt_darr_count(files) - 1) {
-			if (++selected_index >= visible_index + MAX_ENTRY_COUNT)
-				++visible_index;
+		if (selected_index < lt_darr_count(files) - 1 && ++selected_index >= visible_index + MAX_ENTRY_COUNT) {
+			++visible_index;
 		}
 		break;
 
 	case LT_TERM_KEY_UP | LT_TERM_MOD_CTRL: {
 		usz vstep = ++ed->consec_cup * ed->vstep;
 		for (usz i = 0; i < vstep; ++i) {
-			if (selected_index) {
-				if (--selected_index < visible_index)
-					--visible_index;
+			if (selected_index && --selected_index < visible_index) {
+				--visible_index;
 			}
 		}
 	}	break;
@@ -179,17 +190,17 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_CTRL: {
 		usz vstep = ++ed->consec_cdn * ed->vstep;
 		for (usz i = 0; i < vstep; ++i) {
-			if (selected_index < lt_darr_count(files) - 1) {
-				if (++selected_index >= visible_index + MAX_ENTRY_COUNT)
-					++visible_index;
+			if (selected_index < lt_darr_count(files) - 1 && ++selected_index >= visible_index + MAX_ENTRY_COUNT) {
+				++visible_index;
 			}
 		}
 	}	break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_texted_line_len(line_input, 0))
-	case LT_TERM_KEY_ESC:
+		if (!lt_texted_line_len(line_input, 0)) {
+		case LT_TERM_KEY_ESC:
 			edit_file(ed, doc);
+		}
 	default:
 		if (input_term_key(line_input, c))
 			update_file_list();

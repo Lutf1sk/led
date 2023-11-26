@@ -51,10 +51,12 @@ void draw_find_local(editor_t* ed, void* args) {
 
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-	if (curr_input == line_input)
+	if (curr_input == line_input) {
 		rec_str("CTRL+R replace");
-	else
+	}
+	else {
 		rec_str("CTRL+R find");
+	}
 	rec_crestore();
 }
 
@@ -105,16 +107,19 @@ void input_find_local(editor_t* ed, u32 c) {
 		break;
 
 	case 'R' | LT_TERM_MOD_CTRL:
-		if (curr_input == line_input)
+		if (curr_input == line_input) {
 			curr_input = &repl_input;
-		else
+		}
+		else {
 			curr_input = line_input;
+		}
 		break;
 
 	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_texted_line_len(curr_input, 0))
-	case LT_TERM_KEY_ESC:
+		if (!lt_texted_line_len(curr_input, 0)) {
+		case LT_TERM_KEY_ESC:
 			edit_file(ed, doc);
+		}
 	default:
 		changed = input_term_key(curr_input, c);
 		break;

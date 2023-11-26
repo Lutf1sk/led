@@ -26,12 +26,15 @@ static void execute_single_command(ctx_t* cx);
 
 static
 u8 hex_char(char c) {
-	if (c >= 'A' && c <= 'Z')
+	if (c >= 'A' && c <= 'Z') {
 		return (c - 'A' + 10);
-	if (c >= 'a' && c <= 'z')
+	}
+	if (c >= 'a' && c <= 'z') {
 		return (c - 'a' + 10);
-	if (c >= '0' && c <= '9')
+	}
+	if (c >= '0' && c <= '9') {
 		return (c - '0');
+	}
 
 	return 0; // TODO: Error checking
 }
@@ -75,25 +78,30 @@ lstr_t unescape_string(lstr_t esc) {
 static
 usz parse_uint(ctx_t* cx) {
 	char* start = cx->it;
-	while (cx->it < cx->end && lt_is_digit(*cx->it))
+	while (cx->it < cx->end && lt_is_digit(*cx->it)) {
 		++cx->it;
+	}
 	u64 val;
-	if (lt_lstou(LSTR(start, cx->it - start), &val) != LT_SUCCESS)
+	if (lt_lstou(LSTR(start, cx->it - start), &val) != LT_SUCCESS) {
 		return 0;
+	}
 	return val;
 }
 
 static
 lstr_t parse_block(ctx_t* cx) {
-	if (cx->it >= cx->end)
+	if (cx->it >= cx->end) {
 		return NLSTR();
+	}
 
 	char* start = cx->it;
-	while (cx->it < cx->end && *cx->it != '`')
+	while (cx->it < cx->end && *cx->it != '`') {
 		skip_single_command(cx);
+	}
 	lstr_t block = LSTR(start, cx->it - start);
-	if (cx->it < cx->end && *cx->it == '`')
+	if (cx->it < cx->end && *cx->it == '`') {
 		++cx->it;
+	}
 	return block;
 }
 
@@ -104,11 +112,14 @@ lstr_t parse_string(ctx_t* cx) {
 
 	char* start = cx->it;
 	char last = 0;
-	while (cx->it < cx->end && !(*cx->it == '`' && last != '\\'))
+	while (cx->it < cx->end && !(*cx->it == '`' && last != '\\')) {
 		last = *cx->it++;
+	}
+
 	lstr_t block = LSTR(start, cx->it - start);
-	if (cx->it < cx->end && *cx->it == '`')
+	if (cx->it < cx->end && *cx->it == '`') {
 		++cx->it;
+	}
 	return block;
 }
 
@@ -120,8 +131,10 @@ pos_t parse_pos(ctx_t* cx) {
 	pos.line = txed->cursor_y;
 	pos.col = txed->cursor_x;
 
-	if (cx->it >= cx->end)
+	if (cx->it >= cx->end) {
 		return pos;
+	}
+
 	switch (*cx->it++) {
 	case 'f': pos.col += parse_uint(cx); break;
 	case 'b': pos.col -= parse_uint(cx); break;
@@ -129,8 +142,9 @@ pos_t parse_pos(ctx_t* cx) {
 	case 'd': pos.line += parse_uint(cx); break;
 
 	case 'w':
-		if (cx->it >= cx->end)
+		if (cx->it >= cx->end) {
 			break;
+		}
 		switch (*cx->it++) {
 		case 'f': pos.col = lt_texted_find_word_fwd(txed); break;
 		case 'b': pos.col = lt_texted_find_word_bwd(txed); break;
@@ -149,8 +163,9 @@ pos_t parse_pos(ctx_t* cx) {
 		break;
 
 	case 's':
-		if (cx->it >= cx->end)
+		if (cx->it >= cx->end) {
 			break;
+		}
 		switch (*cx->it++) {
 		case 's': lt_texted_get_selection(txed, &pos.line, &pos.col, NULL, NULL); break;
 		case 'e': lt_texted_get_selection(txed, NULL, NULL, &pos.line, &pos.col); break;
@@ -159,8 +174,9 @@ pos_t parse_pos(ctx_t* cx) {
 		break;
 
 	case 'l':
-		if (cx->it >= cx->end)
+		if (cx->it >= cx->end) {
 			break;
+		}
 		switch (*cx->it++) {
 		case 's': pos.col = 0; break;
 		case 'e': pos.col = lt_texted_line_len(txed, pos.line); break;
@@ -181,20 +197,23 @@ static
 b8 parse_condition(ctx_t* cx) {
 	lt_texted_t* txed = &cx->ed->doc->ed;
 
-	if (cx->it >= cx->end)
+	if (cx->it >= cx->end) {
 		return 0;
+	}
 
 	switch (*cx->it++) {
 	case 's':
-		if (cx->it >= cx->end || *cx->it != 'p')
+		if (cx->it >= cx->end || *cx->it != 'p') {
 			break;
+		}
 		++cx->it;
 		return lt_texted_selection_present(txed);
 
 	case 'c':
 		usz clipboard = parse_uint(cx);
-		if (clipboard >= CLIPBOARD_COUNT || cx->it >= cx->end || *cx->it != 'p')
+		if (clipboard >= CLIPBOARD_COUNT || cx->it >= cx->end || *cx->it != 'p') {
 			return 0;
+		}
 		++cx->it;
 		return clipboards[clipboard].str.len > 0;
 
@@ -214,13 +233,15 @@ void skip_single_command(ctx_t* cx) {
 	case 'w': parse_string(cx); break;
 	case 'i':
 		parse_condition(cx); parse_block(cx);
-		if (cx->it >= cx->end || *cx->it != 'e')
+		if (cx->it >= cx->end || *cx->it != 'e') {
 			break;
+		}
 		++cx->it; parse_block(cx);
 		break;
 	case 'f':
-		if (cx->it >= cx->end)
+		if (cx->it >= cx->end) {
 			break;
+		}
 		switch (*cx->it++) {
 		case 'f': parse_string(cx); break;
 		case 'b': parse_string(cx); break;
@@ -246,18 +267,21 @@ void execute_single_command(ctx_t* cx) {
 
 	case 'c': {
 		usz clipboard = parse_uint(cx);
-		if (clipboard >= CLIPBOARD_COUNT)
+		if (clipboard >= CLIPBOARD_COUNT) {
 			break;
+		}
 		clipboard_clear(clipboard);
 		lt_texted_write_selection(txed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
 	}	break;
 
 	case 'p': {
 		usz clipboard = parse_uint(cx);
-		if (clipboard >= CLIPBOARD_COUNT)
+		if (clipboard >= CLIPBOARD_COUNT) {
 			break;
-		if (lt_texted_input_str(txed, clipboards[clipboard].str))
+		}
+		if (lt_texted_input_str(txed, clipboards[clipboard].str)) {
 			cx->modified = 1;
+		}
 	}	break;
 
 	case 'd':
@@ -270,24 +294,28 @@ void execute_single_command(ctx_t* cx) {
 	case 'l': {
 		usz iterations = parse_uint(cx);
 		lstr_t block = parse_block(cx);
-		for (usz i = 0; i < iterations; ++i)
+		for (usz i = 0; i < iterations; ++i) {
 			execute_string(cx->ed, block);
+		}
 	}	break;
 
 	case 'w': {
 		lstr_t str = unescape_string(parse_string(cx));
-		if (lt_texted_input_str(txed, str))
+		if (lt_texted_input_str(txed, str)) {
 			cx->modified = 1;
+		}
 		lt_mfree(lt_libc_heap, str.str);
 	}	break;
 
 	case 'i': {
 		u8 cond = parse_condition(cx);
 		lstr_t true = parse_block(cx);
-		if (cond)
+		if (cond) {
 			execute_string(cx->ed, true);
-		if (cx->it >= cx->end || *cx->it != 'e')
+		}
+		if (cx->it >= cx->end || *cx->it != 'e') {
 			break;
+		}
 		++cx->it;
 		lstr_t false = parse_block(cx);
 		if (!cond)
@@ -303,32 +331,37 @@ void execute_single_command(ctx_t* cx) {
 		switch (*cx->it++) {
 		case 'f':
 			find = unescape_string(parse_string(cx));
-			if (!lt_texted_find_next_occurence(txed, find, &x, &y))
+			if (!lt_texted_find_next_occurence(txed, find, &x, &y)) {
 				break;
+			}
 			goto found;
 
 		case 'b':
 			find = unescape_string(parse_string(cx));
-			if (!lt_texted_find_last_occurence(txed, find, &x, &y))
+			if (!lt_texted_find_last_occurence(txed, find, &x, &y)) {
 				break;
+			}
 
 		found:
 			lt_texted_gotoxy(txed, x, y, 1);
-			if (cx->it >= cx->end || *cx->it != 'r')
+			if (cx->it >= cx->end || *cx->it != 'r') {
 				break;
+			}
 
 			++cx->it;
 			lstr_t replace = unescape_string(parse_string(cx));
 			lt_texted_erase_range(txed, x, y, x + find.len, y);
 			lt_texted_input_str(txed, replace);
 
-			if (find.len && !lt_lseq(find, replace))
+			if (find.len && !lt_lseq(find, replace)) {
 				cx->modified = 1;
+			}
 			lt_mfree(lt_libc_heap, replace.str);
 		}
 
-		if (find.str)
+		if (find.str) {
 			lt_mfree(lt_libc_heap, find.str);
+		}
 	}	break;
 
 	case ' ': break;
@@ -342,11 +375,13 @@ b8 execute_string(editor_t* ed, lstr_t cmd) {
 	cx.end = cmd.str + cmd.len;
 	cx.modified = 0;
 
-	while (cx.it < cx.end)
+	while (cx.it < cx.end) {
 		execute_single_command(&cx);
+	}
 	adjust_vbounds(ed);
 
-	if (cx.modified)
+	if (cx.modified) {
 		ed->doc->unsaved = 1;
+	}
 	return cx.modified;
 }

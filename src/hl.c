@@ -21,14 +21,13 @@ highl_t** hl_generate_git_commit(doc_t* doc, lt_arena_t* alloc) {
 
 		while (it < end) {
 			char* start = it;
-			u8 mode = HLM_UNKNOWN;
-			if (!i)
-				mode = HLM_KEYWORD;
+			u8 mode = (i ? HLM_UNKNOWN : HLM_KEYWORD);
 
 			if (it >= wrap_point) {
 				mode = HLM_PUNCTUATION;
-				while (it < end)
+				while (it < end) {
 					++it;
+				}
 			}
 			else if (*it == '#') {
 				mode = HLM_COMMENT;
@@ -36,12 +35,14 @@ highl_t** hl_generate_git_commit(doc_t* doc, lt_arena_t* alloc) {
 			}
 			else if (lt_is_space(*it)) {
 				mode = HLM_INDENT;
-				while (it < end && lt_is_space(*it))
+				while (it < end && lt_is_space(*it)) {
 					++it;
+				}
 			}
 			else {
-				while (it < end && it < wrap_point && *it != '#' && !lt_is_space(*it))
+				while (it < end && it < wrap_point && *it != '#' && !lt_is_space(*it)) {
 					++it;
+				}
 			}
 
 			highl_t* new = lt_amalloc_lean(alloc, sizeof(highl_t));
@@ -89,8 +90,9 @@ hl_mode_t hl_find_mode_by_name(lstr_t name) {
 }
 
 hl_mode_t hl_find_mode_by_extension(lstr_t path) {
-	if (!extension_modes)
+	if (!extension_modes) {
 		return HL_UNKNOWN;
+	}
 
 	for (usz i = 0; i < lt_darr_count(extension_modes); ++i) {
 		if (lt_lssuffix(path, extension_modes[i].extension)) {
@@ -137,8 +139,9 @@ void hl_load(lt_conf_t* hls) {
 
 	for (usz i = 0; i < hls->child_count; ++i) {
 		lt_conf_t* hl = &hls->children[i];
-		if (hl->stype != LT_CONF_OBJECT)
+		if (hl->stype != LT_CONF_OBJECT) {
 			continue;
+		}
 
 		lstr_t ext = NLSTR();
 		if (!lt_conf_find_str(hl, CLSTR("extension"), &ext)) {

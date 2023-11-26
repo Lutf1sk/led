@@ -6,17 +6,17 @@
 
 static LT_INLINE
 isz min(isz v1, isz v2) {
-	return v1 < v2 ? v1 : v2;
+	return (v1 < v2 ? v1 : v2);
 }
 
 static LT_INLINE
 isz max(isz v1, isz v2) {
-	return v1 > v2 ? v1 : v2;
+	return (v1 > v2 ? v1 : v2);
 }
 
 static LT_INLINE
 isz clamp(isz v, isz min, isz max) {
-	return v < min ? min : v > max ? max : v;
+	return ((v < min ? min : v) > max ? max : v);
 }
 
 #endif

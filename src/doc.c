@@ -33,14 +33,12 @@ void doc_load(doc_t* doc, editor_t* ed) {
 		memcpy(cstr_path, doc->path.str, doc->path.len);
 		cstr_path[doc->path.len] = 0;
 
-		if (access(cstr_path, W_OK) != 0)
-			doc->read_only = 1;
+		doc->read_only = access(cstr_path, W_OK) != 0;
 	}
 
 	// Find line ending type
 	usz first_line_len = lt_lssplit(file, '\n').len;
-	if (first_line_len >= 1 && file.str[first_line_len - 1] == '\r')
-		doc->crlf = 1;
+	doc->crlf = (first_line_len >= 1 && file.str[first_line_len - 1] == '\r');
 
 	// Skip byte order mark if present
 	char* text_start = file.str;
@@ -58,13 +56,15 @@ void doc_load(doc_t* doc, editor_t* ed) {
 
 b8 doc_save(doc_t* doc) {
 	lt_file_t* f = lt_fopenp(doc->path, LT_FILE_W, 0, lt_libc_heap);
-	if (!f)
+	if (!f) {
 		return 0;
-
-	if (doc->leading_bom && lt_fwrite(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len)
+	}
+	if (doc->leading_bom && lt_fwrite(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len) {
 		goto err0;
-	if (lt_texted_write_contents(&doc->ed, (lt_io_callback_t)lt_fwrite, f) < 0)
+	}
+	if (lt_texted_write_contents(&doc->ed, (lt_io_callback_t)lt_fwrite, f) < 0) {
 		goto err0;
+	}
 
 	lt_fclose(f, lt_libc_heap);
 	doc->unsaved = 0;

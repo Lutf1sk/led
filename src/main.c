@@ -44,11 +44,7 @@ char* get_highl(highl_t* node) {
 	case HLM_PUNCTUATION: return clr_strs[CLR_SYNTAX_PUNCTUATION];
 
 	case HLM_INDENT:
-		if (!node->next)
-			return clr_strs[CLR_SYNTAX_TRAIL_INDENT];
-		else
-			return clr_strs[CLR_EDITOR];
-		break;
+		return clr_strs[(!node->next ? CLR_SYNTAX_TRAIL_INDENT : CLR_EDITOR)];
 
 	default:
 		return clr_strs[CLR_SYNTAX_UNKNOWN];
@@ -62,15 +58,19 @@ void draw_header(editor_t* ed) {
 	rec_c(' ');
 	if (ed->doc) {
 		rec_lstr(ed->doc->path.str, ed->doc->path.len);
-	 	if (ed->doc->unsaved)
+	 	if (ed->doc->unsaved) {
 			rec_c('*');
-		if (ed->doc->new)
+		}
+		if (ed->doc->new) {
 			rec_str("[NEW]");
-		if (ed->doc->read_only)
+		}
+		if (ed->doc->read_only) {
 			rec_str("[RO]");
+		}
 	}
-	else
+	else {
 		rec_str("No file selected");
+	}
 	rec_str(" \x1B[0m");
 }
 
@@ -98,34 +98,28 @@ void draw_editor(editor_t* ed) {
 		rec_goto(0, EDITOR_VSTART + i + 1);
 
 		lstr_t line = lt_texted_line_str(txed, line_top + i);
-		highl_t* hl = NULL;
-		if (ed->hl_lines)
-			hl = ed->hl_lines[line_top + i];
+		highl_t* hl = (ed->hl_lines ? ed->hl_lines[line_top + i] : NULL);
 
 		isz linenum = i + line_top + 1;
-		if (ed->relative_linenums)
+		if (ed->relative_linenums) {
 			linenum -= cy + 1;
+		}
 		linenum %= 10000;
-		if (i == cy - line_top)
+		if (i == cy - line_top) {
 			linenum = (line_top + i + 1) % 10000;
+		}
 		sprintf(line_num_buf, "%4zi ", lt_abs_isz(linenum));
 
 		u8 sel = (i >= sel_start_y) && (i <= sel_end_y);
-		rec_str(clr_strs[sel ? CLR_LINENUM_SEL : CLR_LINENUM]);
+		rec_str(clr_strs[(sel ? CLR_LINENUM_SEL : CLR_LINENUM)]);
 		rec_str(line_num_buf);
 
 		sel = (i > sel_start_y) && (i <= sel_end_y);
 
-
 		rec_str("\x1B[0m");
-		if (sel)
-			rec_str(clr_strs[CLR_EDITOR_SEL]);
-		else
-			rec_str(get_highl(hl));
+		rec_str((sel ? clr_strs[CLR_EDITOR_SEL] : get_highl(hl)));
 
-		isz next_hl = -1;
-		if (hl)
-			next_hl = hl->len;
+		isz next_hl = (hl ? hl->len : -1);
 
 		for (isz j = 0, scr_x = 0; j < line.len && scr_x < EDITOR_WIDTH;) {
 			if (!sel && i == sel_start_y && j == sel_start_x) {
@@ -140,8 +134,9 @@ void draw_editor(editor_t* ed) {
 
 			while (hl && j >= next_hl) {
 				hl = hl->next;
-				if (!sel)
+				if (!sel) {
 					rec_str(get_highl(hl));
+				}
 				next_hl = j + hl->len;
 			}
 
@@ -155,8 +150,9 @@ void draw_editor(editor_t* ed) {
 			else {
 				++scr_x;
 				usz end = j + lt_utf8_decode_len(c);
-				while (j < end)
+				while (j < end) {
 					rec_c(line.str[j++]);
+				}
 			}
 		}
 
@@ -166,7 +162,6 @@ void draw_editor(editor_t* ed) {
 			rec_str(clr_strs[CLR_LINENUM_UFLOW]);
 			rec_str("     ");
 		}
-// 		rec_str(clr_strs[CLR_EDITOR]);
 	}
 	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(txed, cy), cx);
 	rec_goto(sx + EDITOR_HSTART + 1, cy - line_top + EDITOR_VSTART + 1);
@@ -175,12 +170,14 @@ void draw_editor(editor_t* ed) {
 
 lstr_t get_config_path(void) {
 	const char* home_dir;
-	if (!(home_dir = getenv("HOME")))
+	if (!(home_dir = getenv("HOME"))) {
 		return NLSTR();
+	}
 
 	lstr_t path;
-	if (lt_aprintf(&path, lt_libc_heap, "%s/.config/led/led.conf", home_dir) < 0)
+	if (lt_aprintf(&path, lt_libc_heap, "%s/.config/led/led.conf", home_dir) < 0) {
 		return NLSTR();
+	}
 	return path;
 }
 
@@ -216,14 +213,16 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 
-		if (lt_arg_lstr(&arg_it, 'c', CLSTR("config"), &cpath))
+		if (lt_arg_lstr(&arg_it, 'c', CLSTR("config"), &cpath)) {
 			continue;
+		}
 
 		lt_darr_push(open_paths, LSTR(*arg_it.it, arg_it.arg_len));
 	}
 
-	if (!cpath.str)
+	if (!cpath.str) {
 		cpath = get_config_path();
+	}
 
 	editor_t editor;
 	memset(&editor, 0, sizeof(editor_t));
@@ -232,12 +231,14 @@ int main(int argc, char** argv) {
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
 	lstr_t conf_file;
-	if (lt_freadallp(cpath, &conf_file, alloc))
+	if (lt_freadallp(cpath, &conf_file, alloc)) {
 		lt_ferrf("failed to read config file\n");
+	}
 	lt_conf_t config, *found;
 	lt_conf_err_info_t conf_err;
-	if (lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc))
+	if (lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc)) {
 		lt_ferrf("failed to parse config file: %S\n", conf_err.err_str);
+	}
 
 	editor.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
 	editor.tab_size = lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4);

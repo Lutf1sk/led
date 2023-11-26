@@ -49,8 +49,9 @@ char clr_strs[CLR_COUNT][32] = {
 static
 void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
 	conf = lt_conf_find(conf, key);
-	if (!conf)
+	if (!conf) {
 		return;
+	}
 
 	lt_conf_t* bold = lt_conf_find(conf, CLSTR("bold"));
 	lt_conf_t* fg = lt_conf_find(conf, CLSTR("fg"));
@@ -59,12 +60,14 @@ void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
 	char* it = clr_strs[clr];
 
 	it += lt_sprintf(it, "\x1B[");
-	it += lt_sprintf(it, "%s", (bold ? bold->bool_val : 0) ? "1" : "22");
+	it += lt_sprintf(it, "%s", ((bold ? bold->bool_val : 0) ? "1" : "22"));
 
-	if (fg)
+	if (fg) {
 		it += lt_sprintf(it, ";%iq", fg->int_val);
-	if (bg)
+	}
+	if (bg) {
 		it += lt_sprintf(it, ";%iq", bg->int_val);
+	}
 	*it++ = 'm';
 	*it++ = 0;
 }

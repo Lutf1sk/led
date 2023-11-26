@@ -58,16 +58,18 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 	case LT_TERM_KEY_DELETE|LT_TERM_MOD_CTRL: lt_texted_delete_word_fwd(ed); return 1;
 
 	case 'X'|LT_TERM_MOD_CTRL:
-		if (!lt_texted_selection_present(ed))
+		if (!lt_texted_selection_present(ed)) {
 			return 0;
+		}
 		clipboard_clear(0);
 		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		lt_texted_erase_selection(ed);
 		return 1;
 
 	case 'C'|LT_TERM_MOD_CTRL:
-		if (!lt_texted_selection_present(ed))
+		if (!lt_texted_selection_present(ed)) {
 			return 0;
+		}
 		clipboard_clear(0);
 		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
 		return 1;
@@ -86,8 +88,9 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 		return 1;
 
 	default: {
-		if (lt_is_unicode_control_char(key) || (key & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK)))
+		if (lt_is_unicode_control_char(key) || (key & (LT_TERM_KEY_SPECIAL_BIT | LT_TERM_MOD_MASK))) {
 			return 0;
+		}
 
 		char utf8_buf[4];
 		lstr_t utf8_str = LSTR(utf8_buf, lt_utf8_encode(key, utf8_buf));

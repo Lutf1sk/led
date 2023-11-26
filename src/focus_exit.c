@@ -18,10 +18,12 @@ static lstr_t unsaved_path = NLSTR();
 void notify_exit(void) {
 	focus = focus_exit;
 	doc_t* unsaved = fb_find_unsaved();
-	if (unsaved)
+	if (unsaved) {
 		unsaved_path = unsaved->path;
-	else
+	}
+	else {
 		exit(0);
+	}
 }
 
 void draw_exit(editor_t* ed, void* args) {

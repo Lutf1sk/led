@@ -27,8 +27,9 @@ usz screen_x_to_cursor_x(editor_t* ed, lstr_t str, isz x) {
 			screen_x += lt_glyph_width(c);
 		}
 
-		if (screen_x > x)
+		if (screen_x > x) {
 			return it - str.str;
+		}
 		it += len;
 	}
 	return str.len;
@@ -91,16 +92,18 @@ void center_line(editor_t* ed, usz line) {
 	line = clamp(line, 0, line_count - 1);
 
 	usz line_top = lt_max_isz(line - ed->height / 2, 0);
-	if (line_top + ed->height >= line_count)
+	if (line_top + ed->height >= line_count) {
 		line_top = lt_max_isz(line_count - ed->height, 0);
+	}
 
 	doc->line_top = line_top;
 }
 
 void delete_selection_if_present(editor_t* ed) {
 	lt_texted_t* txed = &ed->doc->ed;
-	if (lt_texted_selection_present(txed))
+	if (lt_texted_selection_present(txed)) {
 		lt_texted_erase_selection(txed);
+	}
 }
 
 void page_up(editor_t* ed) {
@@ -134,8 +137,9 @@ void halfstep_left(editor_t* ed, b8 sync_selection) {
 	usz indent = lt_texted_count_line_leading_indent(txed, txed->cursor_y);
 	usz move_cols = (len - indent) / 2;
 	usz move_to = txed->cursor_x - move_cols;
-	if (indent == len)
+	if (indent == len) {
 		move_to = 0;
+	}
 	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
 }
 
@@ -145,8 +149,9 @@ void halfstep_right(editor_t* ed, b8 sync_selection) {
 	usz indent = lt_texted_count_line_leading_indent(txed, txed->cursor_y);
 	usz move_cols = (len - indent) / 2;
 	usz move_to = txed->cursor_x + move_cols;
-	if (txed->cursor_x < indent)
+	if (txed->cursor_x < indent) {
 		move_to = indent + move_cols;
+	}
 	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
 }
 

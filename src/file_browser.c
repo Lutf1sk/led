@@ -21,8 +21,9 @@ static doc_t* docs = NULL;
 
 doc_t* fb_find_unsaved(void) {
 	for (usz i = 0; i < file_count; ++i) {
-		if (docs[i].unsaved)
+		if (docs[i].unsaved) {
 			return &docs[i];
+		}
 	}
 	return NULL;
 }
@@ -32,9 +33,11 @@ doc_t* fb_first_file(void) {
 }
 
 b8 streq_case_insensitive(char* str1, char* str2, usz len) {
-	for (usz i = 0; i < len; ++i)
-		if (toupper(*str1++) != toupper(*str2++))
+	for (usz i = 0; i < len; ++i) {
+		if (toupper(*str1++) != toupper(*str2++)) {
 			return 0;
+		}
+	}
 	return 1;
 }
 
@@ -48,8 +51,9 @@ usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
 	usz max_files = lt_min_usz(out_count, file_count);
 
 	if (!str.len) {
-		for (usz i = 0; i < max_files; ++i)
+		for (usz i = 0; i < max_files; ++i) {
 			out[i] = &docs[i];
+		}
 		return max_files;
 	}
 
@@ -74,13 +78,15 @@ usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
 				it = str.str;
 			}
 		}
-		if (it == end)
+		if (it == end) {
 			lt_darr_push(matches, (scored_match_t){ .score = 0, .doc = &docs[i] });
+		}
 	}
 
 	usz found_count = lt_min_usz(out_count, lt_darr_count(matches));
-	for (usz i = 0; i < found_count; ++i)
+	for (usz i = 0; i < found_count; ++i) {
 		out[i] = matches[i].doc;
+	}
 
 	lt_darr_destroy(matches);
 
@@ -91,8 +97,9 @@ doc_t* fb_find_file(lstr_t str) {
 	for (usz i = 0; i < file_count; ++i) {
 		lstr_t name = docs[i].name;
 
-		if (lt_lseq(name, str))
+		if (lt_lseq(name, str)) {
 			return &docs[i];
+		}
 	}
 
 	return NULL;
