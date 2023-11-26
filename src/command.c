@@ -5,6 +5,7 @@
 
 #include "clipboard.h"
 #include "command.h"
+#include "highlight.h"
 
 typedef
 struct ctx {
@@ -123,6 +124,22 @@ lstr_t parse_string(ctx_t* cx) {
 }
 
 static
+lstr_t parse_name(ctx_t* cx) {
+	char* start = cx->it;
+	while (cx->it < cx->end && lt_is_ident_body(*cx->it)) {
+		cx->it++;
+	}
+	return LSTR(start, cx->it - start);
+}
+
+static
+void skip_whitespace(ctx_t* cx) {
+	while (cx->it < cx->end && lt_is_space(*cx->it)) {
+		cx->it++;
+	}
+}
+
+static
 pos_t parse_pos(ctx_t* cx) {
 	lt_texted_t* txed = &cx->ed->doc->ed;
 
@@ -185,7 +202,7 @@ pos_t parse_pos(ctx_t* cx) {
 
 	case 'i': pos.col = lt_texted_count_line_leading_indent(txed, pos.line); break;
 	case 'c': pos.col = parse_uint(cx); break;
-	case ' ': break;
+	case ' ': case '\t': case '\v': break;
 	default: --cx->it; break;
 	}
 
@@ -246,7 +263,8 @@ void skip_single_command(ctx_t* cx) {
 		case 'b': parse_string(cx); break;
 		}
 		break;
-	case ' ': break;
+	case '\\': cx->it = cx->end; break;
+	case ' ': case '\t': case '\v': break;
 	case '`': --cx->it; break;
 	}
 }
@@ -322,8 +340,9 @@ void execute_single_command(ctx_t* cx) {
 	}	break;
 
 	case 'f': {
-		if (cx->it >= cx->end)
+		if (cx->it >= cx->end) {
 			break;
+		}
 
 		usz x, y;
 		lstr_t find = NLSTR();
@@ -363,7 +382,25 @@ void execute_single_command(ctx_t* cx) {
 		}
 	}	break;
 
-	case ' ': break;
+	case '\\': {
+		if (cx->it >= cx->end) {
+			break;
+		}
+
+		lstr_t command = parse_name(cx);
+		if (lt_lseq(command, CLSTR("mode"))) {
+			skip_whitespace(cx);
+			lstr_t mode_str = parse_string(cx);
+			hl_mode_t mode = hl_find_mode_by_name(mode_str);
+			if (mode != HL_UNKNOWN)
+				cx->ed->doc->hl_mode = mode;
+		}
+
+		cx->it = cx->end;
+		break;
+	}
+
+	case ' ': case '\t': case '\v': break;
 	}
 }
 
