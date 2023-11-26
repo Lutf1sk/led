@@ -8,6 +8,8 @@
 #include <lt/str.h>
 #include <lt/mem.h>
 #include <lt/io.h>
+#include <lt/math.h>
+#include <lt/ctype.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -36,22 +38,53 @@ b8 streq_case_insensitive(char* str1, char* str2, usz len) {
 	return 1;
 }
 
+typedef
+struct scored_match {
+	usz score;
+	doc_t* doc;
+} scored_match_t;
+
 usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
-	usz buf_it = 0;
+	usz max_files = lt_min_usz(out_count, file_count);
 
-	for (usz i = 0; buf_it < out_count && i < file_count; ++i) {
-		lstr_t name = docs[i].name;
-
-		// Search at every possible offset
-		for (usz j = 0; j + str.len <= name.len; ++j) {
-			if (name.len >= str.len && streq_case_insensitive(str.str, name.str + j, str.len)) {
-				out[buf_it++] = &docs[i];
-				break;
-			}
-		}
+	if (!str.len) {
+		for (usz i = 0; i < max_files; ++i)
+			out[i] = &docs[i];
+		return max_files;
 	}
 
-	return buf_it;
+	lt_darr(scored_match_t) matches = lt_darr_create(scored_match_t, out_count, lt_libc_heap);
+
+	for (usz i = 0; i < file_count; ++i) {
+		lstr_t path = docs[i].path;
+
+		char* it = str.str, *end = it + str.len, *match_start = it;
+		for (usz j = 0; j < path.len && it < end; ++j) {
+			if (lt_to_lower(path.str[j]) == lt_to_lower(*it)) {
+				++it;
+			}
+			else if (path.str[j] == '.') {
+				; // !!
+			}
+			else {
+				if (it == end) {
+					lt_darr_push(matches, (scored_match_t){ .score = 0, .doc = &docs[i] });
+					break;
+				}
+				it = str.str;
+			}
+		}
+		if (it == end)
+			lt_darr_push(matches, (scored_match_t){ .score = 0, .doc = &docs[i] });
+	}
+
+	usz found_count = lt_min_usz(out_count, lt_darr_count(matches));
+	for (usz i = 0; i < found_count; ++i)
+		out[i] = matches[i].doc;
+
+	lt_darr_destroy(matches);
+
+	return found_count;
 }
 
 doc_t* fb_find_file(lstr_t str) {
