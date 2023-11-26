@@ -62,7 +62,7 @@ usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
 	for (usz i = 0; i < file_count; ++i) {
 		lstr_t path = docs[i].path;
 
-		char* it = str.str, *end = it + str.len, *match_start = it;
+		char* it = str.str, *end = it + str.len;
 		for (usz j = 0; j < path.len && it < end; ++j) {
 			if (lt_to_lower(path.str[j]) == lt_to_lower(*it)) {
 				++it;
@@ -109,7 +109,7 @@ doc_t* fb_open(editor_t* ed, lstr_t path) {
 	// TODO: Return error if file is already open
 
 	if (path.len >= PATH_MAX_LEN)
-		ferrf("Path '%s' is too long\n", path);
+		lt_ferrf("path '%s' is too long\n", path);
 
 	docs = realloc(docs, sizeof(doc_t) * (file_count + 1));
 	LT_ASSERT(docs);

@@ -27,7 +27,6 @@ SRC := \
 	src/focus_command.c \
 	src/focus.c \
 	src/keybinds.c \
-	src/err.c \
 	src/draw.c
 
 LT_PATH := lt
