@@ -67,6 +67,15 @@ void find_next_result(lt_texted_t* ed) {
 	}
 }
 
+void find_prev_result(lt_texted_t* ed) {
+	found = lt_texted_iterate_occurences_bwd(ed, lt_texted_line_str(line_input, 0), &iterator);
+	if (!found) {
+		iterator.line = lt_texted_line_count(ed) -1;
+		iterator.col = lt_texted_line_len(ed, iterator.line);
+		found = lt_texted_iterate_occurences_bwd(ed, lt_texted_line_str(line_input, 0), &iterator);
+	}
+}
+
 void input_find_local(editor_t* ed, u32 c) {
 	doc_t* doc = ed->doc;
 	lt_texted_t* txed = &doc->ed;
@@ -88,6 +97,7 @@ void input_find_local(editor_t* ed, u32 c) {
 		break;
 
 	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
+		find_prev_result(txed);
 		break;
 
 	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
