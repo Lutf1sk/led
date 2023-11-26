@@ -11,7 +11,6 @@
 #include "clr.h"
 #include "editor.h"
 #include "common.h"
-#include "algo.h"
 
 #include "draw.h"
 
@@ -49,9 +48,9 @@ void draw_browse_files(editor_t* ed, void* args) {
 
 	selected = NULL;
 
-	selected_index = clamp(selected_index, 0, found_count - 1);
-	visible_index = clamp(visible_index, selected_index - visible_count + 1, selected_index);
-	visible_index = clamp(visible_index, 0, found_count - visible_count);
+	selected_index = lt_clamp_isz(selected_index, 0, found_count - 1);
+	visible_index = lt_clamp_isz(visible_index, selected_index - visible_count + 1, selected_index);
+	visible_index = lt_clamp_isz(visible_index, 0, found_count - visible_count);
 
 	// Draw available files
 	rec_str(clr_strs[CLR_LIST_ENTRY]);

@@ -9,7 +9,6 @@
 #include "focus.h"
 #include "editor.h"
 #include "clr.h"
-#include "algo.h"
 #include "draw.h"
 
 #include <stdio.h>

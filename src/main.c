@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "algo.h"
 #include "clr.h"
 #include "highlight.h"
 #include "editor.h"
@@ -85,7 +84,7 @@ void draw_editor(editor_t* ed) {
 	sel_end_y -= doc->line_top;
 
 	isz line_top = doc->line_top;
-	isz line_count = clamp(lt_texted_line_count(txed) - doc->line_top, 0, EDITOR_HEIGHT);
+	isz line_count = lt_clamp_isz(lt_texted_line_count(txed) - doc->line_top, 0, EDITOR_HEIGHT);
 
 	usz tab_size = ed->tab_size;
 

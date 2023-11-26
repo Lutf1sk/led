@@ -3,7 +3,6 @@
 #include <lt/math.h>
 #include <lt/mem.h>
 
-#include "algo.h"
 #include "clipboard.h"
 #include "command.h"
 

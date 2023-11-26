@@ -7,7 +7,6 @@
 #include <lt/math.h>
 
 #include "editor.h"
-#include "algo.h"
 #include "highlight.h"
 
 #include <string.h>
@@ -89,7 +88,7 @@ void center_line(editor_t* ed, usz line) {
 	lt_texted_t* txed = &doc->ed;
 	usz line_count = lt_texted_line_count(txed);
 
-	line = clamp(line, 0, line_count - 1);
+	line = lt_clamp_isz(line, 0, line_count - 1);
 
 	usz line_top = lt_max_isz(line - ed->height / 2, 0);
 	if (line_top + ed->height >= line_count) {
@@ -112,8 +111,8 @@ void page_up(editor_t* ed) {
 	usz line_max = lt_texted_line_count(txed) - 1;
 	usz move_by = ed->height - 1;
 
-	doc->line_top = clamp(doc->line_top - move_by, 0, line_max);
-	lt_texted_gotoy(txed, max(txed->cursor_y - move_by, 0), 1);
+	doc->line_top = lt_clamp_isz(doc->line_top - move_by, 0, line_max);
+	lt_texted_gotoy(txed, lt_max_isz(txed->cursor_y - move_by, 0), 1);
 }
 
 void page_down(editor_t* ed) {
@@ -122,8 +121,8 @@ void page_down(editor_t* ed) {
 	usz line_max = lt_texted_line_count(txed) - 1;
 	usz move_by = ed->height - 1;
 
-	doc->line_top = min(doc->line_top + move_by, max(0, line_max - ed->height));
-	lt_texted_gotoy(txed, min(txed->cursor_y + move_by, line_max), 1);
+	doc->line_top = lt_min_isz(doc->line_top + move_by, lt_max_isz(0, line_max - ed->height));
+	lt_texted_gotoy(txed, lt_min_isz(txed->cursor_y + move_by, line_max), 1);
 }
 
 void ed_regenerate_hl(editor_t* ed) {
@@ -140,7 +139,7 @@ void halfstep_left(editor_t* ed, b8 sync_selection) {
 	if (indent == len) {
 		move_to = 0;
 	}
-	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
+	lt_texted_gotox(txed, lt_clamp_isz(move_to, 0, len), sync_selection);
 }
 
 void halfstep_right(editor_t* ed, b8 sync_selection) {
@@ -152,6 +151,6 @@ void halfstep_right(editor_t* ed, b8 sync_selection) {
 	if (txed->cursor_x < indent) {
 		move_to = indent + move_cols;
 	}
-	lt_texted_gotox(txed, clamp(move_to, 0, len), sync_selection);
+	lt_texted_gotox(txed, lt_clamp_isz(move_to, 0, len), sync_selection);
 }
 
