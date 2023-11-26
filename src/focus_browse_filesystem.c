@@ -125,7 +125,7 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 	rec_str(clr_strs[CLR_LIST_ENTRY]);
 	for (usz i = visible_count; i < MAX_ENTRY_COUNT; ++i) {
 		rec_goto(0, start_height + i + 1);
-		rec_clearline("");
+		rec_clearline(clr_strs[CLR_LIST_ENTRY]);
 	}
 
 	rec_crestore();

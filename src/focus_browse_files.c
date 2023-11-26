@@ -84,7 +84,7 @@ void draw_browse_files(editor_t* ed, void* args) {
 	// Fill underflowed slots
 	for (usz i = visible_count; i < MAX_VISIBLE_ENTRIES; ++i) {
 		rec_goto(0, start_height + i + 1);
-		rec_clearline("");
+		rec_clearline(clr_strs[CLR_LIST_ENTRY]);
 	}
 	rec_crestore();
 
