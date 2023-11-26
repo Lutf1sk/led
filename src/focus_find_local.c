@@ -50,6 +50,7 @@ void draw_find_local(editor_t* ed, void* args) {
 
 	rec_goto(2, lt_term_height);
 	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
+	rec_str(clr_strs[CLR_LIST_HIGHL]);
 	if (curr_input == line_input) {
 		rec_str("CTRL+R replace");
 	}
