@@ -167,31 +167,29 @@ void draw_editor(editor_t* ed) {
 	rec_str("\x1B[0m");
 }
 
+#ifdef LT_LINUX
+#	define HOME_ENV "HOME"
+#	define CONF_SUBPATH ".config/led/led.conf"
+#elif defined(LT_WINDOWS)
+#	define HOME_ENV "USERPROFILE"
+#	define CONF_SUBPATH "led.conf"
+#endif
+
 lstr_t get_config_path(void) {
 	const char* home_dir;
-	if (!(home_dir = getenv("HOME"))) {
+	if (!(home_dir = getenv(HOME_ENV))) {
 		return NLSTR();
 	}
 
 	lstr_t path;
-	if (lt_aprintf(&path, lt_libc_heap, "%s/.config/led/led.conf", home_dir) < 0) {
+	if (lt_aprintf(&path, lt_libc_heap, "%s/%s", home_dir, CONF_SUBPATH) < 0) {
 		return NLSTR();
 	}
 	return path;
 }
 
-void cleanup(int code, void* args) {
-	doc_t* doc;
-	while ((doc = fb_first_file()))
-		fb_close(doc);
-
-	lt_term_restore();
-}
-
-void on_exit(void*, void*);
-
-#include <lt/texted.h>
-#include <lt/strstream.h>
+#define LT_ANSI_SHORTEN_NAMES 1
+#include <lt/ansi.h>
 
 int main(int argc, char** argv) {
 	LT_DEBUG_INIT();
@@ -261,7 +259,6 @@ int main(int argc, char** argv) {
 	editor.hl_restore = lt_amsave(arena);
 
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
-	on_exit(cleanup, NULL);
 
 	clipboard_init();
 	focus_init();

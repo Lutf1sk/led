@@ -15,6 +15,16 @@ focus_t focus_exit = { draw_exit, NULL, input_exit };
 
 static lstr_t unsaved_path = NLSTR();
 
+void clean_and_exit(int code) {
+	doc_t* doc;
+	while ((doc = fb_first_file()))
+		fb_close(doc);
+
+	lt_term_restore();
+
+	exit(code);
+}
+
 void notify_exit(void) {
 	focus = focus_exit;
 	doc_t* unsaved = fb_find_unsaved();
@@ -22,7 +32,7 @@ void notify_exit(void) {
 		unsaved_path = unsaved->path;
 	}
 	else {
-		exit(0);
+		clean_and_exit(0);
 	}
 }
 
@@ -39,7 +49,7 @@ void input_exit(editor_t* ed, u32 c) {
 		break;
 
 	case 'y': case 'Y':
-		exit(0);
+		clean_and_exit(0);
 		break;
 	}
 }

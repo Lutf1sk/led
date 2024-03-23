@@ -37,6 +37,10 @@ CC := cc
 CC_WARN := -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
 CC_FLAGS := -I$(LT_PATH)/include/ -std=c11 -fmax-errors=3 $(CC_WARN) -mavx2 -masm=intel
 
+ifdef WINDOWS
+	CC = x86_64-w64-mingw32-gcc
+endif
+
 ifdef DEBUG
 	CC_FLAGS += -fno-omit-frame-pointer -O0 -g
 else
@@ -45,8 +49,16 @@ endif
 
 # -----== LINKER
 LNK := cc
-LNK_LIBS := -lpthread -ldl -lm
+LNK_LIBS := -lpthread -lm
 LNK_FLAGS :=
+
+ifdef WINDOWS
+	LNK = x86_64-w64-mingw32-gcc
+	LNK_LIBS += -lws2_32
+	LNK_FLAGS += -static
+else
+	LNK_LIBS += -ldl
+endif
 
 ifdef DEBUG
 	LNK_FLAGS += -lasan -lubsan -g -rdynamic

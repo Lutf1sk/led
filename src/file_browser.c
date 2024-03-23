@@ -11,11 +11,6 @@
 #include <lt/math.h>
 #include <lt/ctype.h>
 
-#include <string.h>
-#include <stdlib.h>
-#include <libgen.h>
-#include <ctype.h>
-
 static usz file_count = 0;
 static doc_t* docs = NULL;
 
@@ -30,15 +25,6 @@ doc_t* fb_find_unsaved(void) {
 
 doc_t* fb_first_file(void) {
 	return file_count ? docs : NULL;
-}
-
-b8 streq_case_insensitive(char* str1, char* str2, usz len) {
-	for (usz i = 0; i < len; ++i) {
-		if (toupper(*str1++) != toupper(*str2++)) {
-			return 0;
-		}
-	}
-	return 1;
 }
 
 typedef
