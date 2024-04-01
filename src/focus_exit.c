@@ -3,6 +3,9 @@
 
 #include <lt/term.h>
 
+#define LT_ANSI_SHORTEN_NAMES 1
+#include <lt/ansi.h>
+
 #include "focus.h"
 #include "clr.h"
 #include "editor.h"
@@ -19,6 +22,9 @@ void clean_and_exit(int code) {
 	doc_t* doc;
 	while ((doc = fb_first_file()))
 		fb_close(doc);
+
+	lstr_t final_write = CLSTR(CSET(9999, 9999));
+	lt_term_write_direct(final_write.str, final_write.len);
 
 	lt_term_restore();
 
