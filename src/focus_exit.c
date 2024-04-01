@@ -23,7 +23,7 @@ void clean_and_exit(int code) {
 	while ((doc = fb_first_file()))
 		fb_close(doc);
 
-	lstr_t final_write = CLSTR(CSET(9999, 9999));
+	lstr_t final_write = CLSTR(RESET CSET(9999, 9999));
 	lt_term_write_direct(final_write.str, final_write.len);
 
 	lt_term_restore();
