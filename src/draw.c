@@ -21,7 +21,7 @@ void recf(char* fmt, ...) {
 
 void rec_nc(usz n, char c) {
 	memset(write_it, c, n);
-	write_it += n - 10;
+	write_it += n;
 }
 
 void rec_goto(u32 x, u32 y) {
