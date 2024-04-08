@@ -68,8 +68,8 @@ void update_file_list(void) {
 		lt_dclose(dir, lt_libc_heap);
 	}
 
-	selected_index = lt_max_isz(lt_min_isz(selected_index, lt_darr_count(files) - 1), 0);
-	visible_index = lt_max_isz(lt_min_isz(visible_index, lt_darr_count(files) - MAX_ENTRY_COUNT), 0);
+	selected_index = lt_isz_max(lt_isz_min(selected_index, lt_darr_count(files) - 1), 0);
+	visible_index = lt_isz_max(lt_isz_min(visible_index, lt_darr_count(files) - MAX_ENTRY_COUNT), 0);
 }
 
 void browse_filesystem(void) {
@@ -91,7 +91,7 @@ void draw_browse_filesystem(editor_t* ed, void* args) {
 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
 	rec_str(" ");
 
-	usz visible_count = lt_min_usz(MAX_ENTRY_COUNT, lt_darr_count(files));
+	usz visible_count = lt_usz_min(MAX_ENTRY_COUNT, lt_darr_count(files));
 
 	for (usz i = 0; i < visible_count; ++i) {
 		usz index = visible_index + i;

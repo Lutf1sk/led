@@ -84,7 +84,7 @@ void draw_editor(editor_t* ed) {
 	sel_end_y -= doc->line_top;
 
 	isz line_top = doc->line_top;
-	isz line_count = lt_clamp_isz(lt_texted_line_count(txed) - doc->line_top, 0, EDITOR_HEIGHT);
+	isz line_count = lt_isz_clamp(lt_texted_line_count(txed) - doc->line_top, 0, EDITOR_HEIGHT);
 
 	usz tab_size = ed->tab_size;
 
@@ -107,7 +107,7 @@ void draw_editor(editor_t* ed) {
 		if (i == cy - line_top) {
 			linenum = (line_top + i + 1) % 10000;
 		}
-		sprintf(line_num_buf, "%4zi ", lt_abs_isz(linenum));
+		sprintf(line_num_buf, "%4zi ", lt_abs(linenum));
 
 		u8 sel = (i >= sel_start_y) && (i <= sel_end_y);
 		rec_str(clr_strs[(sel ? CLR_LINENUM_SEL : CLR_LINENUM)]);

@@ -80,7 +80,7 @@ void input_editor(editor_t* ed, u32 c) {
 
 	// ----- MOUSE
 	case LT_TERM_KEY_MB1_DN: modified = 0; {
-		usz line = lt_clamp_isz(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
+		usz line = lt_isz_clamp(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
 		usz col = screen_x_to_cursor_x(ed, lt_texted_line_str(txed, line), lt_term_mouse_x - ed->hstart);
 		lt_texted_gotoxy(txed, col, line, 1);
 		m1_pressed = 1;
@@ -88,7 +88,7 @@ void input_editor(editor_t* ed, u32 c) {
 
 	case LT_TERM_KEY_MB1_UP: modified = 0;
 		if (m1_pressed) {
-			usz line = lt_clamp_isz(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
+			usz line = lt_isz_clamp(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
 			usz col = screen_x_to_cursor_x(ed, lt_texted_line_str(txed, line), lt_term_mouse_x - ed->hstart);
 			lt_texted_gotoxy(txed, col, line, 0);
 		}
@@ -97,7 +97,7 @@ void input_editor(editor_t* ed, u32 c) {
 
 	case LT_TERM_KEY_MPOS: modified = 0;
 		if (m1_pressed) {
-			usz line = lt_clamp_isz(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
+			usz line = lt_isz_clamp(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
 			usz col = screen_x_to_cursor_x(ed, lt_texted_line_str(txed, line), lt_term_mouse_x - ed->hstart);
 			lt_texted_gotoxy(txed, col, line, 0);
 		}
@@ -139,7 +139,7 @@ void input_editor(editor_t* ed, u32 c) {
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
-			lt_texted_gotoy(txed, lt_max_isz(txed->cursor_y - move_h + ed->scroll_offs, 0), 0);
+			lt_texted_gotoy(txed, lt_isz_max(txed->cursor_y - move_h + ed->scroll_offs, 0), 0);
 		}
 		center_line(ed, txed->cursor_y);
 	}	break;
@@ -147,7 +147,7 @@ void input_editor(editor_t* ed, u32 c) {
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
-			lt_texted_gotoy(txed, lt_max_isz(txed->cursor_y - move_h + ed->scroll_offs, 0), 1);
+			lt_texted_gotoy(txed, lt_isz_max(txed->cursor_y - move_h + ed->scroll_offs, 0), 1);
 		}
 		center_line(ed, txed->cursor_y);
 	}	break;

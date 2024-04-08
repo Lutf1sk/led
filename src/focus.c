@@ -62,7 +62,7 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 			return 0;
 		}
 		clipboard_clear(0);
-		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
+		lt_texted_write_selection(ed, (lt_write_fn_t)lt_strstream_write, &clipboards[0]);
 		lt_texted_erase_selection(ed);
 		return 1;
 
@@ -71,7 +71,7 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 			return 0;
 		}
 		clipboard_clear(0);
-		lt_texted_write_selection(ed, (lt_io_callback_t)lt_strstream_write, &clipboards[0]);
+		lt_texted_write_selection(ed, (lt_write_fn_t)lt_strstream_write, &clipboards[0]);
 		return 1;
 
 	case 'V'|LT_TERM_MOD_CTRL:

@@ -196,7 +196,7 @@ pos_t parse_pos(ctx_t* cx) {
 		switch (*cx->it++) {
 		case 's': pos.col = 0; break;
 		case 'e': pos.col = lt_texted_line_len(txed, pos.line); break;
-		default: --cx->it; pos.line = lt_max_isz(parse_uint(cx) - 1, 0); break;
+		default: --cx->it; pos.line = lt_isz_max(parse_uint(cx) - 1, 0); break;
 		}
 		break;
 
@@ -288,7 +288,7 @@ void execute_single_command(ctx_t* cx) {
 			break;
 		}
 		clipboard_clear(clipboard);
-		lt_texted_write_selection(txed, (lt_io_callback_t)lt_strstream_write, &clipboards[clipboard]);
+		lt_texted_write_selection(txed, (lt_write_fn_t)lt_strstream_write, &clipboards[clipboard]);
 	}	break;
 
 	case 'p': {
@@ -326,17 +326,17 @@ void execute_single_command(ctx_t* cx) {
 
 	case 'i': {
 		u8 cond = parse_condition(cx);
-		lstr_t true = parse_block(cx);
+		lstr_t if_true = parse_block(cx);
 		if (cond) {
-			execute_string(cx->ed, true);
+			execute_string(cx->ed, if_true);
 		}
 		if (cx->it >= cx->end || *cx->it != 'e') {
 			break;
 		}
 		++cx->it;
-		lstr_t false = parse_block(cx);
+		lstr_t if_false = parse_block(cx);
 		if (!cond)
-			execute_string(cx->ed, false);
+			execute_string(cx->ed, if_false);
 	}	break;
 
 	case 'f': {

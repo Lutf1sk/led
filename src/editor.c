@@ -37,7 +37,7 @@ usz screen_x_to_cursor_x(editor_t* ed, lstr_t str, isz x) {
 usz cursor_x_to_screen_x(editor_t* ed, lstr_t str, isz x) {
 	isz screen_x = 0;
 
-	for (char* it = str.str, *end = it + lt_min_isz(str.len, x); it < end;) {
+	for (char* it = str.str, *end = it + lt_isz_min(str.len, x); it < end;) {
 		if (*it == '\t') {
 			screen_x += ed->tab_size - screen_x % ed->tab_size;
 			++it;
@@ -60,14 +60,14 @@ void adjust_vbounds(editor_t* ed) {
 	isz vbound_top = doc->line_top + ed->scroll_offs;
 	if (line < vbound_top) {
 		doc->line_top -= vbound_top - line;
-		doc->line_top = lt_max_isz(doc->line_top, 0);
+		doc->line_top = lt_isz_max(doc->line_top, 0);
 	}
 
 	// Move screen if cursor is below the lower boundary
 	isz vbound_bottom = (doc->line_top + ed->height) - ed->scroll_offs - 1;
 	if (line > vbound_bottom) {
 		doc->line_top += line - vbound_bottom;
-		doc->line_top = lt_min_isz(doc->line_top, lt_max_isz(0, line_count - ed->height));
+		doc->line_top = lt_isz_min(doc->line_top, lt_isz_max(0, line_count - ed->height));
 	}
 }
 
@@ -88,11 +88,11 @@ void center_line(editor_t* ed, usz line) {
 	lt_texted_t* txed = &doc->ed;
 	usz line_count = lt_texted_line_count(txed);
 
-	line = lt_clamp_isz(line, 0, line_count - 1);
+	line = lt_isz_clamp(line, 0, line_count - 1);
 
-	usz line_top = lt_max_isz(line - ed->height / 2, 0);
+	usz line_top = lt_isz_max(line - ed->height / 2, 0);
 	if (line_top + ed->height >= line_count) {
-		line_top = lt_max_isz(line_count - ed->height, 0);
+		line_top = lt_isz_max(line_count - ed->height, 0);
 	}
 
 	doc->line_top = line_top;
@@ -111,8 +111,8 @@ void page_up(editor_t* ed) {
 	usz line_max = lt_texted_line_count(txed) - 1;
 	usz move_by = ed->height - 1;
 
-	doc->line_top = lt_clamp_isz(doc->line_top - move_by, 0, line_max);
-	lt_texted_gotoy(txed, lt_max_isz(txed->cursor_y - move_by, 0), 1);
+	doc->line_top = lt_isz_clamp(doc->line_top - move_by, 0, line_max);
+	lt_texted_gotoy(txed, lt_isz_max(txed->cursor_y - move_by, 0), 1);
 }
 
 void page_down(editor_t* ed) {
@@ -121,8 +121,8 @@ void page_down(editor_t* ed) {
 	usz line_max = lt_texted_line_count(txed) - 1;
 	usz move_by = ed->height - 1;
 
-	doc->line_top = lt_min_isz(doc->line_top + move_by, lt_max_isz(0, line_max - ed->height));
-	lt_texted_gotoy(txed, lt_min_isz(txed->cursor_y + move_by, line_max), 1);
+	doc->line_top = lt_isz_min(doc->line_top + move_by, lt_isz_max(0, line_max - ed->height));
+	lt_texted_gotoy(txed, lt_isz_min(txed->cursor_y + move_by, line_max), 1);
 }
 
 void ed_regenerate_hl(editor_t* ed) {
@@ -139,7 +139,7 @@ void halfstep_left(editor_t* ed, b8 sync_selection) {
 	if (indent == len) {
 		move_to = 0;
 	}
-	lt_texted_gotox(txed, lt_clamp_isz(move_to, 0, len), sync_selection);
+	lt_texted_gotox(txed, lt_isz_clamp(move_to, 0, len), sync_selection);
 }
 
 void halfstep_right(editor_t* ed, b8 sync_selection) {
@@ -151,6 +151,6 @@ void halfstep_right(editor_t* ed, b8 sync_selection) {
 	if (txed->cursor_x < indent) {
 		move_to = indent + move_cols;
 	}
-	lt_texted_gotox(txed, lt_clamp_isz(move_to, 0, len), sync_selection);
+	lt_texted_gotox(txed, lt_isz_clamp(move_to, 0, len), sync_selection);
 }
 

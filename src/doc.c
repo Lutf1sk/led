@@ -62,7 +62,7 @@ b8 doc_save(doc_t* doc) {
 	if (doc->leading_bom && lt_fwrite(f, BYTE_ORDER_MARK.str, BYTE_ORDER_MARK.len) != BYTE_ORDER_MARK.len) {
 		goto err0;
 	}
-	if (lt_texted_write_contents(&doc->ed, (lt_io_callback_t)lt_fwrite, f) < 0) {
+	if (lt_texted_write_contents(&doc->ed, (lt_write_fn_t)lt_fwrite, f) < 0) {
 		goto err0;
 	}
 

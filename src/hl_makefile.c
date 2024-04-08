@@ -6,7 +6,7 @@
 #include "doc.h"
 
 #define EMIT(x) { \
-	highl_t* new = lt_malloc(alloc, sizeof(highl_t)); \
+	highl_t* new = lt_amalloc(alloc, sizeof(highl_t)); \
 	new->len = it - start; \
 	new->mode = (x); \
 	*node = new; \

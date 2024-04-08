@@ -15,7 +15,7 @@ char* write_it;
 void recf(char* fmt, ...) {
 	va_list argl;
 	va_start(argl, fmt);
-	lt_io_vprintf((lt_io_callback_t)rec_write, NULL, fmt, argl);
+	lt_io_vprintf((lt_write_fn_t)rec_write, NULL, fmt, argl);
 	va_end(argl);
 }
 

@@ -44,13 +44,13 @@ void draw_browse_files(editor_t* ed, void* args) {
 
 	doc_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_texted_line_str(line_input, 0));
-	usz visible_count = lt_min_usz(found_count, MAX_VISIBLE_ENTRIES);
+	usz visible_count = lt_usz_min(found_count, MAX_VISIBLE_ENTRIES);
 
 	selected = NULL;
 
-	selected_index = lt_clamp_isz(selected_index, 0, found_count - 1);
-	visible_index = lt_clamp_isz(visible_index, selected_index - visible_count + 1, selected_index);
-	visible_index = lt_clamp_isz(visible_index, 0, found_count - visible_count);
+	selected_index = lt_isz_clamp(selected_index, 0, found_count - 1);
+	visible_index = lt_isz_clamp(visible_index, selected_index - visible_count + 1, selected_index);
+	visible_index = lt_isz_clamp(visible_index, 0, found_count - visible_count);
 
 	// Draw available files
 	rec_str(clr_strs[CLR_LIST_ENTRY]);

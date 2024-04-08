@@ -34,7 +34,7 @@ struct scored_match {
 } scored_match_t;
 
 usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
-	usz max_files = lt_min_usz(out_count, file_count);
+	usz max_files = lt_min(out_count, file_count);
 
 	if (!str.len) {
 		for (usz i = 0; i < max_files; ++i) {
@@ -69,7 +69,7 @@ usz fb_find_files(doc_t** out, usz out_count, lstr_t str) {
 		}
 	}
 
-	usz found_count = lt_min_usz(out_count, lt_darr_count(matches));
+	usz found_count = lt_min(out_count, lt_darr_count(matches));
 	for (usz i = 0; i < found_count; ++i) {
 		out[i] = matches[i].doc;
 	}
