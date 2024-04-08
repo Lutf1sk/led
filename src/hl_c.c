@@ -38,12 +38,16 @@ b8 is_keyword(lstr_t str) {
 
 	case 'e':
 		if (lt_lseq(str, CLSTR("else"))) return 1;
+		if (lt_lseq(str, CLSTR("elif"))) return 1;
+		if (lt_lseq(str, CLSTR("elifdef"))) return 1;
+		if (lt_lseq(str, CLSTR("elifndef"))) return 1;
+		if (lt_lseq(str, CLSTR("embed"))) return 1;
 		if (lt_lseq(str, CLSTR("endif"))) return 1;
 		if (lt_lseq(str, CLSTR("extern"))) return 1;
-		if (lt_lseq(str, CLSTR("elif"))) return 1;
 		break;
 
 	case 'f':
+		if (lt_lseq(str, CLSTR("false"))) return 1;
 		if (lt_lseq(str, CLSTR("for"))) return 1;
 		break;
 
@@ -59,6 +63,10 @@ b8 is_keyword(lstr_t str) {
 		if (lt_lseq(str, CLSTR("ifndef"))) return 1;
 		break;
 
+	case 'n':
+		if (lt_lseq(str, CLSTR("nullptr"))) return 1;
+		break;
+
 	case 'r':
 		if (lt_lseq(str, CLSTR("register"))) return 1;
 		if (lt_lseq(str, CLSTR("return"))) return 1;
@@ -67,10 +75,13 @@ b8 is_keyword(lstr_t str) {
 	case 's':
 		if (lt_lseq(str, CLSTR("switch"))) return 1;
 		if (lt_lseq(str, CLSTR("static"))) return 1;
+		if (lt_lseq(str, CLSTR("static_assert"))) return 1;
 		if (lt_lseq(str, CLSTR("sizeof"))) return 1;
 		break;
 
 	case 't':
+		if (lt_lseq(str, CLSTR("thread_local"))) return 1;
+		if (lt_lseq(str, CLSTR("true"))) return 1;
 		if (lt_lseq(str, CLSTR("typedef"))) return 1;
 		break;
 
@@ -96,6 +107,7 @@ b8 is_datatype(lstr_t str) {
 	switch (str.str[0]) {
 	case 'b':
 		if (lt_lseq(str, CLSTR("b8"))) return 1;
+		if (lt_lseq(str, CLSTR("bool"))) return 1;
 		break;
 
 	case 'c':
@@ -128,6 +140,10 @@ b8 is_datatype(lstr_t str) {
 
 	case 'l':
 		if (lt_lseq(str, CLSTR("long"))) return 1;
+		break;
+
+	case 'n':
+		if (lt_lseq(str, CLSTR("nullptr_t"))) return 1;
 		break;
 
 	case 's':
