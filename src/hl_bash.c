@@ -34,6 +34,7 @@ hl_mode_t keyword(lstr_t str) {
 	if (lt_lseq(str, CLSTR("then"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("export"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("return"))) return HLM_KEYWORD;
+	if (lt_lseq(str, CLSTR("exec"))) return HLM_KEYWORD;
 	return HLM_FUNCTION;
 }
 
@@ -61,7 +62,7 @@ cmd_start:
 		if (it < end && *it == '=') {
 			EMIT(HLM_IDENTIFIER);
 		}
-		else if (lt_lseq(cmd, CLSTR("sudo"))) {
+		else if (lt_lseq(cmd, CLSTR("sudo")) || lt_lseq(cmd, CLSTR("exec"))) {
 			EMIT(HLM_KEYWORD);
 
 			for (;;) {
