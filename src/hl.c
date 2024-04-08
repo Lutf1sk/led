@@ -78,6 +78,7 @@ struct {
 	{ CLSTR("javascript"),	HL_JS },
 	{ CLSTR("git_commit"),	HL_GIT_COMMIT },
 	{ CLSTR("makefile"),	HL_MAKEFILE },
+	{ CLSTR("bash"),		HL_BASH },
 };
 
 hl_mode_t hl_find_mode_by_name(lstr_t name) {
@@ -128,6 +129,7 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_arena_t* alloc) {
 	case HL_JS: return hl_generate_js(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
 	case HL_MAKEFILE: return hl_generate_makefile(doc, alloc);
+	case HL_BASH: return hl_generate_bash(doc, alloc);
 	case HL_UNKNOWN: return NULL;
 	default: LT_ASSERT_NOT_REACHED(); return NULL;
 	}

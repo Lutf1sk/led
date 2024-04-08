@@ -50,6 +50,7 @@ enum hl_mode {
 	HL_GIT_COMMIT,
 	HL_UNKNOWN,
 	HL_MAKEFILE,
+	HL_BASH,
 } hl_mode_t;
 
 hl_mode_t hl_find_mode_by_name(lstr_t name);
@@ -60,6 +61,7 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_arena_t* alloc);
 
 highl_t** hl_generate_c(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_makefile(doc_t* doc, lt_arena_t* alloc);
+highl_t** hl_generate_bash(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_cpp(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_rust(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_cs(doc_t* doc, lt_arena_t* alloc);

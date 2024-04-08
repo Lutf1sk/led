@@ -53,7 +53,7 @@ highl_t* gen_line(lstr_t line, lt_arena_t* alloc) {
 	// conditionals
 	if (!is_command) {
 		start = it;
-		while (it < end && lt_is_ident_body(*it))
+		while (it < end && (lt_is_ident_body(*it) || *it == '-'))
 			++it;
 		if (it > start)
 			EMIT(keyword(lt_lsfrom_range(start, it)));

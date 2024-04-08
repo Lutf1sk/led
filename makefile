@@ -6,6 +6,7 @@ SRC := \
 	src/clr.c \
 	src/doc.c \
 	src/hl.c \
+	src/hl_bash.c \
 	src/hl_c.c \
 	src/hl_cpp.c \
 	src/hl_rust.c \
