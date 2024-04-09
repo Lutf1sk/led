@@ -120,3 +120,4 @@ Similarly a ```<block>``` is any number of commands, terminated either by the en
 
 ```c<clipboard>p```: if clipboard <clipboard> is present (length is not zero).
 
+```p<position>```: if current cursor position is equal to ```<position>```

@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
 
 	lstr_t conf_file;
-	if (lt_freadallp(cpath, &conf_file, alloc)) {
+	if (lt_freadallp_utf8(cpath, &conf_file, alloc)) {
 		lt_ferrf("failed to read config file\n");
 	}
 	lt_conf_t config, *found;

@@ -74,7 +74,7 @@ void input_editor(editor_t* ed, u32 c) {
 		lt_texted_delete_selection_prefix(txed, CLSTR("// // "));
 		break;
 
-	case '\\' | LT_TERM_MOD_CTRL: modified = 0;
+	case '\\' | LT_TERM_MOD_CTRL: modified = 0; case 'x' | LT_TERM_MOD_ALT:
 		command();
 		break;
 
@@ -136,6 +136,7 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
+	case 'U' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -144,6 +145,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
+	case 'u' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -185,6 +187,7 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
+	case 'D' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
@@ -195,6 +198,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
+	case 'd' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
@@ -235,11 +239,13 @@ void input_editor(editor_t* ed, u32 c) {
 
 	// ----- DELETE
 
+	case LT_TERM_KEY_DELETE | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DELETE | LT_TERM_MOD_CTRL: lt_texted_delete_word_fwd(txed); break;
 	case LT_TERM_KEY_DELETE: lt_texted_delete_fwd(txed); break;
 
 	// ----- BACKSPACE
 
+	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL: lt_texted_delete_word_bwd(txed); break;
 	case LT_TERM_KEY_BSPACE: lt_texted_delete_bwd(txed); break;
 

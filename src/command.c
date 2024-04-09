@@ -19,6 +19,7 @@ typedef
 struct pos {
 	isz line;
 	isz col;
+	b8 sync_tx;
 } pos_t;
 
 static void skip_single_command(ctx_t* cx);
@@ -146,14 +147,15 @@ pos_t parse_pos(ctx_t* cx) {
 	pos_t pos;
 	pos.line = txed->cursor_y;
 	pos.col = txed->cursor_x;
+	pos.sync_tx = 0;
 
 	if (cx->it >= cx->end) {
 		return pos;
 	}
 
 	switch (*cx->it++) {
-	case 'f': pos.col += parse_uint(cx); break;
-	case 'b': pos.col -= parse_uint(cx); break;
+	case 'f': pos.col += parse_uint(cx); pos.sync_tx = 1; break;
+	case 'b': pos.col -= parse_uint(cx); pos.sync_tx = 1; break;
 	case 'u': pos.line -= parse_uint(cx); break;
 	case 'd': pos.line += parse_uint(cx); break;
 
@@ -162,8 +164,8 @@ pos_t parse_pos(ctx_t* cx) {
 			break;
 		}
 		switch (*cx->it++) {
-		case 'f': pos.col = lt_texted_find_word_fwd(txed); break;
-		case 'b': pos.col = lt_texted_find_word_bwd(txed); break;
+		case 'f': pos.col = lt_texted_find_word_fwd(txed); pos.sync_tx = 1; break;
+		case 'b': pos.col = lt_texted_find_word_bwd(txed); pos.sync_tx = 1; break;
 		default: --cx->it; break;
 		}
 		break;
@@ -171,11 +173,13 @@ pos_t parse_pos(ctx_t* cx) {
 	case 't':
 		pos.line = 0;
 		pos.col = 0;
+		pos.sync_tx = 1;
 		break;
 
 	case 'e':
 		pos.line = lt_texted_line_count(txed) - 1;
 		pos.col = lt_texted_line_len(txed, pos.line);
+		pos.sync_tx = 1;
 		break;
 
 	case 's':
@@ -183,8 +187,8 @@ pos_t parse_pos(ctx_t* cx) {
 			break;
 		}
 		switch (*cx->it++) {
-		case 's': lt_texted_get_selection(txed, &pos.line, &pos.col, NULL, NULL); break;
-		case 'e': lt_texted_get_selection(txed, NULL, NULL, &pos.line, &pos.col); break;
+		case 's': lt_texted_get_selection(txed, &pos.col, &pos.line, NULL, NULL); pos.sync_tx = 1; break;
+		case 'e': lt_texted_get_selection(txed, NULL, NULL, &pos.col, &pos.line); pos.sync_tx = 1; break;
 		default: --cx->it; break;
 		}
 		break;
@@ -194,17 +198,20 @@ pos_t parse_pos(ctx_t* cx) {
 			break;
 		}
 		switch (*cx->it++) {
-		case 's': pos.col = 0; break;
-		case 'e': pos.col = lt_texted_line_len(txed, pos.line); break;
-		default: --cx->it; pos.line = lt_isz_max(parse_uint(cx) - 1, 0); break;
+		case 's': pos.col = 0; pos.sync_tx = 1; break;
+		case 'e': pos.col = lt_texted_line_len(txed, pos.line); pos.sync_tx = 1; break;
+		default: --cx->it; pos.line = lt_isz_max(parse_uint(cx) - 1, 0); pos.sync_tx = 1; break;
 		}
 		break;
 
-	case 'i': pos.col = lt_texted_count_line_leading_indent(txed, pos.line); break;
-	case 'c': pos.col = parse_uint(cx); break;
+	case 'i': pos.col = lt_texted_count_line_leading_indent(txed, pos.line); pos.sync_tx = 1; break;
+	case 'c': pos.col = parse_uint(cx); pos.sync_tx = 1; break;
 	case ' ': case '\t': case '\v': break;
 	default: --cx->it; break;
 	}
+
+	pos.line = lt_clamp(pos.line, 0, lt_texted_line_count(txed) - 1);
+	pos.col = lt_clamp(pos.col, 0, lt_texted_line_len(txed, pos.line));
 
 	return pos;
 }
@@ -232,6 +239,11 @@ b8 parse_condition(ctx_t* cx) {
 		}
 		++cx->it;
 		return clipboards[clipboard].str.len > 0;
+
+	case 'p': {
+		pos_t cmp_pos = parse_pos(cx);
+		return txed->cursor_x == cmp_pos.col && txed->cursor_y == cmp_pos.line;
+	}
 
 	default: --cx->it; break;
 	}
@@ -279,7 +291,17 @@ void execute_single_command(ctx_t* cx) {
 	case 'j': sync_selection = 1;
 	case 's': {
 		pos_t pos = parse_pos(cx);
-		lt_texted_gotoxy(txed, pos.col, pos.line, sync_selection);
+		txed->cursor_y = lt_min(pos.line, lt_texted_line_count(txed));
+		txed->cursor_x = lt_min(pos.col, lt_texted_line_len(txed, pos.line));
+		if (pos.sync_tx) {
+			lt_texted_sync_tx(txed);
+		}
+		else {
+			lt_texted_gototx(txed);
+		}
+		if (sync_selection) {
+			lt_texted_sync_selection(txed);
+		}
 	}	break;
 
 	case 'c': {

@@ -161,12 +161,12 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 		update_file_list();
 	}	break;
 
-	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
+	case LT_TERM_KEY_UP: case 'l' | LT_TERM_MOD_ALT:
 		if (selected_index && --selected_index < visible_index) {
 			--visible_index;
 		}
 		break;
-	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
+	case LT_TERM_KEY_DOWN: case 'k' | LT_TERM_MOD_ALT:
 		if (selected_index < lt_darr_count(files) - 1 && ++selected_index >= visible_index + MAX_ENTRY_COUNT) {
 			++visible_index;
 		}

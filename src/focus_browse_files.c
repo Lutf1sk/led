@@ -104,13 +104,13 @@ void input_browse_files(editor_t* ed, u32 c) {
 		edit_file(ed, selected ? selected : doc);
 		break;
 
-	case LT_TERM_KEY_UP: case 'k' | LT_TERM_MOD_ALT:
+	case LT_TERM_KEY_UP: case 'l' | LT_TERM_MOD_ALT:
 		if (selected_index) {
 			--selected_index;
 		}
 		break;
 
-	case LT_TERM_KEY_DOWN: case 'j' | LT_TERM_MOD_ALT:
+	case LT_TERM_KEY_DOWN: case 'k' | LT_TERM_MOD_ALT:
 		if (selected_index + 1 < max_index) {
 			++selected_index;
 		}
