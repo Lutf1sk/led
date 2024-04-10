@@ -226,6 +226,7 @@ int main(int argc, char** argv) {
 
 	lt_arena_t* arena = lt_amcreate(NULL, LT_GB(1), 0);
 	lt_alloc_t* alloc = (lt_alloc_t*)arena;
+	void* restore = lt_amsave(arena);
 
 	lstr_t conf_file;
 	if (lt_freadallp_utf8(cpath, &conf_file, alloc)) {
@@ -248,15 +249,15 @@ int main(int argc, char** argv) {
 	keybinds_load(lt_conf_find_array(&config, CLSTR("keybinds"), &found));
 	hl_load(lt_conf_find_array(&config, CLSTR("highlight"), &found));
 
-	lt_conf_free(&config, alloc);
+	lt_amrestore(arena, restore);
+
+	write_buf = lt_malloc(alloc, LT_KB(256));
+	editor.hl_arena = arena;
+	editor.hl_restore = lt_amsave(arena);
 
 	for (usz i = 0; i < lt_darr_count(open_paths); ++i) {
 		fb_open(&editor, open_paths[i]);
 	}
-
-	write_buf = lt_malloc(alloc, LT_MB(4));
-	editor.hl_arena = arena;
-	editor.hl_restore = lt_amsave(arena);
 
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
 

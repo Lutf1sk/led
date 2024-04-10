@@ -150,7 +150,7 @@ void keybinds_load(lt_conf_t* kbs) {
 
 		lstr_t cmd = NLSTR();
 		if (lt_conf_find_str(kb, CLSTR("command"), &cmd)) {
-			reg_keybind_command(key, cmd);
+			reg_keybind_command(key, lt_strdup(lt_libc_heap, cmd));
 		}
 	}
 }
