@@ -154,3 +154,36 @@ void halfstep_right(editor_t* ed, b8 sync_selection) {
 	lt_texted_gotox(txed, lt_isz_clamp(move_to, 0, len), sync_selection);
 }
 
+void unindent_selection(editor_t* ed) {
+	lt_texted_t* txed = &ed->doc->ed;
+
+	usz start_y, end_y;
+	lt_texted_get_selection(txed, NULL, &start_y, NULL, &end_y);
+
+	for (usz i = start_y; i <= end_y; ++i) {
+		lstr_t line = lt_texted_line_str(txed, i);
+		if (!line.len) {
+			continue;
+		}
+
+		usz erase = 1;
+		if (line.str[0] == ' ') {
+			while (erase < ed->tab_size && erase < line.len && line.str[erase] == ' ') {
+				++erase;
+			}
+		}
+		else if (line.str[0] != '\t') {
+			continue;
+		}
+
+		lt_darr_erase(txed->lines[i], 0, erase);
+
+		if (i == txed->cursor_y) {
+			txed->cursor_x = lt_isz_clamp(txed->cursor_x - erase, 0, lt_darr_count(txed->lines[txed->cursor_y]));
+			lt_texted_sync_tx(txed);
+		}
+		if (i == txed->select_y) {
+			txed->select_x = lt_isz_clamp(txed->select_x - erase, 0, lt_darr_count(txed->lines[txed->select_y]));
+		}
+	}
+}

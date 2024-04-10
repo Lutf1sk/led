@@ -26,9 +26,10 @@ struct editor {
 	isz hstart, vstart;
 
 	u8 relative_linenums;
+	u8 await_utf8;
+	b8 tabs_to_spaces;
 
 	u64 vstep_timeout_at_ms;
-	u8 await_utf8;
 	usz consec_cup;
 	usz consec_cdn;
 
@@ -57,5 +58,7 @@ void ed_regenerate_hl(editor_t* ed);
 
 void halfstep_left(editor_t* ed, b8 sync_selection);
 void halfstep_right(editor_t* ed, b8 sync_selection);
+
+void unindent_selection(editor_t* ed);
 
 #endif

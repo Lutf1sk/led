@@ -252,17 +252,31 @@ void input_editor(editor_t* ed, u32 c) {
 	// ----- TAB
 
 	case LT_TERM_KEY_TAB | LT_TERM_MOD_SHIFT:
-		lt_texted_delete_selection_prefix(txed, CLSTR("\t"));
+		unindent_selection(ed);
 		break;
 
-	case LT_TERM_KEY_TAB:
+	case LT_TERM_KEY_TAB: {
+		char space_buf[256];
+		usz tab_size = lt_min(ed->tab_size, sizeof(space_buf));
+		lt_mset8(space_buf, ' ', tab_size);
+
 		if (lt_texted_selection_present(txed)) {
-			lt_texted_prefix_nonempty_selection(txed, CLSTR("\t"));
+			if (ed->tabs_to_spaces) {
+				lt_texted_prefix_nonempty_selection(txed, LSTR(space_buf, tab_size));
+			}
+			else {
+				lt_texted_prefix_nonempty_selection(txed, CLSTR("\t"));
+			}
+		}
+		else if (ed->tabs_to_spaces) {
+			usz screen_pos = cursor_x_to_screen_x(ed, lt_texted_line_str(txed, txed->cursor_y), txed->cursor_x);
+			usz space_count = ed->tab_size - screen_pos % ed->tab_size;
+			lt_texted_input_str(txed, LSTR(space_buf, space_count));
 		}
 		else {
 			lt_texted_input_str(txed, CLSTR("\t"));
 		}
-		break;
+	}	break;
 
 	// ----- MISC.
 

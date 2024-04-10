@@ -243,6 +243,7 @@ int main(int argc, char** argv) {
 	editor.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
 	editor.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
 	editor.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
+	editor.tabs_to_spaces = lt_conf_find_bool_default(&config, CLSTR("editor.tabs_to_spaces"), 0);
 
 	clr_load(&config);
 	keybind_init();
