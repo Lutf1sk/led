@@ -131,7 +131,7 @@ void draw_editor(editor_t* ed) {
 				sel = 0;
 			}
 
-			while (hl && j >= next_hl) {
+			while (hl && hl->next && j >= next_hl) {
 				hl = hl->next;
 				if (!sel) {
 					rec_str(get_highl(hl));
