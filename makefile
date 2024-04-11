@@ -36,7 +36,12 @@ LT_ENV :=
 # -----== COMPILER
 CC := cc
 CC_WARN := -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
-CC_FLAGS := -I$(LT_PATH)/include/ -std=c2x -fmax-errors=3 $(CC_WARN) -mavx2 -masm=intel
+CC_FLAGS := -I$(LT_PATH)/include/ -std=c2x -fmax-errors=3 $(CC_WARN)
+
+ifndef ARM
+	CC_FLAGS += -mavx2 -masm=intel
+	LT_ENV += ARM=1
+endif
 
 ifdef WINDOWS
 	CC = x86_64-w64-mingw32-gcc
