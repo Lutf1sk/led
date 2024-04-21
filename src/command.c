@@ -417,6 +417,20 @@ void execute_single_command(ctx_t* cx) {
 			if (mode != HL_UNKNOWN)
 				cx->ed->doc->hl_mode = mode;
 		}
+		else if (lt_lseq(command, CLSTR("tabs"))) {
+			cx->ed->tabs_to_spaces = 0;
+		}
+		else if (lt_lseq(command, CLSTR("spaces"))) {
+			cx->ed->tabs_to_spaces = 1;
+		}
+		else if (lt_lseq(command, CLSTR("tabsize"))) {
+			skip_whitespace(cx);
+			lstr_t size_str = parse_string(cx);
+			u64 size;
+			if (lt_lstou(size_str, &size) == LT_SUCCESS) {
+				cx->ed->tab_size = size;
+			}
+		}
 
 		cx->it = cx->end;
 		break;
