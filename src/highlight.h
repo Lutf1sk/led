@@ -45,6 +45,7 @@ enum hl_mode {
 	HL_CS,
 	HL_ONYX,
 	HL_LPC,
+	HL_L,
 	HL_RUST,
 	HL_JS,
 	HL_GIT_COMMIT,
@@ -67,6 +68,7 @@ highl_t** hl_generate_rust(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_cs(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_onyx(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_lpc(doc_t* doc, lt_arena_t* alloc);
+highl_t** hl_generate_l(doc_t* doc, lt_arena_t* alloc);
 highl_t** hl_generate_js(doc_t* doc, lt_arena_t* alloc);
 
 void hl_load(lt_conf_t* hl);

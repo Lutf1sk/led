@@ -70,6 +70,7 @@ struct {
 	hl_mode_t mode;
 } mode_strs[] = {
 	{ CLSTR("c"),			HL_C },
+	{ CLSTR("l"),			HL_L },
 	{ CLSTR("c++"),			HL_CPP },
 	{ CLSTR("c#"),			HL_CS },
 	{ CLSTR("onyx"),		HL_ONYX },
@@ -125,6 +126,7 @@ highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_arena_t* alloc) {
 	case HL_CS: return hl_generate_cs(doc, alloc);
 	case HL_ONYX: return hl_generate_onyx(doc, alloc);
 	case HL_LPC: return hl_generate_lpc(doc, alloc);
+	case HL_L: return hl_generate_l(doc, alloc);
 	case HL_RUST: return hl_generate_rust(doc, alloc);
 	case HL_JS: return hl_generate_js(doc, alloc);
 	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);

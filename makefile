@@ -13,6 +13,7 @@ SRC := \
 	src/hl_cs.c \
 	src/hl_onyx.c \
 	src/hl_lpc.c \
+	src/hl_l.c \
 	src/hl_js.c \
 	src/hl_makefile.c \
 	src/editor.c \
