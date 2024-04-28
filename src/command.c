@@ -427,7 +427,7 @@ void execute_single_command(ctx_t* cx) {
 			skip_whitespace(cx);
 			lstr_t size_str = parse_string(cx);
 			u64 size;
-			if (lt_lstou(size_str, &size) == LT_SUCCESS) {
+			if (lt_lstou(size_str, &size) == LT_SUCCESS && size) {
 				cx->ed->tab_size = size;
 			}
 		}
