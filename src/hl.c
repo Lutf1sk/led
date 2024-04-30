@@ -68,19 +68,16 @@ static lt_darr(modeext_t) extension_modes = NULL;
 struct {
 	lstr_t str;
 	hl_mode_t mode;
+	lstr_t comment_style;
 } mode_strs[] = {
-	{ CLSTR("c"),			HL_C },
-	{ CLSTR("l"),			HL_L },
-	{ CLSTR("c++"),			HL_CPP },
-	{ CLSTR("c#"),			HL_CS },
-	{ CLSTR("onyx"),		HL_ONYX },
-	{ CLSTR("lpc"),			HL_LPC },
-	{ CLSTR("rust"),		HL_RUST },
-	{ CLSTR("javascript"),	HL_JS },
-	{ CLSTR("git_commit"),	HL_GIT_COMMIT },
-	{ CLSTR("makefile"),	HL_MAKEFILE },
-	{ CLSTR("bash"),		HL_BASH },
+#define HLMODE_OP(ename, sname, comment) { CLSTR(sname), HL_##ename, CLSTR(comment) },
+	FOR_EACH_HLMODE()
+#undef HLMODE_OP
 };
+
+lstr_t comment_style_by_hlmode(hl_mode_t mode) {
+	return mode_strs[mode].comment_style;
+}
 
 hl_mode_t hl_find_mode_by_name(lstr_t name) {
 	for (usz i = 0; i < sizeof(mode_strs) / sizeof(*mode_strs); ++i) {

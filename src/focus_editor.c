@@ -70,8 +70,12 @@ void input_editor(editor_t* ed, u32 c) {
 	case '/' | LT_TERM_MOD_CTRL:
 		// This is a pretty hackish way of toggling a comment,
 		// might want to improve this later
-		lt_texted_prefix_nonempty_selection(txed, CLSTR("// "));
-		lt_texted_delete_selection_prefix(txed, CLSTR("// // "));
+		lstr_t comment_style = comment_style_by_hlmode(ed->doc->hl_mode);
+		char stylex2[32];
+		memcpy(stylex2, comment_style.str, comment_style.len);
+		memcpy(stylex2 + comment_style.len, comment_style.str, comment_style.len);
+		lt_texted_prefix_nonempty_selection(txed, comment_style);
+		lt_texted_delete_selection_prefix(txed, LSTR(stylex2, comment_style.len * 2));
 		break;
 
 	case '\\' | LT_TERM_MOD_CTRL: modified = 0; case 'x' | LT_TERM_MOD_ALT:
