@@ -70,7 +70,7 @@ void input_editor(editor_t* ed, u32 c) {
 	case '/' | LT_TERM_MOD_CTRL:
 		// This is a pretty hackish way of toggling a comment,
 		// might want to improve this later
-		lstr_t comment_style = comment_style_by_hlmode(ed->doc->hl_mode);
+		lstr_t comment_style = modes[ed->doc->hl_mode].comment_style;
 		char stylex2[32];
 		memcpy(stylex2, comment_style.str, comment_style.len);
 		memcpy(stylex2 + comment_style.len, comment_style.str, comment_style.len);

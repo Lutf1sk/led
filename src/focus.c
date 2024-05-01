@@ -27,20 +27,28 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 	switch (key) {
 	case LT_TERM_KEY_LEFT: lt_texted_cursor_left(ed, 1); return 0;
 	case LT_TERM_KEY_RIGHT: lt_texted_cursor_right(ed, 1); return 0;
+	case LT_TERM_KEY_LEFT|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_LEFT|LT_TERM_MOD_CTRL: lt_texted_step_left(ed, 1); return 0;
+	case LT_TERM_KEY_RIGHT|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_RIGHT|LT_TERM_MOD_CTRL: lt_texted_step_right(ed, 1); return 0;
 	case LT_TERM_KEY_UP: lt_texted_cursor_up(ed, 1); return 0;
 	case LT_TERM_KEY_DOWN: lt_texted_cursor_down(ed, 1); return 0;
+	case LT_TERM_KEY_UP|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP|LT_TERM_MOD_CTRL: lt_texted_step_up(ed, 1); return 0;
+	case LT_TERM_KEY_DOWN|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN|LT_TERM_MOD_CTRL: lt_texted_step_down(ed, 1); return 0;
 
 	case LT_TERM_KEY_LEFT|LT_TERM_MOD_SHIFT: lt_texted_cursor_left(ed, 0); return 0;
 	case LT_TERM_KEY_RIGHT|LT_TERM_MOD_SHIFT: lt_texted_cursor_right(ed, 0); return 0;
+	case LT_TERM_KEY_LEFT|LT_TERM_MOD_ALT|LT_TERM_MOD_SHIFT:
 	case LT_TERM_KEY_LEFT|LT_TERM_MOD_CTRL|LT_TERM_MOD_SHIFT: lt_texted_step_left(ed, 0); return 0;
+	case LT_TERM_KEY_RIGHT|LT_TERM_MOD_ALT|LT_TERM_MOD_SHIFT:
 	case LT_TERM_KEY_RIGHT|LT_TERM_MOD_CTRL|LT_TERM_MOD_SHIFT: lt_texted_step_right(ed, 0); return 0;
 	case LT_TERM_KEY_UP|LT_TERM_MOD_SHIFT: lt_texted_cursor_up(ed, 0); return 0;
 	case LT_TERM_KEY_DOWN|LT_TERM_MOD_SHIFT: lt_texted_cursor_down(ed, 0); return 0;
+	case LT_TERM_KEY_UP|LT_TERM_MOD_ALT|LT_TERM_MOD_SHIFT:
 	case LT_TERM_KEY_UP|LT_TERM_MOD_CTRL|LT_TERM_MOD_SHIFT: lt_texted_step_up(ed, 0); return 0;
+	case LT_TERM_KEY_DOWN|LT_TERM_MOD_ALT|LT_TERM_MOD_SHIFT:
 	case LT_TERM_KEY_DOWN|LT_TERM_MOD_CTRL|LT_TERM_MOD_SHIFT: lt_texted_step_down(ed, 0); return 0;
 
 	case LT_TERM_KEY_HOME: lt_texted_gotox(ed, 0, 1); return 0;
@@ -54,7 +62,9 @@ b8 input_term_key(lt_texted_t* ed, u32 key) {
 
 	case LT_TERM_KEY_BSPACE: lt_texted_delete_bwd(ed); return 1;
 	case LT_TERM_KEY_DELETE: lt_texted_delete_fwd(ed); return 1;
+	case LT_TERM_KEY_BSPACE|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_BSPACE|LT_TERM_MOD_CTRL: lt_texted_delete_word_bwd(ed); return 1;
+	case LT_TERM_KEY_DELETE|LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DELETE|LT_TERM_MOD_CTRL: lt_texted_delete_word_fwd(ed); return 1;
 
 	case 'X'|LT_TERM_MOD_CTRL:

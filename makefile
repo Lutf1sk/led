@@ -5,7 +5,7 @@ SRC := \
 	src/clipboard.c \
 	src/clr.c \
 	src/doc.c \
-	src/hl.c \
+	src/highlight.c \
 	src/hl_bash.c \
 	src/hl_c.c \
 	src/hl_cpp.c \

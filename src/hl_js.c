@@ -191,7 +191,7 @@ highl_t* gen_line(lstr_t line, multiline_mode_t* ml_mode, lt_arena_t* alloc) {
 		c = line.str[i];
 		start = i++;
 
-		hl_mode_t mode = HLM_UNKNOWN;
+		modeid_t mode = HLM_UNKNOWN;
 
 		switch (c) {
 		case '/':

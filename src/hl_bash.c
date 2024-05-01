@@ -6,7 +6,7 @@
 #include "doc.h"
 
 static
-hl_mode_t keyword(lstr_t str) {
+modeid_t keyword(lstr_t str) {
 	if (lt_lseq(str, CLSTR("if"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("then"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("else"))) return HLM_KEYWORD;

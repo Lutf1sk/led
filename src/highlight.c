@@ -57,38 +57,35 @@ highl_t** hl_generate_git_commit(doc_t* doc, lt_arena_t* alloc) {
 	return lines;
 }
 
+static
+highl_t** hl_generate_unknown(doc_t* doc, lt_arena_t* alloc) {
+	return NULL;
+}
+
 typedef
 struct modeext {
 	lstr_t extension;
-	hl_mode_t mode;
+	modeid_t mode;
 } modeext_t;
 
 static lt_darr(modeext_t) extension_modes = NULL;
 
-struct {
-	lstr_t str;
-	hl_mode_t mode;
-	lstr_t comment_style;
-} mode_strs[] = {
-#define HLMODE_OP(ename, sname, comment) { CLSTR(sname), HL_##ename, CLSTR(comment) },
+mode_t modes[HL_COUNT] = {
+#define HLMODE_OP(ename, sname, comment, func) { CLSTR(sname), CLSTR(comment), func },
 	FOR_EACH_HLMODE()
 #undef HLMODE_OP
 };
 
-lstr_t comment_style_by_hlmode(hl_mode_t mode) {
-	return mode_strs[mode].comment_style;
-}
-
-hl_mode_t hl_find_mode_by_name(lstr_t name) {
-	for (usz i = 0; i < sizeof(mode_strs) / sizeof(*mode_strs); ++i) {
-		if (lt_lseq_nocase(name, mode_strs[i].str)) {
-			return mode_strs[i].mode;
+modeid_t hl_find_mode_by_name(lstr_t name) {
+	for (usz i = 0; i < HL_COUNT; ++i) {
+		if (lt_lseq_nocase(name, modes[i].name)) {
+			return i;
 		}
 	}
 	return HL_UNKNOWN;
 }
 
-hl_mode_t hl_find_mode_by_extension(lstr_t path) {
+modeid_t hl_find_mode_by_extension(lstr_t path) {
 	if (!extension_modes) {
 		return HL_UNKNOWN;
 	}
@@ -102,7 +99,7 @@ hl_mode_t hl_find_mode_by_extension(lstr_t path) {
 }
 
 void hl_register_extension(lstr_t extension, lstr_t mode_str) {
-	hl_mode_t mode = hl_find_mode_by_name(mode_str);
+	modeid_t mode = hl_find_mode_by_name(mode_str);
 	if (mode == HL_UNKNOWN) {
 		lt_werrf("unknown highlighting mode '%S'\n", mode_str);
 		return;
@@ -114,24 +111,6 @@ void hl_register_extension(lstr_t extension, lstr_t mode_str) {
 	}
 
 	lt_darr_push(extension_modes, (modeext_t){ lt_strdup(lt_libc_heap, extension), mode });
-}
-
-highl_t** hl_generate(doc_t* doc, hl_mode_t mode, lt_arena_t* alloc) {
-	switch (mode) {
-	case HL_C: return hl_generate_c(doc, alloc);
-	case HL_CPP: return hl_generate_cpp(doc, alloc);
-	case HL_CS: return hl_generate_cs(doc, alloc);
-	case HL_ONYX: return hl_generate_onyx(doc, alloc);
-	case HL_LPC: return hl_generate_lpc(doc, alloc);
-	case HL_L: return hl_generate_l(doc, alloc);
-	case HL_RUST: return hl_generate_rust(doc, alloc);
-	case HL_JS: return hl_generate_js(doc, alloc);
-	case HL_GIT_COMMIT: return hl_generate_git_commit(doc, alloc);
-	case HL_MAKEFILE: return hl_generate_makefile(doc, alloc);
-	case HL_BASH: return hl_generate_bash(doc, alloc);
-	case HL_UNKNOWN: return NULL;
-	default: LT_ASSERT_NOT_REACHED(); return NULL;
-	}
 }
 
 void hl_load(lt_conf_t* hls) {

@@ -61,4 +61,7 @@ void halfstep_right(editor_t* ed, b8 sync_selection);
 
 void unindent_selection(editor_t* ed);
 
+void auto_indent(editor_t* ed, usz line);
+void auto_indent_selection(editor_t* ed);
+
 #endif

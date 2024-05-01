@@ -257,6 +257,7 @@ void skip_single_command(ctx_t* cx) {
 	case 'c': parse_uint(cx); break;
 	case 'p': parse_uint(cx); break;
 	case 'd': break;
+	case 'a': break;
 	case 'l': parse_uint(cx); parse_block(cx); break;
 	case 'w': parse_string(cx); break;
 	case 'i':
@@ -324,10 +325,15 @@ void execute_single_command(ctx_t* cx) {
 	}	break;
 
 	case 'd':
-		if (lt_texted_selection_present(&cx->ed->doc->ed)) {
-			lt_texted_erase_selection(&cx->ed->doc->ed);
+		if (lt_texted_selection_present(txed)) {
+			lt_texted_erase_selection(txed);
 			cx->modified = 1;
 		}
+		break;
+
+	case 'a':
+		auto_indent_selection(cx->ed);
+		cx->modified = 1;
 		break;
 
 	case 'l': {
@@ -413,7 +419,7 @@ void execute_single_command(ctx_t* cx) {
 		if (lt_lseq(command, CLSTR("mode"))) {
 			skip_whitespace(cx);
 			lstr_t mode_str = parse_string(cx);
-			hl_mode_t mode = hl_find_mode_by_name(mode_str);
+			modeid_t mode = hl_find_mode_by_name(mode_str);
 			if (mode != HL_UNKNOWN)
 				cx->ed->doc->hl_mode = mode;
 		}

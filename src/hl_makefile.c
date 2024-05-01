@@ -14,7 +14,7 @@
 }
 
 static
-hl_mode_t keyword(lstr_t str) {
+modeid_t keyword(lstr_t str) {
 	if (lt_lseq(str, CLSTR("ifdef"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("ifndef"))) return HLM_KEYWORD;
 	if (lt_lseq(str, CLSTR("ifeq"))) return HLM_KEYWORD;
@@ -63,7 +63,7 @@ highl_t* gen_line(lstr_t line, lt_arena_t* alloc) {
 		char c = *it;
 		char* start = it++;
 
-		hl_mode_t mode = HLM_UNKNOWN;
+		modeid_t mode = HLM_UNKNOWN;
 
 		switch (c) {
 		case '#':

@@ -22,32 +22,14 @@
 
 #include "draw.h"
 
+static char* mode_clr_tab[HLM_COUNT];
+
 char* get_highl(highl_t* node) {
 	if (!node)
 		return clr_strs[CLR_EDITOR];
-
-	switch (node->mode) {
-	case HLM_STRING: return clr_strs[CLR_SYNTAX_STRING];
-	case HLM_CHAR: return clr_strs[CLR_SYNTAX_CHAR];
-	case HLM_NUMBER: return clr_strs[CLR_SYNTAX_NUMBER];
-
-	case HLM_IDENTIFIER: return clr_strs[CLR_SYNTAX_IDENTIFIER];
-	case HLM_KEYWORD: return clr_strs[CLR_SYNTAX_KEYWORD];
-	case HLM_COMMENT: return clr_strs[CLR_SYNTAX_COMMENT];
-	case HLM_DATATYPE: return clr_strs[CLR_SYNTAX_DATATYPE];
-
-	case HLM_FUNCTION: return clr_strs[CLR_SYNTAX_FUNCTION];
-
-	case HLM_HASH: return clr_strs[CLR_SYNTAX_HASH];
-	case HLM_OPERATOR: return clr_strs[CLR_SYNTAX_OPERATOR];
-	case HLM_PUNCTUATION: return clr_strs[CLR_SYNTAX_PUNCTUATION];
-
-	case HLM_INDENT:
+	if (node->mode == HLM_INDENT)
 		return clr_strs[(!node->next ? CLR_SYNTAX_TRAIL_INDENT : CLR_EDITOR)];
-
-	default:
-		return clr_strs[CLR_SYNTAX_UNKNOWN];
-	}
+	return mode_clr_tab[node->mode];
 }
 
 void draw_header(editor_t* ed) {
@@ -246,6 +228,19 @@ int main(int argc, char** argv) {
 	editor.tabs_to_spaces = lt_conf_find_bool_default(&config, CLSTR("editor.tabs_to_spaces"), 0);
 
 	clr_load(&config);
+	mode_clr_tab[HLM_STRING]      = clr_strs[CLR_SYNTAX_STRING];
+	mode_clr_tab[HLM_CHAR]        = clr_strs[CLR_SYNTAX_CHAR];
+	mode_clr_tab[HLM_NUMBER]      = clr_strs[CLR_SYNTAX_NUMBER];
+	mode_clr_tab[HLM_IDENTIFIER]  = clr_strs[CLR_SYNTAX_IDENTIFIER];
+	mode_clr_tab[HLM_KEYWORD]     = clr_strs[CLR_SYNTAX_KEYWORD];
+	mode_clr_tab[HLM_COMMENT]     = clr_strs[CLR_SYNTAX_COMMENT];
+	mode_clr_tab[HLM_DATATYPE]    = clr_strs[CLR_SYNTAX_DATATYPE];
+	mode_clr_tab[HLM_FUNCTION]    = clr_strs[CLR_SYNTAX_FUNCTION];
+	mode_clr_tab[HLM_HASH]        = clr_strs[CLR_SYNTAX_HASH];
+	mode_clr_tab[HLM_OPERATOR]    = clr_strs[CLR_SYNTAX_OPERATOR];
+	mode_clr_tab[HLM_PUNCTUATION] = clr_strs[CLR_SYNTAX_PUNCTUATION];
+	mode_clr_tab[HLM_UNKNOWN]     = clr_strs[CLR_SYNTAX_UNKNOWN];
+
 	keybind_init();
 	keybinds_load(lt_conf_find_array(&config, CLSTR("keybinds"), &found));
 	hl_load(lt_conf_find_array(&config, CLSTR("highlight"), &found));
