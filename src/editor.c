@@ -5,6 +5,7 @@
 #include <lt/ctype.h>
 #include <lt/mem.h>
 #include <lt/math.h>
+#include <lt/str.h>
 
 #include "editor.h"
 #include "highlight.h"
@@ -189,55 +190,98 @@ void unindent_selection(editor_t* ed) {
 }
 
 i8 bidir_tab[256] = {
-	['('] = 1,  ['{'] = 1,  ['['] = 1,  ['<'] = 1,
-	[')'] = -1, ['}'] = -1, [']'] = -1, ['>'] = -1,
+	['('] = 1,  ['{'] = 1,  ['['] = 1,
+	[')'] = -1, ['}'] = -1, [']'] = -1,
 };
+
+// returns new balance, writes last tested index to `out_x`
+isz bidir_match_balance(lstr_t str, isz bal, usz out_x[static 1]) {
+	char* it = str.str, *end = it + str.len;
+	while (it < end && bal) {
+		bal += bidir_tab[(u8)*it++];
+	}
+	*out_x = it - end;
+	return bal;
+}
+
+isz bidir_str_balance(lstr_t str) {
+	isz bal = 0;
+	for (char* it = str.str, *end = it + str.len; it < end; ++it) {
+		bal += bidir_tab[(u8)*it];
+	}
+	return bal;
+}
+
+doc_pos_t find_enclosing_block(editor_t* ed, usz line_idx) {
+	lt_texted_t* txed = &ed->doc->ed;
+	isz x = 0, y = line_idx - 1;
+	for (isz bal = -1; y >= 0 && bal; ++y) {
+		lstr_t line_str = lt_texted_line_str(txed, y);
+		bal += bidir_match_balance(line_str, bal, &x);
+	}
+	return (doc_pos_t) { .x = x, .y = y };
+}
+
+doc_pos_t find_enclosing_block_end(editor_t* ed, usz line_idx) {
+	lt_texted_t* txed = &ed->doc->ed;
+	return (doc_pos_t) { 0 };
+}
+
+u8 indent_size_tab[256] = {
+	[' '] = 1,
+	['\t'] = 1,
+	['\v'] = 1,
+	['\r'] = 1,
+	['\n'] = 1,
+};
+
+void update_tab_size(usz tab_size) {
+	indent_size_tab['\t'] = tab_size;
+}
+
+isz indent_in_spaces(lstr_t str, usz tab_size) {
+	isz indent = 0;
+	for (char* it = str.str, *end = it + str.len; it < end; ++it) {
+		indent += indent_size_tab[(u8)*it];
+	}
+	return indent;
+}
+
+lstr_t leading_indent(lstr_t str) {
+	usz i = 0;
+	while (i < str.len && indent_size_tab[(u8)str.str[i]]) {
+		++i;
+	}
+	return lt_lstake(str, i);
+}
 
 void auto_indent(editor_t* ed, usz line_idx) {
 	lt_texted_t* txed = &ed->doc->ed;
 
 	usz erase_chars = lt_texted_count_line_leading_indent(txed, line_idx);
-	if (lt_texted_line_len(txed, line_idx) == erase_chars && erase_chars) {
-		return;
-	}
 	lt_darr_erase(txed->lines[line_idx], 0, erase_chars);
 
-	isz first_nonempty = line_idx - 1;
-	usz initial_indent_chars;
-	for (;;) {
-		if (first_nonempty < 0) {
-			return;
-		}
-		initial_indent_chars = lt_texted_count_line_leading_indent(txed, first_nonempty);
-		if (lt_texted_line_len(txed, first_nonempty) != initial_indent_chars) {
+	lstr_t first_nonempty = NLSTR();
+	for (isz y = line_idx - 1; y >= 0; --y) {
+		first_nonempty = lt_texted_line_str(txed, y);
+		if (first_nonempty.len) {
 			break;
 		}
-		first_nonempty--;
 	}
 
-	isz indent = 0;
-	lstr_t line = lt_texted_line_str(txed, first_nonempty);
-	for (char* it = line.str, *end = it + initial_indent_chars; it < end; ++it) {
-		if (*it == '\t')
-			indent += ed->tab_size;
-		else
-			indent++;
-	}
+	isz indent = indent_in_spaces(leading_indent(first_nonempty), ed->tab_size);
+	isz dir = lt_isz_max(bidir_str_balance(first_nonempty), 0);
+	dir += (first_nonempty.len > 0 && first_nonempty.str[first_nonempty.len - 1] == ':');
 
-	isz dir = 0;
-	for (char* it = line.str, *end = it + line.len; it < end; ++it) {
-		dir += bidir_tab[(u8)*it] * ed->tab_size;
-	}
-
-	line = lt_texted_line_str(txed, line_idx);
+	lstr_t line = lt_texted_line_str(txed, line_idx);
 	for (char* it = line.str, *end = it + line.len; it < end && bidir_tab[(u8)*it] < 0; ++it) {
-		dir -= ed->tab_size;
+		dir--;
 	}
 
 	indent -= (dir < 0) * ed->tab_size;
 	indent += (dir > 0) * ed->tab_size;
 
-	if (indent < 0) {
+	if (indent <= 0) {
 		return;
 	}
 

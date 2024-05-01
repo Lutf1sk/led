@@ -25,10 +25,12 @@
 static char* mode_clr_tab[HLM_COUNT];
 
 char* get_highl(highl_t* node) {
-	if (!node)
+	if (!node) {
 		return clr_strs[CLR_EDITOR];
-	if (node->mode == HLM_INDENT)
+	}
+	if (node->mode == HLM_INDENT) {
 		return clr_strs[(!node->next ? CLR_SYNTAX_TRAIL_INDENT : CLR_EDITOR)];
+	}
 	return mode_clr_tab[node->mode];
 }
 
@@ -222,6 +224,7 @@ int main(int argc, char** argv) {
 
 	editor.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
 	editor.tab_size = lt_max(1, lt_conf_find_int_default(&config, CLSTR("editor.tab_size"), 4));
+	update_tab_size(editor.tab_size);
 	editor.vstep = lt_conf_find_int_default(&config, CLSTR("editor.vstep"), 2);
 	editor.vstep_timeout_ms = lt_conf_find_int_default(&config, CLSTR("editor.vstep_timeout_ms"), 250);
 	editor.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);

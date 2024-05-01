@@ -286,14 +286,13 @@ void input_editor(editor_t* ed, u32 c) {
 
 	case '\n':
 		delete_selection_if_present(ed);
-
-		lstr_t indent = lt_texted_line_str(txed, txed->cursor_y);
-		indent.len = lt_texted_count_line_leading_indent(txed, txed->cursor_y);
-
 		lt_texted_break_line(txed);
-		lt_texted_input_str(txed, indent);
-
 		auto_indent(ed, txed->cursor_y);
+		break;
+
+	case 'B' | LT_TERM_MOD_CTRL:
+		doc_pos_t block_start = find_enclosing_block(ed, txed->cursor_y);
+		lt_texted_gotoxy(txed, block_start.x, block_start.y, 1);
 		break;
 
 	case LT_TERM_KEY_F4: modified = 0; {

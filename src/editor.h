@@ -61,6 +61,11 @@ void halfstep_right(editor_t* ed, b8 sync_selection);
 
 void unindent_selection(editor_t* ed);
 
+void update_tab_size(usz tab_size);
+
+doc_pos_t find_enclosing_block(editor_t* ed, usz line_idx);
+doc_pos_t find_enclosing_block_end(editor_t* ed, usz line_idx);
+
 void auto_indent(editor_t* ed, usz line);
 void auto_indent_selection(editor_t* ed);
 
