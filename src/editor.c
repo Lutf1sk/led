@@ -194,13 +194,27 @@ i8 bidir_tab[256] = {
 	[')'] = -1, ['}'] = -1, [']'] = -1,
 };
 
-// returns new balance, writes last tested index to `out_x`
-isz bidir_match_balance(lstr_t str, isz bal, usz out_x[static 1]) {
-	char* it = str.str, *end = it + str.len;
-	while (it < end && bal) {
-		bal += bidir_tab[(u8)*it++];
+// returns new balance, if returned balance is 0; writes last tested index to `out_x`
+isz bidir_match_balance_fwd(lstr_t str, isz bal, usz out_x[static 1]) {
+	for (char* it = str.str, *end = it + str.len; it < end; ++it) {
+		bal += bidir_tab[(u8)*it];
+		if (!bal) {
+			*out_x = it - str.str;
+			return bal;
+		}
 	}
-	*out_x = it - end;
+	return bal;
+}
+
+// returns new balance, if returned balance is 0; writes last tested index to `out_x`
+isz bidir_match_balance_bwd(lstr_t str, isz bal, usz out_x[static 1]) {
+	for (char* start = str.str, *it = start + str.len - 1; it >= start; --it) {
+		bal += bidir_tab[(u8)*it];
+		if (!bal) {
+			*out_x = it - start;
+			return bal;
+		}
+	}
 	return bal;
 }
 
@@ -212,19 +226,49 @@ isz bidir_str_balance(lstr_t str) {
 	return bal;
 }
 
-doc_pos_t find_enclosing_block(editor_t* ed, usz line_idx) {
+doc_pos_t find_enclosing_block(editor_t* ed, isz x, isz y) {
 	lt_texted_t* txed = &ed->doc->ed;
-	isz x = 0, y = line_idx - 1;
-	for (isz bal = -1; y >= 0 && bal; ++y) {
+	isz bal = -1;
+	for (;;) {
+		if (y < 0) {
+			return (doc_pos_t) { 0 };
+		}
 		lstr_t line_str = lt_texted_line_str(txed, y);
-		bal += bidir_match_balance(line_str, bal, &x);
+		if (x >= 0) {
+			line_str.len = x;
+			x = -1;
+		}
+		bal = bidir_match_balance_bwd(line_str, bal, &x);
+		if (!bal) {
+			return (doc_pos_t) { .x = x + 1, .y = y };
+		}
+		--y;
 	}
-	return (doc_pos_t) { .x = x, .y = y };
 }
 
-doc_pos_t find_enclosing_block_end(editor_t* ed, usz line_idx) {
+doc_pos_t find_enclosing_block_end(editor_t* ed, isz x, isz y) {
 	lt_texted_t* txed = &ed->doc->ed;
-	return (doc_pos_t) { 0 };
+	isz bal = 1;
+	isz line_count = lt_texted_line_count(txed);
+	for (;;) {
+		if (y >= line_count) {
+			return (doc_pos_t) {
+				.x = lt_texted_line_len(txed, line_count - 1),
+				.y = line_count };
+		}
+		lstr_t line_str = lt_texted_line_str(txed, y);
+		isz xoffs = 0;
+		if (x >= 0) {
+			line_str = lt_lsdrop(line_str, x);
+			xoffs = x;
+			x = -1;
+		}
+		bal = bidir_match_balance_fwd(line_str, bal, &x);
+		if (!bal) {
+			return (doc_pos_t) { .x = x + xoffs, .y = y };
+		}
+		++y;
+	}
 }
 
 u8 indent_size_tab[256] = {
@@ -258,7 +302,7 @@ lstr_t leading_indent(lstr_t str) {
 void auto_indent(editor_t* ed, usz line_idx) {
 	lt_texted_t* txed = &ed->doc->ed;
 
-	usz erase_chars = lt_texted_count_line_leading_indent(txed, line_idx);
+	usz erase_chars = leading_indent(lt_texted_line_str(txed, line_idx)).len;
 	lt_darr_erase(txed->lines[line_idx], 0, erase_chars);
 
 	lstr_t first_nonempty = NLSTR();
