@@ -197,23 +197,23 @@ void auto_indent(editor_t* ed, usz line_idx) {
 	lt_texted_t* txed = &ed->doc->ed;
 
 	usz erase_chars = lt_texted_count_line_leading_indent(txed, line_idx);
-	if (erase_chars == lt_texted_line_len(txed, line_idx)) {
+	if (lt_texted_line_len(txed, line_idx) == erase_chars && erase_chars) {
 		return;
 	}
 	lt_darr_erase(txed->lines[line_idx], 0, erase_chars);
 
 	isz first_nonempty = line_idx - 1;
+	usz initial_indent_chars;
 	for (;;) {
 		if (first_nonempty < 0) {
 			return;
 		}
-		if (lt_texted_line_len(txed, first_nonempty)) {
+		initial_indent_chars = lt_texted_count_line_leading_indent(txed, first_nonempty);
+		if (lt_texted_line_len(txed, first_nonempty) != initial_indent_chars) {
 			break;
 		}
 		first_nonempty--;
 	}
-
-	usz initial_indent_chars = lt_texted_count_line_leading_indent(txed, first_nonempty);
 
 	isz indent = 0;
 	lstr_t line = lt_texted_line_str(txed, first_nonempty);
@@ -256,6 +256,7 @@ void auto_indent(editor_t* ed, usz line_idx) {
 	txed->cursor_x -= erase_chars - cut_chars;
 	txed->cursor_x += indent_chars - cut_chars;
 	lt_texted_sync_selection(txed);
+	lt_texted_sync_tx(txed);
 }
 
 void auto_indent_selection(editor_t* ed) {

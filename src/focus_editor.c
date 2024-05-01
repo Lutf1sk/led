@@ -292,6 +292,8 @@ void input_editor(editor_t* ed, u32 c) {
 
 		lt_texted_break_line(txed);
 		lt_texted_input_str(txed, indent);
+
+		auto_indent(ed, txed->cursor_y);
 		break;
 
 	case LT_TERM_KEY_F4: modified = 0; {
