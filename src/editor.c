@@ -308,25 +308,58 @@ lstr_t trailing_indent(lstr_t str) {
 	return str;
 }
 
+usz find_nonempty_bwd(lt_texted_t* txed, usz line_idx) {
+	for (isz i = line_idx - 1; i >= 0; --i) {
+		if (lt_texted_line_len(txed, i)) {
+			return i;
+		}
+	}
+	return 0;
+}
+
 void auto_indent(editor_t* ed, usz line_idx) {
 	lt_texted_t* txed = &ed->doc->ed;
 
-	usz erase_chars = leading_indent(lt_texted_line_str(txed, line_idx)).len;
+	lstr_t line = lt_texted_line_str(txed, line_idx);
+
+	isz erase_chars = leading_indent(line).len;
 	lt_darr_erase(txed->lines[line_idx], 0, erase_chars);
 
-	lstr_t first_nonempty = NLSTR();
-	for (isz y = line_idx - 1; y >= 0; --y) {
-		first_nonempty = lt_texted_line_str(txed, y);
-		if (first_nonempty.len) {
-			break;
+	if (line_idx == txed->cursor_y) {
+		txed->cursor_x = lt_isz_max(txed->cursor_x - erase_chars, 0);
+		lt_texted_sync_selection(txed);
+		lt_texted_sync_tx(txed);
+	}
+
+	if (!line_idx) {
+		return;
+	}
+
+	usz first_nonempty_idx = find_nonempty_bwd(txed, line_idx);
+	lstr_t first_nonempty = lt_texted_line_str(txed, first_nonempty_idx);
+
+	lstr_t indent_str = leading_indent(first_nonempty);
+	isz indent = indent_in_spaces(indent_str, ed->tab_size);
+	isz dir = lt_isz_max(bidir_str_balance(first_nonempty), 0);
+
+	if (first_nonempty_idx != line_idx && first_nonempty.len) {
+		if (line.len && line.str[line.len - 1] == ':') {
+			--dir;
+		}
+
+		char last_char = first_nonempty.str[first_nonempty.len - 1];
+		if (last_char == ':' || last_char == ')') {
+			++dir;
+		}
+		else {
+			usz prev_line_idx = find_nonempty_bwd(txed, first_nonempty_idx);
+			if (prev_line_idx != first_nonempty_idx) {
+				lstr_t prev_line = lt_texted_line_str(txed, prev_line_idx);
+				dir -= (prev_line.len && prev_line.str[prev_line.len - 1] == ')');
+			}
 		}
 	}
 
-	isz indent = indent_in_spaces(leading_indent(first_nonempty), ed->tab_size);
-	isz dir = lt_isz_max(bidir_str_balance(first_nonempty), 0);
-	dir += (first_nonempty.len > 0 && first_nonempty.str[first_nonempty.len - 1] == ':');
-
-	lstr_t line = lt_texted_line_str(txed, line_idx);
 	for (char* it = line.str, *end = it + line.len; it < end && bidir_tab[(u8)*it] < 0; ++it) {
 		dir--;
 	}
@@ -334,26 +367,26 @@ void auto_indent(editor_t* ed, usz line_idx) {
 	indent -= (dir < 0) * ed->tab_size;
 	indent += (dir > 0) * ed->tab_size;
 
-	if (indent <= 0) {
-		return;
+	if (indent < 0) {
+		indent = 0;
 	}
 
 	char indent_with = '\t';
-	usz indent_chars = indent / ed->tab_size;
+	isz indent_chars = indent / ed->tab_size;
 	if (ed->tabs_to_spaces) {
 		indent_with = ' ';
 		indent_chars *= ed->tab_size;
 	}
 
-	for (usz i = 0; i < indent_chars; ++i) {
+	for (isz i = 0; i < indent_chars; ++i) {
 		lt_darr_insert(txed->lines[line_idx], 0, &indent_with, 1);
 	}
 
-	usz cut_chars = lt_isz_max(erase_chars - txed->cursor_x, 0);
-	txed->cursor_x -= erase_chars - cut_chars;
-	txed->cursor_x += indent_chars - cut_chars;
-	lt_texted_sync_selection(txed);
-	lt_texted_sync_tx(txed);
+	if (line_idx == txed->cursor_y) {
+		txed->cursor_x += indent_chars;
+		lt_texted_sync_selection(txed);
+		lt_texted_sync_tx(txed);
+	}
 }
 
 void auto_indent_selection(editor_t* ed) {

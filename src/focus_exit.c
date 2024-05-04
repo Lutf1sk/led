@@ -59,4 +59,3 @@ void input_exit(editor_t* ed, u32 c) {
 		break;
 	}
 }
-
