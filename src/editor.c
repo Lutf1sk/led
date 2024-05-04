@@ -299,6 +299,15 @@ lstr_t leading_indent(lstr_t str) {
 	return lt_lstake(str, i);
 }
 
+lstr_t trailing_indent(lstr_t str) {
+	for (char* start = str.str, *it = start + str.len - 1; it >= start; --it) {
+		if (!indent_size_tab[(u8)*it]) {
+			return lt_lsfrom_range(it + 1, str.str + str.len);
+		}
+	}
+	return str;
+}
+
 void auto_indent(editor_t* ed, usz line_idx) {
 	lt_texted_t* txed = &ed->doc->ed;
 
@@ -353,5 +362,17 @@ void auto_indent_selection(editor_t* ed) {
 
 	for (usz i = start_y; i <= end_y; ++i) {
 		auto_indent(ed, i);
+	}
+}
+
+void remove_trailing_indent(editor_t* ed) {
+	lt_texted_t* txed = &ed->doc->ed;
+	usz line_count = lt_texted_line_count(txed);
+	for (usz i = 0; i < line_count; ++i) {
+		lstr_t line = lt_texted_line_str(txed, i);
+		lstr_t trailing = trailing_indent(line);
+		if (!(i == txed->cursor_y && txed->cursor_x + line.str > trailing.str)) {
+			lt_darr_erase(txed->lines[i], trailing.str - line.str, trailing.len);
+		}
 	}
 }

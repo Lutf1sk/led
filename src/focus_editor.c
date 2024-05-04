@@ -62,6 +62,10 @@ void input_editor(editor_t* ed, u32 c) {
 		break;
 
 	case 'S' | LT_TERM_MOD_CTRL: modified = 0;
+		if (ed->remove_trailing_indent) {
+			remove_trailing_indent(ed);
+		}
+
 		if (!doc_save(doc)) {
 			notify_error("Failed to save document");
 		}

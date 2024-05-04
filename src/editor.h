@@ -25,6 +25,7 @@ struct editor {
 	isz width, height;
 	isz hstart, vstart;
 
+	b8 remove_trailing_indent;
 	u8 relative_linenums;
 	u8 await_utf8;
 	b8 tabs_to_spaces;
@@ -68,5 +69,7 @@ doc_pos_t find_enclosing_block_end(editor_t* ed, isz x, isz y);
 
 void auto_indent(editor_t* ed, usz line);
 void auto_indent_selection(editor_t* ed);
+
+void remove_trailing_indent(editor_t* ed);
 
 #endif
