@@ -176,6 +176,8 @@ lstr_t get_config_path(void) {
 #include <lt/ansi.h>
 
 int main(int argc, char** argv) {
+	lt_err_t err;
+
 	LT_DEBUG_INIT();
 
 	lstr_t cpath = NLSTR();
@@ -213,13 +215,13 @@ int main(int argc, char** argv) {
 	void* restore = lt_amsave(arena);
 
 	lstr_t conf_file;
-	if (lt_freadallp_utf8(cpath, &conf_file, alloc)) {
-		lt_ferrf("failed to read config file\n");
+	if ((err = lt_freadallp_utf8(cpath, &conf_file, alloc))) {
+		lt_ferrf("failed to read config file '%S': %S\n", cpath, lt_err_str(err));
 	}
 	lt_conf_t config, *found;
 	lt_conf_err_info_t conf_err;
-	if (lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc)) {
-		lt_ferrf("failed to parse config file: %S\n", conf_err.err_str);
+	if ((lt_conf_parse(&config, conf_file.str, conf_file.len, &conf_err, alloc))) {
+		lt_ferrf("failed to parse config file '%S': %S\n", cpath, conf_err.err_str);
 	}
 
 	editor.scroll_offs = lt_conf_find_int_default(&config, CLSTR("editor.scroll_offset"), 2);
