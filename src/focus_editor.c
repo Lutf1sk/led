@@ -290,13 +290,13 @@ void input_editor(editor_t* ed, u32 c) {
 		auto_indent(ed, txed->cursor_y);
 		break;
 
-	case 'B' | LT_TERM_MOD_ALT: modified = 0; {
-		doc_pos_t block_start = find_enclosing_block(ed, txed->cursor_x, txed->cursor_y);
+	case 'b' | LT_TERM_MOD_ALT: modified = 0; {
+		doc_pos_t block_start = find_enclosing_block_end(ed, txed->cursor_x, txed->cursor_y);
 		lt_texted_gotoxy(txed, block_start.x, block_start.y, 1);
 	}	break;
 
-	case 'b' | LT_TERM_MOD_ALT: modified = 0; {
-		doc_pos_t block_start = find_enclosing_block_end(ed, txed->cursor_x, txed->cursor_y);
+	case 'B' | LT_TERM_MOD_ALT: modified = 0; {
+		doc_pos_t block_start = find_enclosing_block(ed, txed->cursor_x, txed->cursor_y);
 		lt_texted_gotoxy(txed, block_start.x, block_start.y, 1);
 	}	break;
 
