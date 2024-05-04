@@ -140,7 +140,12 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 		lstr_t name = lt_texted_line_str(line_input, 0);
 		if (name.len) {
 			doc_t* new_doc = fb_open(ed, name);
-			edit_file(ed, new_doc ? new_doc : doc);
+			if (new_doc) {
+				edit_file(ed, new_doc);
+			}
+			else {
+				edit_file(ed, fb_first_file());
+			}
 		}
 		else {
 			edit_file(ed, doc);

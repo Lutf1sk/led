@@ -4,6 +4,7 @@
 #include "file_browser.h"
 #include "editor.h"
 #include "highlight.h"
+#include "focus.h"
 
 #include <lt/str.h>
 #include <lt/mem.h>
@@ -92,10 +93,32 @@ doc_t* fb_find_file(lstr_t str) {
 }
 
 doc_t* fb_open(editor_t* ed, lstr_t path) {
+	lt_err_t err;
+
+	lt_stat_t stat;
+	if ((err = lt_statp(path, &stat))) {
+		return NULL;
+	}
+
+	if (stat.type == LT_DIRENT_DIR) {
+		lt_dir_t* dir = lt_dopenp(path, lt_libc_heap);
+		lt_foreach_dirent(ent, dir) {
+			if (lt_lsprefix(ent->name, CLSTR("."))) {
+				continue;
+			}
+			lstr_t ent_path = lt_lsbuild(lt_libc_heap, "%S/%S", path, ent->name);
+			fb_open(ed, ent_path);
+			lt_hmfree(ent_path.str);
+		}
+		return NULL;
+	}
+
 	// TODO: Return error if file is already open
 
-	if (path.len >= PATH_MAX_LEN)
-		lt_ferrf("path '%s' is too long\n", path);
+	if (path.len >= PATH_MAX_LEN) {
+		notify_error("path too long\n");
+		return NULL;
+	}
 
 	lt_dir_t* dir = lt_dopenp(path, lt_libc_heap);
 	if (dir) {
