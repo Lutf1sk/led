@@ -72,18 +72,18 @@ void notify_exit(void);
 void draw_exit(editor_t* editor, void* args);
 void input_exit(editor_t* editor, u32 c);
 
-// Terminal
-
-void terminal(void);
-
-void draw_terminal(editor_t* editor, void* args);
-void input_terminal(editor_t* editor, u32 c);
-
 // Command
 
 void command(void);
 
 void draw_command(editor_t* editor, void* args);
 void input_command(editor_t* editor, u32 c);
+
+// Shell
+
+void run_shell(void);
+
+void draw_shell(editor_t* editor, void* args);
+void input_shell(editor_t* editor, u32 c);
 
 #endif

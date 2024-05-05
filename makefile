@@ -19,12 +19,12 @@ SRC := \
 	src/editor.c \
 	src/command.c \
 	src/file_browser.c \
-	src/focus_terminal.c \
 	src/focus_editor.c \
 	src/focus_error.c \
 	src/focus_browse_files.c \
 	src/focus_browse_filesystem.c \
 	src/focus_exit.c \
+	src/focus_shell.c \
 	src/focus_find_local.c \
 	src/focus_command.c \
 	src/focus.c \
@@ -37,7 +37,7 @@ LT_ENV :=
 # -----== COMPILER
 CC := cc
 CC_WARN := -Wall -Werror -Wno-strict-aliasing -Wno-error=unused-variable -Wno-unused-function -Wno-pedantic
-CC_FLAGS := -I$(LT_PATH)/include/ -std=c2x -fmax-errors=3 $(CC_WARN)
+CC_FLAGS := -I$(LT_PATH)/include/ -std=gnu2x -fmax-errors=3 $(CC_WARN)
 
 ifndef ARM
 	CC_FLAGS += -mavx2 -masm=intel

@@ -71,6 +71,11 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 		break;
 
+	case 'D' | LT_TERM_MOD_CTRL:
+		modified = 0;
+		run_shell();
+		break;
+
 	case '/' | LT_TERM_MOD_CTRL:
 		// This is a pretty hackish way of toggling a comment,
 		// might want to improve this later

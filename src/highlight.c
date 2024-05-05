@@ -70,7 +70,7 @@ struct modeext {
 
 static lt_darr(modeext_t) extension_modes = NULL;
 
-mode_t modes[HL_COUNT] = {
+hlmode_t modes[HL_COUNT] = {
 #define HLMODE_OP(ename, sname, comment, func) { CLSTR(sname), CLSTR(comment), func },
 	FOR_EACH_HLMODE()
 #undef HLMODE_OP

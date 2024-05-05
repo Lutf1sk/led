@@ -1,0 +1,2 @@
+- auto-indenter does not handle comments
+- auto-indenter does not handle multiline preprocessor statements/strings

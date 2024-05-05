@@ -62,13 +62,13 @@ enum modeid {
 } modeid_t;
 
 typedef
-struct mode {
+struct hlmode {
 	lstr_t name;
 	lstr_t comment_style;
 	highl_t** (*generate_func)(doc_t*, lt_arena_t*);
-} mode_t;
+} hlmode_t;
 
-extern mode_t modes[HL_COUNT];
+extern hlmode_t modes[HL_COUNT];
 
 modeid_t hl_find_mode_by_name(lstr_t name);
 modeid_t hl_find_mode_by_extension(lstr_t path);
