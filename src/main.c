@@ -330,10 +330,6 @@ int main(int argc, char** argv) {
 		u32 c = lt_term_getkey();
 
 		switch (c) {
-		case 'R' | LT_TERM_MOD_CTRL:
-			notify("Skjut mig");
-			break;
-
 		case 'E' | LT_TERM_MOD_CTRL:
 			notify_exit();
 			break;
