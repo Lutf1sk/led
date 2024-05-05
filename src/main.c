@@ -41,7 +41,7 @@ void draw_header(editor_t* ed) {
 	rec_c(' ');
 	if (ed->doc) {
 		rec_lstr(ed->doc->path);
-	 	if (ed->doc->unsaved) {
+		if (ed->doc->unsaved) {
 			rec_c('*');
 		}
 		if (ed->doc->new) {

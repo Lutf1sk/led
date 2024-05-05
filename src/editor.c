@@ -196,9 +196,22 @@ i8 bidir_tab[256] = {
 
 // returns new balance, if returned balance is 0; writes last tested index to `out_x`
 isz bidir_match_balance_fwd(lstr_t str, isz bal, usz out_x[static 1]) {
+	u8 quote = 0;
 	for (char* it = str.str, *end = it + str.len; it < end; ++it) {
-		bal += bidir_tab[(u8)*it];
-		if (!bal) {
+		u8 c = *it;
+		if (quote) {
+			if (c == '\\' && it + 1 < end) {
+				++it;
+			}
+			else if (c == quote) {
+				quote = 0;
+			}
+			continue;
+		}
+		else if (c == '\'' || c == '"') {
+			quote = c;
+		}
+		else if (!(bal += bidir_tab[c])) {
 			*out_x = it - str.str;
 			return bal;
 		}
@@ -208,9 +221,19 @@ isz bidir_match_balance_fwd(lstr_t str, isz bal, usz out_x[static 1]) {
 
 // returns new balance, if returned balance is 0; writes last tested index to `out_x`
 isz bidir_match_balance_bwd(lstr_t str, isz bal, usz out_x[static 1]) {
+	u8 quote = 0;
 	for (char* start = str.str, *it = start + str.len - 1; it >= start; --it) {
-		bal += bidir_tab[(u8)*it];
-		if (!bal) {
+		u8 c = *it;
+		if (quote) {
+			if (c == quote && !(it > start && it[-1] == '\\')) {
+				quote = 0;
+			}
+			continue;
+		}
+		else if (c == '\'' || c == '"') {
+			quote = c;
+		}
+		else if (!(bal += bidir_tab[c])) {
 			*out_x = it - start;
 			return bal;
 		}
@@ -220,8 +243,23 @@ isz bidir_match_balance_bwd(lstr_t str, isz bal, usz out_x[static 1]) {
 
 isz bidir_str_balance(lstr_t str) {
 	isz bal = 0;
+	u8 quote = 0;
 	for (char* it = str.str, *end = it + str.len; it < end; ++it) {
-		bal += bidir_tab[(u8)*it];
+		u8 c = *it;
+		if (quote) {
+			if (c == '\\' && it + 1 < end) {
+				++it;
+			}
+			else if (c == quote) {
+				quote = 0;
+			}
+		}
+		else if (c == '\'' || c == '"') {
+			quote = c;
+		}
+		else {
+			bal += bidir_tab[c];
+		}
 	}
 	return bal;
 }
@@ -310,9 +348,16 @@ lstr_t trailing_indent(lstr_t str) {
 
 usz find_nonempty_bwd(lt_texted_t* txed, usz line_idx) {
 	for (isz i = line_idx - 1; i >= 0; --i) {
-		if (lt_texted_line_len(txed, i)) {
-			return i;
+		lstr_t line = lt_texted_line_str(txed, i);
+		if (!line.len) {
+			continue;
 		}
+		lstr_t trimmed = lt_lstrim_left(line);
+		if (trimmed.len && trimmed.str[0] == '#') {
+			continue;
+		}
+
+		return i;
 	}
 	return 0;
 }
@@ -331,7 +376,9 @@ void auto_indent(editor_t* ed, usz line_idx) {
 		lt_texted_sync_tx(txed);
 	}
 
-	if (!line_idx) {
+	line = lt_texted_line_str(txed, line_idx);
+
+	if (!line_idx || (line.len && line.str[0] == '#')) {
 		return;
 	}
 
