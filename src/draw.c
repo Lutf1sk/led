@@ -19,9 +19,11 @@ void recf(char* fmt, ...) {
 	va_end(argl);
 }
 
-void rec_nc(usz n, char c) {
-	memset(write_it, c, n);
-	write_it += n;
+void rec_nc(isz n, char c) {
+	if (n > 0) {
+		memset(write_it, c, n);
+		write_it += n;
+	}
 }
 
 void rec_goto(u32 x, u32 y) {

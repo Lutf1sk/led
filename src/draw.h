@@ -48,7 +48,7 @@ isz rec_write(void* usr, void* data, usz len) {
 
 isz rec_write(void* usr, void* data, usz len);
 void recf(char* fmt, ...);
-void rec_nc(usz n, char c);
+void rec_nc(isz n, char c);
 
 void rec_goto(u32 x, u32 y);
 

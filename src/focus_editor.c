@@ -16,6 +16,7 @@
 #include "clipboard.h"
 #include "command.h"
 #include "keybinds.h"
+#include "notify.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -53,10 +54,6 @@ void input_editor(editor_t* ed, u32 c) {
 		edit_file(ed, fb_first_file());
 		return;
 
-	case 'K' | LT_TERM_MOD_CTRL: modified = 0;
-		browse_files();
-		break;
-
 	case 'F' | LT_TERM_MOD_CTRL: modified = 0;
 		find_local(txed->cursor_y, txed->cursor_x);
 		break;
@@ -67,13 +64,8 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 
 		if (!doc_save(doc)) {
-			notify_error("Failed to save document");
+			notify("failed to save document");
 		}
-		break;
-
-	case 'D' | LT_TERM_MOD_CTRL:
-		modified = 0;
-		run_shell();
 		break;
 
 	case '/' | LT_TERM_MOD_CTRL:

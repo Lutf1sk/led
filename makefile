@@ -20,7 +20,6 @@ SRC := \
 	src/command.c \
 	src/file_browser.c \
 	src/focus_editor.c \
-	src/focus_error.c \
 	src/focus_browse_files.c \
 	src/focus_browse_filesystem.c \
 	src/focus_exit.c \
@@ -29,7 +28,8 @@ SRC := \
 	src/focus_command.c \
 	src/focus.c \
 	src/keybinds.c \
-	src/draw.c
+	src/draw.c \
+	src/notify.c
 
 LT_PATH := lt
 LT_ENV :=

@@ -19,6 +19,7 @@
 #include "focus.h"
 #include "clipboard.h"
 #include "keybinds.h"
+#include "notify.h"
 
 #include "draw.h"
 
@@ -34,27 +35,42 @@ char* get_highl(highl_t* node) {
 	return mode_clr_tab[node->mode];
 }
 
-void draw_header(editor_t* ed) {
-	rec_goto(0, 0);
+isz draw_header(editor_t* ed) {
+	isz written = 0;
+
+	rec_goto(1, 1);
 	rec_clearline(clr_strs[CLR_HEADER_BG]);
 	rec_str(clr_strs[CLR_HEADER_TAB]);
+
 	rec_c(' ');
+	++written;
+
 	if (ed->doc) {
 		rec_lstr(ed->doc->path);
+		written += ed->doc->path.len;
+
 		if (ed->doc->unsaved) {
 			rec_c('*');
+			++written;
 		}
 		if (ed->doc->new) {
 			rec_str("[NEW]");
+			written += 5;
 		}
 		if (ed->doc->read_only) {
 			rec_str("[RO]");
+			written += 4;
 		}
 	}
 	else {
-		rec_str("No file selected");
+		lstr_t nofile = CLSTR("no file selected");
+		rec_lstr(nofile);
+		written += nofile.len;
+
 	}
 	rec_str(" \x1B[0m");
+	++written;
+	return written;
 }
 
 void draw_editor(editor_t* ed) {
@@ -266,8 +282,11 @@ int main(int argc, char** argv) {
 	clipboard_init();
 	focus_init();
 	find_local_init();
+	notify_init();
 
 	edit_file(&editor, fb_first_file());
+
+	lstr_t notification = NLSTR();
 
 	for (;;) {
 		editor.width = EDITOR_WIDTH;
@@ -283,23 +302,52 @@ int main(int argc, char** argv) {
 			rec_clear(clr_strs[CLR_EDITOR]);
 			draw_header(&editor);
 
-			if (editor.doc)
+			if (editor.doc) {
 				draw_editor(&editor);
-			if (focus.draw)
+			}
+			if (focus.draw) {
 				focus.draw(&editor, focus.draw_args);
+			}
+
+			if (notification.str || pop_notification(&notification)) {
+				rec_goto(1, lt_term_height);
+				rec_str(clr_strs[CLR_NOTIFY_ERROR]);
+				rec_c(' ');
+				rec_lstr(notification);
+				rec_nc(lt_term_width - notification.len - 1, ' ');
+			}
 			lt_term_write_direct(write_buf, write_it - write_buf);
+
+			if (notification.str) {
+				while ((lt_term_getkey() & LT_TERM_KEY_MASK) == LT_TERM_KEY_MPOS) {}
+				lt_hmfree(notification.str);
+				notification = NLSTR();
+				continue;
+			}
 		}
 
 		// Get and handle input.
 		u32 c = lt_term_getkey();
 
 		switch (c) {
+		case 'R' | LT_TERM_MOD_CTRL:
+			notify("Skjut mig");
+			break;
+
 		case 'E' | LT_TERM_MOD_CTRL:
 			notify_exit();
 			break;
 
 		case 'O' | LT_TERM_MOD_CTRL:
 			browse_filesystem();
+			break;
+
+		case 'D' | LT_TERM_MOD_CTRL:
+			run_shell();
+			break;
+
+		case 'K' | LT_TERM_MOD_CTRL:
+			browse_files();
 			break;
 
 		default:

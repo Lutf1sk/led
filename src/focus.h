@@ -58,13 +58,6 @@ void find_local(isz start_x, isz start_y);
 void draw_find_local(editor_t* editor, void* args);
 void input_find_local(editor_t* editor, u32 c);
 
-// Notify error
-
-void notify_error(char* str);
-
-void draw_notify_error(editor_t* editor, void* args);
-void input_notify_error(editor_t* editor, u32 c);
-
 // Notify exit
 
 void notify_exit(void);
