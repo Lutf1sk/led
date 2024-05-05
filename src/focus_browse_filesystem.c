@@ -18,6 +18,8 @@
 #include "common.h"
 #include "draw.h"
 
+#include <stdlib.h>
+
 focus_t focus_browse_filesystem = { draw_browse_filesystem, NULL, input_browse_filesystem };
 
 #define MAX_ENTRY_COUNT 15
@@ -41,6 +43,13 @@ void update_file_list(void) {
 	lt_darr_clear(files);
 
 	lstr_t input = lt_texted_line_str(line_input, 0);
+
+	b8 free_input = 0;
+	if (lt_lsprefix(input, CLSTR("~/"))) {
+		char* home_path = getenv("HOME");
+		input = lt_lsbuild(lt_libc_heap, "%s/%S", (home_path) ? home_path : "/home", lt_lsdrop(input, 2));
+		free_input = 1;
+	}
 
 	lstr_t dirname = lt_lsdirname(input);
 	lstr_t basename = input.len ? lt_lsbasename(input) : CLSTR("");
@@ -70,6 +79,10 @@ void update_file_list(void) {
 
 	selected_index = lt_isz_max(lt_isz_min(selected_index, lt_darr_count(files) - 1), 0);
 	visible_index = lt_isz_max(lt_isz_min(visible_index, lt_darr_count(files) - MAX_ENTRY_COUNT), 0);
+
+	if (free_input) {
+		lt_hmfree(input.str);
+	}
 }
 
 void browse_filesystem(void) {
