@@ -21,7 +21,12 @@ void run_shell(void) {
 
 	pid_t child = fork();
 	if (child == 0) {
-// 		lt_printf(FG_BYELLOW "led" RESET " > " FG_BYELLOW "running '/bin/bash'\n" RESET);
+
+		if (strcmp(getenv("TERM"), "linux") == 0) {
+			lstr_t final_write = CLSTR(RESET CSET(9999, 0) "\n");
+			lt_term_write_direct(final_write.str, final_write.len);
+		}
+
 		setenv("LED", "1", true);
 		execl("/bin/bash", "/bin/bash", NULL);
 	}
