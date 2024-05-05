@@ -249,6 +249,8 @@ int main(int argc, char** argv) {
 	editor.relative_linenums = lt_conf_find_bool_default(&config, CLSTR("editor.relative_linenums"), 0);
 	editor.tabs_to_spaces = lt_conf_find_bool_default(&config, CLSTR("editor.tabs_to_spaces"), 0);
 
+	shell_load(&config);
+
 	clr_load(&config);
 	mode_clr_tab[HLM_STRING]      = clr_strs[CLR_SYNTAX_STRING];
 	mode_clr_tab[HLM_CHAR]        = clr_strs[CLR_SYNTAX_CHAR];
