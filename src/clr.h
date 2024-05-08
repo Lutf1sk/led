@@ -49,7 +49,7 @@ enum {
 
 	CLR_COUNT
 };
-extern char clr_strs[CLR_COUNT][32];
+extern u32 clr_attr[CLR_COUNT];
 
 void clr_load(lt_conf_t* clr_conf);
 

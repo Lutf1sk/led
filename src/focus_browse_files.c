@@ -35,12 +35,16 @@ void browse_files(void) {
 void draw_browse_files(editor_t* ed, void* args) {
 	(void)args;
 
-	usz start_height = lt_term_height - MAX_VISIBLE_ENTRIES;
+	isz start_height = lt_term_height - MAX_VISIBLE_ENTRIES - 1;
 
-	rec_goto(2, start_height);
-	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_str(" ");
+	buf_set_pos(start_height, 0);
+	buf_write_char(clr_attr[CLR_LIST_HEAD], ' ');
+	buf_write_txed(clr_attr[CLR_EDITOR_SEL], clr_attr[CLR_LIST_HEAD], line_input);
+	buf_write_char(clr_attr[CLR_LIST_HEAD] | ATTR_FILL, ' ');
+	buf_write_char(0, 0);
+
+	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(line_input, 0), line_input->cursor_x);
+	buf_set_cursor(start_height, sx + 1);
 
 	doc_t* found[MAX_ENTRY_COUNT];
 	usz found_count = fb_find_files(found, MAX_ENTRY_COUNT, lt_texted_line_str(line_input, 0));
@@ -53,38 +57,33 @@ void draw_browse_files(editor_t* ed, void* args) {
 	visible_index = lt_isz_clamp(visible_index, 0, found_count - visible_count);
 
 	// Draw available files
-	rec_str(clr_strs[CLR_LIST_ENTRY]);
 	for (usz i = 0; i < visible_count; ++i) {
 		usz index = visible_index + i;
 
-		rec_goto(2, start_height + i + 1);
+		u32 attr0 = clr_attr[CLR_LIST_DIR];
+		u32 attr1 = clr_attr[CLR_LIST_FILE];
 
 		if (index == selected_index) {
 			selected = found[selected_index];
-			rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-		}
-		else {
-			rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+			attr0 = (attr0 & ~ATTR_BG_MASK) | (clr_attr[CLR_LIST_HIGHL] & ATTR_BG_MASK);
+			attr1 = (attr1 & ~ATTR_BG_MASK) | (clr_attr[CLR_LIST_HIGHL] & ATTR_BG_MASK);
 		}
 
 		lstr_t basename = lt_lsbasename(found[index]->path);
 		lstr_t dirname = lt_lsdirname(found[index]->path);
 
-		rec_str(clr_strs[CLR_LIST_DIR]);
-		rec_lstr(dirname);
-
-		rec_str("/ ");
-
-		rec_str(clr_strs[CLR_LIST_FILE]);
-		rec_lstr(basename);
+		buf_set_pos(start_height + i + 1, 0);
+		buf_write_utf8(attr0, CLSTR(" "));
+		buf_write_utf8(attr0, dirname);
+		buf_write_utf8(attr0, CLSTR("/ "));
+		buf_write_utf8(attr1 | ATTR_FILL, basename);
+		buf_write_char(0, 0);
 	}
 
 	// Fill underflowed slots
 	for (usz i = visible_count; i < MAX_VISIBLE_ENTRIES; ++i) {
-		rec_goto(0, start_height + i + 1);
-		rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+		buf_writeln_utf8(start_height + i + 1, clr_attr[CLR_LIST_ENTRY] | ATTR_FILL, CLSTR(" "));
 	}
-	rec_crestore();
 
 	max_index = found_count;
 }

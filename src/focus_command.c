@@ -17,11 +17,14 @@ void command(void) {
 }
 
 void draw_command(editor_t* ed, void* args) {
-	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_str(" ");
-	rec_crestore();
+	buf_set_pos(lt_term_height - 1, 0);
+	buf_write_char(clr_attr[CLR_LIST_HEAD], ' ');
+	buf_write_txed(clr_attr[CLR_EDITOR_SEL], clr_attr[CLR_LIST_HEAD], line_input);
+	buf_write_char(clr_attr[CLR_LIST_HEAD] | ATTR_FILL, ' ');
+	buf_write_char(0, 0);
+
+	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(line_input, 0), line_input->cursor_x);
+	buf_set_cursor(lt_term_height - 1, sx + 1);
 }
 
 void input_command(editor_t* ed, u32 c) {

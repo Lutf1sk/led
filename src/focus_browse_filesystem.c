@@ -97,45 +97,51 @@ void browse_filesystem(void) {
 }
 
 void draw_browse_filesystem(editor_t* ed, void* args) {
-	usz start_height = lt_term_height - MAX_ENTRY_COUNT;
+	isz start_height = lt_term_height - MAX_ENTRY_COUNT - 1;
 
-	rec_goto(2, start_height);
-	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_str(" ");
+	buf_set_pos(start_height, 0);
+	buf_write_char(clr_attr[CLR_LIST_HEAD], ' ');
+	buf_write_txed(clr_attr[CLR_EDITOR_SEL], clr_attr[CLR_LIST_HEAD], line_input);
+	buf_write_char(clr_attr[CLR_LIST_HEAD] | ATTR_FILL, ' ');
+	buf_write_char(0, 0);
+
+	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(line_input, 0), line_input->cursor_x);
+	buf_set_cursor(start_height, sx + 1);
 
 	usz visible_count = lt_usz_min(MAX_ENTRY_COUNT, lt_darr_count(files));
 
 	for (usz i = 0; i < visible_count; ++i) {
 		usz index = visible_index + i;
 
-		rec_goto(2, start_height + i + 1);
+		u32 attr = ATTR_FG_WHT;
 
-		rec_clearline(clr_strs[(index == selected_index ? CLR_LIST_HIGHL : CLR_LIST_ENTRY)]);
-
+		buf_set_pos(start_height + i + 1, 0);
 		if (files[index].type == LT_DIRENT_DIR) {
-			rec_str(clr_strs[CLR_LIST_DIR]);
+			attr = clr_attr[CLR_LIST_DIR];
 		}
 		else if (files[index].type == LT_DIRENT_SYMLINK) {
-			rec_str(clr_strs[CLR_LIST_SYMLINK]);
+			attr = clr_attr[CLR_LIST_SYMLINK];
 		}
 		else if (files[index].type == LT_DIRENT_FILE) {
-			rec_str(clr_strs[CLR_LIST_FILE]);
+			attr = clr_attr[CLR_LIST_FILE];
 		}
 
-		rec_lstr(files[index].name);
+		if (index == selected_index) {
+			attr = (attr & ~ATTR_BG_MASK) | (clr_attr[CLR_LIST_HIGHL] & ATTR_BG_MASK);
+		}
+
+		buf_write_char(attr, ' ');
+		buf_write_utf8(attr | ATTR_FILL, files[index].name);
 		if (files[index].type == LT_DIRENT_DIR) {
-			rec_str("/");
+			buf_write_char(attr | ATTR_FILL, '/');
 		}
+		buf_write_char(0, 0);
 	}
 
-	rec_str(clr_strs[CLR_LIST_ENTRY]);
 	for (usz i = visible_count; i < MAX_ENTRY_COUNT; ++i) {
-		rec_goto(0, start_height + i + 1);
-		rec_clearline(clr_strs[CLR_LIST_ENTRY]);
+		usz term_y = start_height + i + 1;
+		buf_writeln_utf8(term_y, clr_attr[CLR_LIST_ENTRY] | ATTR_FILL, CLSTR("  "));
 	}
-
-	rec_crestore();
 }
 
 void input_browse_filesystem(editor_t* ed, u32 c) {

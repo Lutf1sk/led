@@ -43,9 +43,7 @@ void notify_exit(void) {
 }
 
 void draw_exit(editor_t* ed, void* args) {
-	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_NOTIFY_ERROR]);
-	rec_str("files have unsaved changed, are you sure? (Y/n)");
+	buf_writeln_utf8(lt_term_height - 1, clr_attr[CLR_NOTIFY_ERROR], CLSTR(" files have unsaved changed, are you sure? (Y/n) "));
 }
 
 void input_exit(editor_t* ed, u32 c) {

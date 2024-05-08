@@ -43,21 +43,21 @@ void find_local(isz start_y_, isz start_x_) {
 }
 
 void draw_find_local(editor_t* ed, void* args) {
-	rec_goto(2, lt_term_height - 1);
-	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_led(curr_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_str(" ");
+	buf_set_pos(lt_term_height - 2, 0);
+	buf_write_char(clr_attr[CLR_LIST_HEAD], ' ');
+	buf_write_txed(clr_attr[CLR_EDITOR_SEL], clr_attr[CLR_LIST_HEAD], curr_input);
+	buf_write_char(clr_attr[CLR_LIST_HEAD] | ATTR_FILL, ' ');
+	buf_write_char(0, 0);
 
-	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_LIST_HIGHL]);
-	rec_str(clr_strs[CLR_LIST_HIGHL]);
+	usz sx = cursor_x_to_screen_x(ed, lt_texted_line_str(curr_input, 0), curr_input->cursor_x);
+	buf_set_cursor(lt_term_height - 2, sx + 1);
+
 	if (curr_input == line_input) {
-		rec_str("CTRL+R replace");
+		buf_writeln_utf8(lt_term_height - 1, clr_attr[CLR_LIST_HIGHL] | ATTR_FILL, CLSTR(" CTRL+R replace "));
 	}
 	else {
-		rec_str("CTRL+R find");
+		buf_writeln_utf8(lt_term_height - 1, clr_attr[CLR_LIST_HIGHL] | ATTR_FILL, CLSTR(" CTRL+R find "));
 	}
-	rec_crestore();
 }
 
 void find_next_result(lt_texted_t* ed) {

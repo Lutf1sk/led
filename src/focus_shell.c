@@ -74,11 +74,11 @@ void run_shell(void) {
 }
 
 void draw_shell(editor_t* editor, void* args) {
-	rec_goto(2, lt_term_height);
-	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-	rec_str(" ");
-	rec_crestore();
+// 	rec_goto(2, lt_term_height);
+// 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
+// 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
+// 	rec_str(" ");
+// 	rec_crestore();
 }
 
 void input_shell(editor_t* ed, u32 c) {

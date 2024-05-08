@@ -2,48 +2,49 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include "clr.h"
+#include "draw.h"
 
 #include <lt/conf.h>
 #include <lt/io.h>
 
-char clr_strs[CLR_COUNT][32] = {
-	[CLR_LINENUM] = "\x1B[22;37;100m",
-	[CLR_LINENUM_UFLOW] = "\x1B[22;37;100m",
-	[CLR_LINENUM_SEL] = "\x1B[22;30;47m",
+u32 clr_attr[CLR_COUNT] = {
+	[CLR_LINENUM]       = ATTR_BG_BRIGHT | ATTR_BG_BLK | ATTR_FG_WHT,
+	[CLR_LINENUM_UFLOW] = ATTR_BG_BRIGHT | ATTR_BG_BLK | ATTR_FG_WHT,
+	[CLR_LINENUM_SEL]   = ATTR_BG_WHT | ATTR_FG_BLK,
 
-	[CLR_HEADER_TAB] = "\x1B[22;30;47m",
-	[CLR_HEADER_BG] = "\x1B[22;30;100m",
+	[CLR_HEADER_TAB] = ATTR_BG_WHT | ATTR_FG_BLK,
+	[CLR_HEADER_BG]  = ATTR_BG_BLK | ATTR_BG_BRIGHT,
 
-	[CLR_EDITOR] = "\x1B[22;37;40m",
-	[CLR_EDITOR_SEL] = "\x1B[22;30;46m",
+	[CLR_EDITOR]     = ATTR_FG_WHT | ATTR_BG_BLK,
+	[CLR_EDITOR_SEL] = ATTR_FG_BLK | ATTR_BG_CYN,
 
-	[CLR_SYNTAX_UNKNOWN] = "\x1B[22;37;40m",
+	[CLR_SYNTAX_UNKNOWN] = ATTR_FG_WHT | ATTR_BG_BLK,
 
-	[CLR_SYNTAX_STRING] = "\x1B[22;33;40m",
-	[CLR_SYNTAX_CHAR] = "\x1B[22;33;40m",
-	[CLR_SYNTAX_NUMBER] = "\x1B[22;37;40m",
+	[CLR_SYNTAX_STRING] = ATTR_FG_YLW | ATTR_BG_BLK,
+	[CLR_SYNTAX_CHAR]   = ATTR_FG_YLW | ATTR_BG_BLK,
+	[CLR_SYNTAX_NUMBER] = ATTR_FG_WHT | ATTR_BG_BLK,
 
-	[CLR_SYNTAX_IDENTIFIER] = "\x1B[22;97;40m",
-	[CLR_SYNTAX_KEYWORD] = "\x1B[22;93;40m",
-	[CLR_SYNTAX_COMMENT] = "\x1B[22;32;40m",
-	[CLR_SYNTAX_DATATYPE] = "\x1B[22;31;40m",
+	[CLR_SYNTAX_IDENTIFIER] = ATTR_FG_WHT | ATTR_BG_BLK | ATTR_FG_BRIGHT,
+	[CLR_SYNTAX_KEYWORD]    = ATTR_FG_YLW | ATTR_BG_BLK | ATTR_FG_BRIGHT,
+	[CLR_SYNTAX_COMMENT]    = ATTR_FG_GRN | ATTR_BG_BLK,
+	[CLR_SYNTAX_DATATYPE]   = ATTR_FG_RED | ATTR_BG_BLK,
 
-	[CLR_SYNTAX_HASH] = "\x1B[22;37;40m",
-	[CLR_SYNTAX_OPERATOR] = "\x1B[22;36;40m",
-	[CLR_SYNTAX_PUNCTUATION] = "\x1B[22;31;40m",
+	[CLR_SYNTAX_HASH]        = ATTR_FG_WHT | ATTR_BG_BLK,
+	[CLR_SYNTAX_OPERATOR]    = ATTR_FG_CYN | ATTR_BG_BLK,
+	[CLR_SYNTAX_PUNCTUATION] = ATTR_FG_RED | ATTR_BG_BLK,
 
-	[CLR_SYNTAX_FUNCTION] = "\x1B[1;97;40m",
+	[CLR_SYNTAX_FUNCTION] = ATTR_BOLD | ATTR_FG_WHT | ATTR_BG_BLK | ATTR_FG_BRIGHT,
 
-	[CLR_NOTIFY_ERROR] = "\x1B[1;30;41m",
+	[CLR_NOTIFY_ERROR] = ATTR_BOLD | ATTR_FG_BLK | ATTR_BG_RED,
 
-	[CLR_LIST_HEAD] = "\x1B[22;30;47m",
-	[CLR_LIST_ENTRY] = "\x1B[22;37;40m",
-	[CLR_LIST_HIGHL] = "\x1B[22;37;100m",
-	[CLR_LIST_DIR] = "\x1B[22;93m",
-	[CLR_LIST_FILE] = "\x1B[22;97m",
-	[CLR_LIST_SYMLINK] = "\x1B[22;33m",
+	[CLR_LIST_HEAD]    = ATTR_FG_BLK | ATTR_BG_WHT,
+	[CLR_LIST_ENTRY]   = ATTR_FG_WHT | ATTR_BG_BLK,
+	[CLR_LIST_HIGHL]   = ATTR_FG_WHT | ATTR_BG_BLK | ATTR_BG_BRIGHT,
+	[CLR_LIST_DIR]     = ATTR_FG_YLW | ATTR_BG_BLK | ATTR_FG_BRIGHT,
+	[CLR_LIST_FILE]    = ATTR_FG_WHT | ATTR_BG_BLK | ATTR_FG_BRIGHT,
+	[CLR_LIST_SYMLINK] = ATTR_FG_CYN | ATTR_BG_BLK,
 
-	[CLR_SYNTAX_TRAIL_INDENT] = "\x1B[22;30;41m",
+	[CLR_SYNTAX_TRAIL_INDENT] = ATTR_BG_RED,
 };
 
 static
@@ -53,23 +54,16 @@ void load_clr(u32 clr, lt_conf_t* conf, lstr_t key) {
 		return;
 	}
 
-	lt_conf_t* bold = lt_conf_find(conf, CLSTR("bold"));
-	lt_conf_t* fg = lt_conf_find(conf, CLSTR("fg"));
-	lt_conf_t* bg = lt_conf_find(conf, CLSTR("bg"));
+	b8 bold = lt_conf_find_bool_default(conf, CLSTR("bold"), 0);
+	i64 fg = lt_conf_find_int_default(conf, CLSTR("fg"), 7);
+	i64 bg = lt_conf_find_int_default(conf, CLSTR("bg"), 0);
 
-	char* it = clr_strs[clr];
+	u32 attr = 0;
+	if (bold) attr |= ATTR_BOLD;
+	attr |= (fg & 0xF) << 16;
+	attr |= (bg & 0xF) << 20;
 
-	it += lt_sprintf(it, "\x1B[");
-	it += lt_sprintf(it, "%s", ((bold ? bold->bool_val : 0) ? "1" : "22"));
-
-	if (fg) {
-		it += lt_sprintf(it, ";%iq", fg->int_val);
-	}
-	if (bg) {
-		it += lt_sprintf(it, ";%iq", bg->int_val);
-	}
-	*it++ = 'm';
-	*it++ = 0;
+	clr_attr[clr] = attr;
 }
 
 void clr_load(lt_conf_t* conf) {
@@ -111,4 +105,3 @@ void clr_load(lt_conf_t* conf) {
 
 	load_clr(CLR_SYNTAX_TRAIL_INDENT, conf, CLSTR("colors.syntax_trail_indent"));
 }
-
