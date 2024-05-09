@@ -353,7 +353,7 @@ usz find_nonempty_bwd(lt_texted_t* txed, usz line_idx) {
 			continue;
 		}
 		lstr_t trimmed = lt_lstrim_left(line);
-		if (!trimmed.len || (trimmed.len && trimmed.str[0] == '#')) {
+		if (!trimmed.len || lt_lsprefix(trimmed, CLSTR("#")) || lt_lsprefix(trimmed, CLSTR("//"))) {
 			continue;
 		}
 
@@ -394,8 +394,10 @@ void auto_indent(editor_t* ed, usz line_idx) {
 			--dir;
 		}
 
+		lstr_t nonempty_trimmed = lt_lsdrop(first_nonempty, indent_str.len);
+
 		char last_char = first_nonempty.str[first_nonempty.len - 1];
-		if (last_char == ':' || last_char == ')') {
+		if (last_char == ':' || last_char == ')' || lt_lsprefix(nonempty_trimmed, CLSTR("case "))) {
 			++dir;
 		}
 		else {
