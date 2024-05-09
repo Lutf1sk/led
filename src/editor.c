@@ -390,7 +390,7 @@ void auto_indent(editor_t* ed, usz line_idx) {
 	isz dir = lt_isz_max(bidir_str_balance(first_nonempty), 0);
 
 	if (first_nonempty_idx != line_idx && first_nonempty.len) {
-		if (line.len && line.str[line.len - 1] == ':') {
+		if ((line.len && line.str[line.len - 1] == ':') || lt_lsprefix(line, CLSTR("case "))) {
 			--dir;
 		}
 
