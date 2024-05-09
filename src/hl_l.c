@@ -36,7 +36,6 @@ b8 is_keyword(lstr_t str) {
 		break;
 
 	case 'i':
-		if (lt_lseq(str, CLSTR("include"))) return 1;
 		if (lt_lseq(str, CLSTR("import"))) return 1;
 		if (lt_lseq(str, CLSTR("if"))) return 1;
 		break;
@@ -50,8 +49,8 @@ b8 is_keyword(lstr_t str) {
 		if (lt_lseq(str, CLSTR("mut"))) return 1;
 		break;
 
-	case 'o':
-		if (lt_lseq(str, CLSTR("on"))) return 1;
+	case 'r':
+		if (lt_lseq(str, CLSTR("return"))) return 1;
 		break;
 
 	case 's':

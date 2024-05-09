@@ -16,8 +16,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-focus_t focus_shell = { draw_shell, NULL, input_shell };
-
 char* shell_path = NULL;
 lt_darr(char*) shell_args = NULL;
 
@@ -71,30 +69,4 @@ void run_shell(void) {
 
 	lt_term_restore();
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
-}
-
-void draw_shell(editor_t* editor, void* args) {
-// 	rec_goto(2, lt_term_height);
-// 	rec_clearline(clr_strs[CLR_LIST_HEAD]);
-// 	rec_led(line_input, clr_strs[CLR_EDITOR_SEL], clr_strs[CLR_LIST_HEAD]);
-// 	rec_str(" ");
-// 	rec_crestore();
-}
-
-void input_shell(editor_t* ed, u32 c) {
-	switch (c) {
-	case LT_TERM_KEY_BSPACE: case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL:
-		if (!lt_texted_line_len(line_input, 0)) {
-		case LT_TERM_KEY_ESC:
-			edit_file(ed, ed->doc);
-		}
-	default:
-		input_term_key(line_input, c);
-		return;
-
-
-	case '\n':
-		edit_file(ed, ed->doc);
-		break;
-	}
 }

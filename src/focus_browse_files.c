@@ -73,7 +73,7 @@ void draw_browse_files(editor_t* ed, void* args) {
 		lstr_t dirname = lt_lsdirname(found[index]->path);
 
 		buf_set_pos(start_height + i + 1, 0);
-		buf_write_utf8(attr0, CLSTR(" "));
+		buf_write_char(attr0, ' ');
 		buf_write_utf8(attr0, dirname);
 		buf_write_utf8(attr0, CLSTR("/ "));
 		buf_write_utf8(attr1 | ATTR_FILL, basename);

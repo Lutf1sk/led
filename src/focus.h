@@ -75,10 +75,20 @@ void input_command(editor_t* editor, u32 c);
 // Shell
 
 void shell_load(lt_conf_t* cf);
-
 void run_shell(void);
 
-void draw_shell(editor_t* editor, void* args);
-void input_shell(editor_t* editor, u32 c);
+// Relative jump
+
+void reljump(b8 bwd);
+
+void draw_reljump(editor_t* editor, void* args);
+void input_reljump(editor_t* editor, u32 c);
+
+// Find character
+
+void findch(b8 bwd);
+
+void draw_findch(editor_t* editor, void* args);
+void input_findch(editor_t* editor, u32 c);
 
 #endif

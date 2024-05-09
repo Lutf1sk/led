@@ -58,6 +58,14 @@ void input_editor(editor_t* ed, u32 c) {
 		find_local(txed->cursor_y, txed->cursor_x);
 		break;
 
+	case 'f' | LT_TERM_MOD_ALT: modified = 0;
+		findch(0);
+		break;
+
+	case 'F' | LT_TERM_MOD_ALT: modified = 0;
+		findch(1);
+		break;
+
 	case 'S' | LT_TERM_MOD_CTRL: modified = 0;
 		if (ed->remove_trailing_indent) {
 			remove_trailing_indent(ed);
@@ -81,6 +89,14 @@ void input_editor(editor_t* ed, u32 c) {
 
 	case '\\' | LT_TERM_MOD_CTRL: modified = 0; case 'x' | LT_TERM_MOD_ALT:
 		command();
+		break;
+
+	case 'u' | LT_TERM_MOD_ALT: modified = 0;
+		reljump(1);
+		break;
+
+	case 'd' | LT_TERM_MOD_ALT: modified = 0;
+		reljump(0);
 		break;
 
 	// ----- MOUSE
@@ -141,7 +157,6 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
-	case 'U' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -150,7 +165,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
-	case 'u' | LT_TERM_MOD_ALT:
+	case 'y' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -192,7 +207,6 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
-	case 'D' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
@@ -203,7 +217,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
-	case 'd' | LT_TERM_MOD_ALT:
+	case 'g' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
@@ -219,6 +233,7 @@ void input_editor(editor_t* ed, u32 c) {
 	case LT_TERM_KEY_RIGHT | LT_TERM_MOD_SHIFT: modified = 0; lt_texted_cursor_right(txed, 0); break;
 	case LT_TERM_KEY_RIGHT: modified = 0; lt_texted_cursor_right(txed, 1); break;
 	case LT_TERM_KEY_RIGHT | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: modified = 0; lt_texted_step_right(txed, 0); break;
+	case 'e' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_RIGHT | LT_TERM_MOD_CTRL: modified = 0; lt_texted_step_right(txed, 1); break;
 	case LT_TERM_KEY_RIGHT | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; halfstep_right(ed, 0); break;
 	case LT_TERM_KEY_RIGHT | LT_TERM_MOD_ALT: modified = 0; halfstep_right(ed, 1); break;
@@ -228,6 +243,7 @@ void input_editor(editor_t* ed, u32 c) {
 	case LT_TERM_KEY_LEFT | LT_TERM_MOD_SHIFT: modified = 0; lt_texted_cursor_left(txed, 0); break;
 	case LT_TERM_KEY_LEFT: modified = 0; lt_texted_cursor_left(txed, 1); break;
 	case LT_TERM_KEY_LEFT | LT_TERM_MOD_CTRL | LT_TERM_MOD_SHIFT: modified = 0; lt_texted_step_left(txed, 0); break;
+	case 'b' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_LEFT | LT_TERM_MOD_CTRL: modified = 0; lt_texted_step_left(txed, 1); break;
 	case LT_TERM_KEY_LEFT | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; halfstep_left(ed, 0); break;
 	case LT_TERM_KEY_LEFT | LT_TERM_MOD_ALT: modified = 0; halfstep_left(ed, 1); break;
@@ -291,12 +307,12 @@ void input_editor(editor_t* ed, u32 c) {
 		auto_indent(ed, txed->cursor_y);
 		break;
 
-	case 'b' | LT_TERM_MOD_ALT: modified = 0; {
+	case ']' | LT_TERM_MOD_ALT: modified = 0; {
 		doc_pos_t block_start = find_enclosing_block_end(ed, txed->cursor_x, txed->cursor_y);
 		lt_texted_gotoxy(txed, block_start.x, block_start.y, 1);
 	}	break;
 
-	case 'B' | LT_TERM_MOD_ALT: modified = 0; {
+	case '[' | LT_TERM_MOD_ALT: modified = 0; {
 		doc_pos_t block_start = find_enclosing_block(ed, txed->cursor_x, txed->cursor_y);
 		lt_texted_gotoxy(txed, block_start.x, block_start.y, 1);
 	}	break;
