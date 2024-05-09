@@ -99,6 +99,10 @@ void input_editor(editor_t* ed, u32 c) {
 		reljump(0);
 		break;
 
+	case 'a' | LT_TERM_MOD_ALT:
+		auto_indent(ed, txed->cursor_y);
+		break;
+
 	// ----- MOUSE
 	case LT_TERM_KEY_MB1_DN: modified = 0; {
 		usz line = lt_isz_clamp(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
@@ -165,7 +169,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
-	case 'y' | LT_TERM_MOD_ALT:
+	case 'p' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -217,7 +221,7 @@ void input_editor(editor_t* ed, u32 c) {
 		center_line(ed, txed->cursor_y);
 	}	break;
 
-	case 'g' | LT_TERM_MOD_ALT:
+	case 'm' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
