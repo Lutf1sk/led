@@ -353,7 +353,7 @@ usz find_nonempty_bwd(lt_texted_t* txed, usz line_idx) {
 			continue;
 		}
 		lstr_t trimmed = lt_lstrim_left(line);
-		if (trimmed.len && trimmed.str[0] == '#') {
+		if (!trimmed.len || (trimmed.len && trimmed.str[0] == '#')) {
 			continue;
 		}
 
