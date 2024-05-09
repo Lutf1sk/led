@@ -317,6 +317,10 @@ int main(int argc, char** argv) {
 		u32 c = lt_term_getkey();
 
 		switch (c) {
+		case LT_TERM_KEY_RESIZE:
+			buf_resize(lt_term_width, lt_term_height);
+			break;
+
 		case 'E' | LT_TERM_MOD_CTRL:
 			notify_exit();
 			break;
