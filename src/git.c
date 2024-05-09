@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-void git_open_tracked(editor_t* ed, char* git_path) {
+void git_open_tracked(editor_t* ed, char* git_path, lstr_t repo_path) {
 	lt_strstream_t ss;
 	lt_strstream_create(&ss, lt_libc_heap);
 
@@ -28,7 +28,14 @@ void git_open_tracked(editor_t* ed, char* git_path) {
 		dup2(nullfd, STDERR_FILENO);
 		close(nullfd);
 		close(pfd[1]);
-		execl(git_path, git_path, "ls-files", NULL);
+		if (repo_path.str) {
+			char* repo_cpath = lt_lstos(repo_path, lt_libc_heap);
+			execl(git_path, git_path, "-C", repo_cpath, "ls-files", NULL);
+			lt_hmfree(repo_cpath);
+		}
+		else {
+			execl(git_path, git_path, "ls-files", NULL);
+		}
 		exit(2);
 	}
 
@@ -48,10 +55,25 @@ void git_open_tracked(editor_t* ed, char* git_path) {
 
 	lstr_t str = ss.str;
 	while ((isz)str.len > 0) {
-		lstr_t path = lt_lssplit(str, '\n');
+		lstr_t entry = lt_lssplit(str, '\n');
+		lstr_t path = entry;
 
-		fb_open(ed, path);
-		str = lt_lsdrop(str, path.len + 1);
+		if (repo_path.str) {
+			path = lt_lsbuild(lt_libc_heap, "%S/%S", repo_path, path);
+		}
+
+		lt_stat_t st;
+		if (lt_statp(path, &st) == LT_SUCCESS && st.type == LT_DIRENT_DIR) {
+			git_open_tracked(ed, git_path, path);
+		}
+		else {
+			fb_open(ed, path);
+		}
+		str = lt_lsdrop(str, entry.len + 1);
+
+		if (repo_path.str) {
+			lt_hmfree(path.str);
+		}
 	}
 
 	lt_strstream_destroy(&ss);

@@ -5,6 +5,6 @@
 
 #include "editor.h"
 
-void git_open_tracked(editor_t* ed, char* path);
+void git_open_tracked(editor_t* ed, char* path, lstr_t repo_path);
 
 #endif

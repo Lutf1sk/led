@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
 
 	if (lt_darr_count(open_paths) == 0 && lt_conf_find_bool_default(&config, CLSTR("git.auto_open_tracked"), 1)) {
 		char* git_path = lt_lstos(lt_conf_find_str_default(&config, CLSTR("git.path"), CLSTR("/bin/git")), lt_libc_heap);
-		git_open_tracked(&editor, git_path);
+		git_open_tracked(&editor, git_path, NLSTR());
 		lt_hmfree(git_path);
 	}
 
