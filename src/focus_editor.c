@@ -166,6 +166,7 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
+	case 'P' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_UP | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		if (txed->cursor_y >= doc->line_top + move_h || doc->line_top == 0) {
@@ -216,6 +217,7 @@ void input_editor(editor_t* ed, u32 c) {
 		}
 	}	break;
 
+	case 'M' | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DOWN | LT_TERM_MOD_ALT | LT_TERM_MOD_SHIFT: modified = 0; {
 		isz move_h = ed->height / 2;
 		usz line_count = lt_texted_line_count(txed);
