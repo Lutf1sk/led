@@ -84,6 +84,13 @@ void reljump(b8 bwd);
 void draw_reljump(editor_t* editor, void* args);
 void input_reljump(editor_t* editor, u32 c);
 
+// Extract lines
+
+void extract(b8 delete_src, b8 insert_new);
+
+void draw_extract(editor_t* editor, void* args);
+void input_extract(editor_t* editor, u32 c);
+
 // Find character
 
 void findch(b8 bwd);

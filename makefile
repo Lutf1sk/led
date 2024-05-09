@@ -21,6 +21,7 @@ SRC := \
 	src/command.c \
 	src/file_browser.c \
 	src/focus_editor.c \
+	src/focus_extract.c \
 	src/focus_reljump.c \
 	src/focus_findch.c \
 	src/focus_browse_files.c \

@@ -87,7 +87,7 @@ void input_editor(editor_t* ed, u32 c) {
 		lt_texted_delete_selection_prefix(txed, LSTR(stylex2, comment_style.len * 2));
 		break;
 
-	case '\\' | LT_TERM_MOD_CTRL: modified = 0; case 'x' | LT_TERM_MOD_ALT:
+	case '\\' | LT_TERM_MOD_CTRL: modified = 0;
 		command();
 		break;
 
@@ -102,6 +102,18 @@ void input_editor(editor_t* ed, u32 c) {
 	case 'R' | LT_TERM_MOD_CTRL: modified = 0;
 		doc_free(ed->doc);
 		doc_load(ed->doc, ed);
+		break;
+
+	case 'c' | LT_TERM_MOD_ALT: modified = 0;
+		extract(0, 0);
+		break;
+
+	case 'x' | LT_TERM_MOD_ALT:
+		extract(1, 0);
+		break;
+
+	case 'z' | LT_TERM_MOD_ALT:
+		extract(0, 1);
 		break;
 
 	// ----- MOUSE
