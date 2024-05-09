@@ -62,6 +62,7 @@ void run_shell(void) {
 
 		setenv("LED", "1", true);
 		execv(shell_path, shell_args);
+		exit(2);
 	}
 	lt_printf("\n");
 

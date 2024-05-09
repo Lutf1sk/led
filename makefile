@@ -2,6 +2,7 @@ OUT := led
 
 SRC := \
 	src/main.c \
+	src/git.c \
 	src/clipboard.c \
 	src/clr.c \
 	src/doc.c \

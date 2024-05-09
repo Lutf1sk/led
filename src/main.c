@@ -25,6 +25,8 @@
 #include "keybinds.h"
 #include "notify.h"
 
+#include "git.h"
+
 #include "draw.h"
 
 static u32 mode_clr_tab[HLM_COUNT];
@@ -262,6 +264,12 @@ int main(int argc, char** argv) {
 
 	for (usz i = 0; i < lt_darr_count(open_paths); ++i) {
 		fb_open(&editor, open_paths[i]);
+	}
+
+	if (lt_darr_count(open_paths) == 0 && lt_conf_find_bool_default(&config, CLSTR("git.auto_open_tracked"), 1)) {
+		char* git_path = lt_lstos(lt_conf_find_str_default(&config, CLSTR("git.path"), CLSTR("/bin/git")), lt_libc_heap);
+		git_open_tracked(&editor, git_path);
+		lt_hmfree(git_path);
 	}
 
 	lt_term_init(LT_TERM_BPASTE | LT_TERM_ALTBUF | LT_TERM_MOUSE | LT_TERM_UTF8);
