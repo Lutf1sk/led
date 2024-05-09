@@ -99,10 +99,6 @@ void input_editor(editor_t* ed, u32 c) {
 		reljump(0);
 		break;
 
-	case 'a' | LT_TERM_MOD_ALT:
-		auto_indent_selection(ed);
-		break;
-
 	case 'R' | LT_TERM_MOD_CTRL: modified = 0;
 		doc_free(ed->doc);
 		doc_load(ed->doc, ed);
