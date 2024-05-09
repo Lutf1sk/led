@@ -267,12 +267,14 @@ void input_editor(editor_t* ed, u32 c) {
 
 	// ----- DELETE
 
+	case 'L' | LT_TERM_MOD_CTRL:
 	case LT_TERM_KEY_DELETE | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_DELETE | LT_TERM_MOD_CTRL: lt_texted_delete_word_fwd(txed); break;
 	case LT_TERM_KEY_DELETE: lt_texted_delete_fwd(txed); break;
 
 	// ----- BACKSPACE
 
+	case 'H' | LT_TERM_MOD_CTRL:
 	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_ALT:
 	case LT_TERM_KEY_BSPACE | LT_TERM_MOD_CTRL: lt_texted_delete_word_bwd(txed); break;
 	case LT_TERM_KEY_BSPACE: lt_texted_delete_bwd(txed); break;
