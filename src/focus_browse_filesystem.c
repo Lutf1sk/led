@@ -157,6 +157,13 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 	switch (c) {
 	case '\n': {
 		lstr_t name = lt_texted_line_str(line_input, 0);
+		b8 free_name = 0;
+		if (lt_lsprefix(name, CLSTR("~/"))) {
+			char* home_path = getenv("HOME");
+			name = lt_lsbuild(lt_libc_heap, "%s/%S", (home_path) ? home_path : "/home", lt_lsdrop(name, 2));
+			free_name = 1;
+		}
+
 		if (name.len) {
 			doc_t* new_doc = fb_open(ed, name);
 			if (new_doc) {
@@ -168,6 +175,10 @@ void input_browse_filesystem(editor_t* ed, u32 c) {
 		}
 		else {
 			edit_file(ed, doc);
+		}
+
+		if (free_name) {
+			lt_hmfree(name.str);
 		}
 	}	break;
 
