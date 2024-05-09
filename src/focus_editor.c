@@ -103,6 +103,11 @@ void input_editor(editor_t* ed, u32 c) {
 		auto_indent(ed, txed->cursor_y);
 		break;
 
+	case 'R' | LT_TERM_MOD_CTRL: modified = 0;
+		doc_free(ed->doc);
+		doc_load(ed->doc, ed);
+		break;
+
 	// ----- MOUSE
 	case LT_TERM_KEY_MB1_DN: modified = 0; {
 		usz line = lt_isz_clamp(doc->line_top + (lt_term_mouse_y - ed->vstart), 0, lt_texted_line_count(txed) - 1);
