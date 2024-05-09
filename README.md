@@ -10,31 +10,37 @@ Available options are listed within the example config.
 
 ## Keybinds
 The following keybinds are built into the editor and cannot be changed, others can be found/added in the example config.
-| Key       | Description           |
-| :-------: | :-------------------: |
-| CTRL+S    | Save current file     |
-| CTRL+E    | Exit                  |
-| CTRL+O    | Open file             |
-| CTRL+\    | Execute command       |
-| CTRL+K    | Browse open files     |
-| CTRL+Q    | Close current file    |
-| CTRL+F    | Local find string     |
-| CTRL+/    | Comment selection     |
-| ALT+P     | Move to other bracket |
-| TAB       | Indent selection      |
-| Shift+TAB | Unindent selection    |
-| Page Up   | Move up one page      |
-| Page Down | Move down one page    |
-| Home      | Jump to start of line |
-| End       | Jump to end of line   |
-| F4        | Switch header/source  |
+| Key            | Description           |
+| :------------: | :-------------------: |
+| CTRL+S         | Save current file     |
+| CTRL+E         | Exit                  |
+| CTRL+O         | Open file             |
+| CTRL+\         | Execute command       |
+| ALT+X          | Execute command       |
+| CTRL+K         | Browse open files     |
+| CTRL+Q         | Close current file    |
+| CTRL+F         | Local find string     |
+| CTRL+/         | Comment selection     |
+| ALT+[          | Find previous unmatched directional character |
+| ALT+]          | Find next unmatched directional character     |
+| SHIF+ALT+F <C> | Find previous occurence of <C> |
+| ALT+F <C>      | Find next occurence of <C>     |
+| ALT+U <N>      | Jump up <N> lines     |
+| ALT+D <N>      | Jump down <N> lines   |
+| TAB            | Indent selection      |
+| Shift+TAB      | Unindent selection    |
+| Page Up        | Move up one page      |
+| Page Down      | Move down one page    |
+| Home           | Jump to start of line |
+| End            | Jump to end of line   |
+| F4             | Switch header/source  |
 
 The cursor is moved with the arrow keys. Using CTRL+Horizontal arrows moves word-by-word.
 CTRL+Vertical arrows moves up/down `editor.vstep * <consecutive_keypresses>` lines.
 ALT+Horizontal arrows moves left/right by half of the line length.
-ALT+Vertical arrows moves the cursor up half a page and centers the cursor.
+ALT+Vertical arrows or ALT+P/ALT+M moves up half a page and centers the cursor.
 As expected, moving the cursor with shift held down adds text to the selection.
-Selecting text with a mouse works just like any other gui application (given that your terminal emulator supports mouse events).
+Selecting text with a mouse works just like any other application (given that your terminal emulator supports mouse events).
 
 ## Commands
 Pressing CTRL+\ brings up a command input, this is a series of single character commands that each perform one action.
@@ -55,6 +61,7 @@ Similarly, a `<block>` is any number of commands, terminated either by the end o
 - `i<condition><true_block>[e<false_block>]` execute `<true_block>` if `<condition>` is true, otherwise execute `<false_block>` if `e` is present.
 - `ff<string>` jump to next occurence of `<string>`.
 - `fb<string>` jump to previous occurence of `<string>`.
+- `a` auto-indent selected lines
 
 ### Positions
 - `f<number>` moves forward `<number>` columns.
